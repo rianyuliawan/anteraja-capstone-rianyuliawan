@@ -1,0 +1,71 @@
+awb,pickup_area,pickup_point,delivery_area,delivery_point,current_stage,pickup_at,last_stage_at,completed_stop_order,route_hub_count,scenario_key
+ANT-FRZ-0001,Jakarta Pusat,"Kemayoran, Jakarta Pusat",Jakarta Selatan,"Pasar Minggu, Jakarta Selatan",PICKED_UP,2026-09-18 14:55,2026-09-18 14:55,0,3,PICKED_UP_3HUB
+ANT-FRZ-0002,Jakarta Timur,"Cakung, Jakarta Timur",Jakarta Utara,"Koja, Jakarta Utara",IN_TRANSIT,2026-09-18 14:55,2026-09-18 16:02,1,1,IN_TRANSIT_1HUB
+ANT-FRZ-0003,Bogor,"Tanah Sareal, Bogor",Tangerang,"Karawaci, Tangerang",PICKED_UP,2026-09-18 14:49,2026-09-18 14:49,0,2,PICKED_UP_2HUB
+ANT-FRZ-0004,Tangerang Selatan,"Ciputat, Tangerang Selatan",Bekasi,"Bekasi Timur, Bekasi",IN_TRANSIT,2026-09-18 14:49,2026-09-18 16:00,1,1,IN_TRANSIT_1HUB
+ANT-FRZ-0005,Jakarta Barat,"Kebon Jeruk, Jakarta Barat",Jakarta Timur,"Duren Sawit, Jakarta Timur",PICKED_UP,2026-09-18 14:43,2026-09-18 14:43,0,2,PICKED_UP_2HUB
+ANT-FRZ-0006,Bekasi,"Bekasi Barat, Bekasi",Tangerang Selatan,"Serpong, Tangerang Selatan",OUT_FOR_DELIVERY,2026-09-18 11:21,2026-09-18 15:58,3,3,OUT_FOR_DELIVERY_3HUB
+ANT-FRZ-0007,Tangerang,"Cipondoh, Tangerang",Bogor,"Bogor Utara, Bogor",PICKED_UP,2026-09-18 14:37,2026-09-18 14:37,0,2,PICKED_UP_2HUB
+ANT-FRZ-0008,Jakarta Utara,"Tanjung Priok, Jakarta Utara",Jakarta Timur,"Duren Sawit, Jakarta Timur",OUT_FOR_DELIVERY,2026-09-18 13:55,2026-09-18 15:56,1,1,OUT_FOR_DELIVERY_1HUB
+ANT-FRZ-0009,Jakarta Selatan,"Cilandak, Jakarta Selatan",Jakarta Pusat,"Senen, Jakarta Pusat",AT_HUB,2026-09-18 15:02,2026-09-18 15:55,1,2,AT_HUB_2HUB
+ANT-FRZ-0010,Depok,"Beji, Depok",Tangerang,"Karawaci, Tangerang",OUT_FOR_DELIVERY,2026-09-18 13:47,2026-09-18 15:54,1,1,OUT_FOR_DELIVERY_1HUB
+ANT-FRZ-0011,Jakarta Pusat,"Kemayoran, Jakarta Pusat",Jakarta Selatan,"Pasar Minggu, Jakarta Selatan",AT_HUB,2026-09-18 13:30,2026-09-18 15:53,2,3,AT_HUB_3HUB
+ANT-FRZ-0012,Jakarta Timur,"Cakung, Jakarta Timur",Jakarta Utara,"Koja, Jakarta Utara",DELIVERED,2026-09-18 12:33,2026-09-18 15:52,2,1,DELIVERED_1HUB
+ANT-FRZ-0013,Bogor,"Tanah Sareal, Bogor",Tangerang,"Karawaci, Tangerang",AT_HUB,2026-09-18 15:06,2026-09-18 16:03,1,2,AT_HUB_2HUB
+ANT-FRZ-0014,Tangerang Selatan,"Ciputat, Tangerang Selatan",Bekasi,"Bekasi Timur, Bekasi",DELIVERED,2026-09-18 12:47,2026-09-18 16:02,2,1,DELIVERED_1HUB
+ANT-FRZ-0015,Jakarta Barat,"Kebon Jeruk, Jakarta Barat",Jakarta Timur,"Duren Sawit, Jakarta Timur",IN_TRANSIT,2026-09-18 14:40,2026-09-18 16:01,1,2,IN_TRANSIT_2HUB
+ANT-FRZ-0016,Bekasi,"Bekasi Barat, Bekasi",Tangerang Selatan,"Serpong, Tangerang Selatan",DELIVERED,2026-09-18 10:29,2026-09-18 16:00,4,3,DELIVERED_3HUB
+ANT-FRZ-0017,Tangerang,"Cipondoh, Tangerang",Bogor,"Bogor Utara, Bogor",IN_TRANSIT,2026-09-18 14:34,2026-09-18 15:59,1,2,IN_TRANSIT_2HUB
+ANT-FRZ-0018,Jakarta Utara,"Tanjung Priok, Jakarta Utara",Jakarta Timur,"Duren Sawit, Jakarta Timur",DELIVERED,2026-09-18 12:41,2026-09-18 15:58,2,1,DELIVERED_1HUB
+ANT-FRZ-0019,Jakarta Selatan,"Cilandak, Jakarta Selatan",Jakarta Pusat,"Senen, Jakarta Pusat",IN_TRANSIT,2026-09-18 14:46,2026-09-18 15:57,1,2,IN_TRANSIT_2HUB
+ANT-FRZ-0020,Depok,"Beji, Depok",Tangerang,"Karawaci, Tangerang",PICKED_UP,2026-09-18 14:46,2026-09-18 14:46,0,1,PICKED_UP_1HUB
+ANT-FRZ-0021,Jakarta Pusat,"Kemayoran, Jakarta Pusat",Jakarta Selatan,"Pasar Minggu, Jakarta Selatan",IN_TRANSIT,2026-09-18 11:58,2026-09-18 15:55,3,3,IN_TRANSIT_3HUB
+ANT-FRZ-0022,Jakarta Timur,"Cakung, Jakarta Timur",Jakarta Utara,"Koja, Jakarta Utara",PICKED_UP,2026-09-18 14:40,2026-09-18 14:40,0,1,PICKED_UP_1HUB
+ANT-FRZ-0023,Bogor,"Tanah Sareal, Bogor",Tangerang,"Karawaci, Tangerang",OUT_FOR_DELIVERY,2026-09-18 12:28,2026-09-18 15:53,2,2,OUT_FOR_DELIVERY_2HUB
+ANT-FRZ-0024,Tangerang Selatan,"Ciputat, Tangerang Selatan",Bekasi,"Bekasi Timur, Bekasi",PICKED_UP,2026-09-18 14:34,2026-09-18 14:34,0,1,PICKED_UP_1HUB
+ANT-FRZ-0025,Jakarta Barat,"Kebon Jeruk, Jakarta Barat",Jakarta Timur,"Duren Sawit, Jakarta Timur",OUT_FOR_DELIVERY,2026-09-18 12:52,2026-09-18 16:03,2,2,OUT_FOR_DELIVERY_2HUB
+ANT-FRZ-0026,Bekasi,"Bekasi Barat, Bekasi",Tangerang Selatan,"Serpong, Tangerang Selatan",AT_HUB,2026-09-18 13:54,2026-09-18 16:02,2,3,AT_HUB_3HUB
+ANT-FRZ-0027,Tangerang,"Cipondoh, Tangerang",Bogor,"Bogor Utara, Bogor",OUT_FOR_DELIVERY,2026-09-18 12:40,2026-09-18 16:01,2,2,OUT_FOR_DELIVERY_2HUB
+ANT-FRZ-0028,Jakarta Utara,"Tanjung Priok, Jakarta Utara",Jakarta Timur,"Duren Sawit, Jakarta Timur",AT_HUB,2026-09-18 15:06,2026-09-18 16:00,1,1,AT_HUB_1HUB
+ANT-FRZ-0029,Jakarta Selatan,"Cilandak, Jakarta Selatan",Jakarta Pusat,"Senen, Jakarta Pusat",DELIVERED,2026-09-18 11:40,2026-09-18 15:59,3,2,DELIVERED_2HUB
+ANT-FRZ-0030,Depok,"Beji, Depok",Tangerang,"Karawaci, Tangerang",AT_HUB,2026-09-18 15:02,2026-09-18 15:58,1,1,AT_HUB_1HUB
+ANT-FRZ-0031,Jakarta Pusat,"Kemayoran, Jakarta Pusat",Jakarta Selatan,"Pasar Minggu, Jakarta Selatan",DELIVERED,2026-09-18 10:13,2026-09-18 15:57,4,3,DELIVERED_3HUB
+ANT-FRZ-0032,Jakarta Timur,"Cakung, Jakarta Timur",Jakarta Utara,"Koja, Jakarta Utara",AT_HUB,2026-09-18 14:58,2026-09-18 15:56,1,1,AT_HUB_1HUB
+ANT-FRZ-0033,Bogor,"Tanah Sareal, Bogor",Tangerang,"Karawaci, Tangerang",DELIVERED,2026-09-18 11:12,2026-09-18 15:55,3,2,DELIVERED_2HUB
+ANT-FRZ-0034,Tangerang Selatan,"Ciputat, Tangerang Selatan",Bekasi,"Bekasi Timur, Bekasi",IN_TRANSIT,2026-09-18 14:25,2026-09-18 15:54,1,1,IN_TRANSIT_1HUB
+ANT-FRZ-0035,Jakarta Barat,"Kebon Jeruk, Jakarta Barat",Jakarta Timur,"Duren Sawit, Jakarta Timur",DELIVERED,2026-09-18 11:16,2026-09-18 15:53,3,2,DELIVERED_2HUB
+ANT-FRZ-0036,Bekasi,"Bekasi Barat, Bekasi",Tangerang Selatan,"Serpong, Tangerang Selatan",IN_TRANSIT,2026-09-18 12:01,2026-09-18 15:52,3,3,IN_TRANSIT_3HUB
+ANT-FRZ-0037,Tangerang,"Cipondoh, Tangerang",Bogor,"Bogor Utara, Bogor",PICKED_UP,2026-09-18 14:43,2026-09-18 14:43,0,2,PICKED_UP_2HUB
+ANT-FRZ-0038,Jakarta Utara,"Tanjung Priok, Jakarta Utara",Jakarta Timur,"Duren Sawit, Jakarta Timur",IN_TRANSIT,2026-09-18 14:55,2026-09-18 16:02,1,1,IN_TRANSIT_1HUB
+ANT-FRZ-0039,Jakarta Selatan,"Cilandak, Jakarta Selatan",Jakarta Pusat,"Senen, Jakarta Pusat",PICKED_UP,2026-09-18 16:01,2026-09-18 16:01,0,2,PICKED_UP_2HUB
+ANT-FRZ-0040,Depok,"Beji, Depok",Tangerang,"Karawaci, Tangerang",OUT_FOR_DELIVERY,2026-09-18 14:03,2026-09-18 16:00,1,1,OUT_FOR_DELIVERY_1HUB
+ANT-FRZ-0041,Jakarta Pusat,"Kemayoran, Jakarta Pusat",Jakarta Selatan,"Pasar Minggu, Jakarta Selatan",PICKED_UP,2026-09-18 15:59,2026-09-18 15:59,0,3,PICKED_UP_3HUB
+ANT-FRZ-0042,Jakarta Timur,"Cakung, Jakarta Timur",Jakarta Utara,"Koja, Jakarta Utara",OUT_FOR_DELIVERY,2026-09-18 13:55,2026-09-18 15:58,1,1,OUT_FOR_DELIVERY_1HUB
+ANT-FRZ-0043,Bogor,"Tanah Sareal, Bogor",Tangerang,"Karawaci, Tangerang",AT_HUB,2026-09-18 15:06,2026-09-18 15:57,1,2,AT_HUB_2HUB
+ANT-FRZ-0044,Tangerang Selatan,"Ciputat, Tangerang Selatan",Bekasi,"Bekasi Timur, Bekasi",OUT_FOR_DELIVERY,2026-09-18 14:01,2026-09-18 15:56,1,1,OUT_FOR_DELIVERY_1HUB
+ANT-FRZ-0045,Jakarta Barat,"Kebon Jeruk, Jakarta Barat",Jakarta Timur,"Duren Sawit, Jakarta Timur",AT_HUB,2026-09-18 15:02,2026-09-18 15:55,1,2,AT_HUB_2HUB
+ANT-FRZ-0046,Bekasi,"Bekasi Barat, Bekasi",Tangerang Selatan,"Serpong, Tangerang Selatan",OUT_FOR_DELIVERY,2026-09-18 10:55,2026-09-18 15:54,3,3,OUT_FOR_DELIVERY_3HUB
+ANT-FRZ-0047,Tangerang,"Cipondoh, Tangerang",Bogor,"Bogor Utara, Bogor",AT_HUB,2026-09-18 14:58,2026-09-18 15:53,1,2,AT_HUB_2HUB
+ANT-FRZ-0048,Jakarta Utara,"Tanjung Priok, Jakarta Utara",Jakarta Timur,"Duren Sawit, Jakarta Timur",DELIVERED,2026-09-18 12:45,2026-09-18 15:52,2,1,DELIVERED_1HUB
+ANT-FRZ-0049,Jakarta Selatan,"Cilandak, Jakarta Selatan",Jakarta Pusat,"Senen, Jakarta Pusat",AT_HUB,2026-09-18 15:06,2026-09-18 16:03,1,2,AT_HUB_2HUB
+ANT-FRZ-0050,Depok,"Beji, Depok",Tangerang,"Karawaci, Tangerang",DELIVERED,2026-09-18 12:59,2026-09-18 16:02,2,1,DELIVERED_1HUB
+ANT-FRZ-0051,Jakarta Pusat,"Kemayoran, Jakarta Pusat",Jakarta Selatan,"Pasar Minggu, Jakarta Selatan",IN_TRANSIT,2026-09-18 12:04,2026-09-18 16:01,3,3,IN_TRANSIT_3HUB
+ANT-FRZ-0052,Jakarta Timur,"Cakung, Jakarta Timur",Jakarta Utara,"Koja, Jakarta Utara",DELIVERED,2026-09-18 12:49,2026-09-18 16:00,2,1,DELIVERED_1HUB
+ANT-FRZ-0053,Bogor,"Tanah Sareal, Bogor",Tangerang,"Karawaci, Tangerang",IN_TRANSIT,2026-09-18 14:34,2026-09-18 15:59,1,2,IN_TRANSIT_2HUB
+ANT-FRZ-0054,Tangerang Selatan,"Ciputat, Tangerang Selatan",Bekasi,"Bekasi Timur, Bekasi",PICKED_UP,2026-09-18 15:58,2026-09-18 15:58,0,1,PICKED_UP_1HUB
+ANT-FRZ-0055,Jakarta Barat,"Kebon Jeruk, Jakarta Barat",Jakarta Timur,"Duren Sawit, Jakarta Timur",IN_TRANSIT,2026-09-18 14:46,2026-09-18 15:57,1,2,IN_TRANSIT_2HUB
+ANT-FRZ-0056,Bekasi,"Bekasi Barat, Bekasi",Tangerang Selatan,"Serpong, Tangerang Selatan",PICKED_UP,2026-09-18 15:56,2026-09-18 15:56,0,3,PICKED_UP_3HUB
+ANT-FRZ-0057,Tangerang,"Cipondoh, Tangerang",Bogor,"Bogor Utara, Bogor",OUT_FOR_DELIVERY,2026-09-18 12:46,2026-09-18 15:55,2,2,OUT_FOR_DELIVERY_2HUB
+ANT-FRZ-0058,Jakarta Utara,"Tanjung Priok, Jakarta Utara",Jakarta Timur,"Duren Sawit, Jakarta Timur",PICKED_UP,2026-09-18 15:54,2026-09-18 15:54,0,1,PICKED_UP_1HUB
+ANT-FRZ-0059,Jakarta Selatan,"Cilandak, Jakarta Selatan",Jakarta Pusat,"Senen, Jakarta Pusat",OUT_FOR_DELIVERY,2026-09-18 12:34,2026-09-18 15:53,2,2,OUT_FOR_DELIVERY_2HUB
+ANT-FRZ-0060,Depok,"Beji, Depok",Tangerang,"Karawaci, Tangerang",PICKED_UP,2026-09-18 15:52,2026-09-18 15:52,0,1,PICKED_UP_1HUB
+ANT-FRZ-0061,Jakarta Pusat,"Kemayoran, Jakarta Pusat",Jakarta Selatan,"Pasar Minggu, Jakarta Selatan",OUT_FOR_DELIVERY,2026-09-18 11:39,2026-09-18 16:03,3,3,OUT_FOR_DELIVERY_3HUB
+ANT-FRZ-0062,Jakarta Timur,"Cakung, Jakarta Timur",Jakarta Utara,"Koja, Jakarta Utara",AT_HUB,2026-09-18 15:10,2026-09-18 16:02,1,1,AT_HUB_1HUB
+ANT-FRZ-0063,Bogor,"Tanah Sareal, Bogor",Tangerang,"Karawaci, Tangerang",OUT_FOR_DELIVERY,2026-09-18 12:46,2026-09-18 16:01,2,2,OUT_FOR_DELIVERY_2HUB
+ANT-FRZ-0064,Tangerang Selatan,"Ciputat, Tangerang Selatan",Bekasi,"Bekasi Timur, Bekasi",AT_HUB,2026-09-18 15:06,2026-09-18 16:00,1,1,AT_HUB_1HUB
+ANT-FRZ-0065,Jakarta Barat,"Kebon Jeruk, Jakarta Barat",Jakarta Timur,"Duren Sawit, Jakarta Timur",DELIVERED,2026-09-18 11:38,2026-09-18 15:59,3,2,DELIVERED_2HUB
+ANT-FRZ-0066,Bekasi,"Bekasi Barat, Bekasi",Tangerang Selatan,"Serpong, Tangerang Selatan",AT_HUB,2026-09-18 12:10,2026-09-18 15:58,3,3,AT_HUB_3HUB
+ANT-FRZ-0067,Tangerang,"Cipondoh, Tangerang",Bogor,"Bogor Utara, Bogor",DELIVERED,2026-09-18 11:24,2026-09-18 15:57,3,2,DELIVERED_2HUB
+ANT-FRZ-0068,Jakarta Utara,"Tanjung Priok, Jakarta Utara",Jakarta Timur,"Duren Sawit, Jakarta Timur",IN_TRANSIT,2026-09-18 14:31,2026-09-18 15:56,1,1,IN_TRANSIT_1HUB
+ANT-FRZ-0069,Jakarta Selatan,"Cilandak, Jakarta Selatan",Jakarta Pusat,"Senen, Jakarta Pusat",DELIVERED,2026-09-18 11:10,2026-09-18 15:55,3,2,DELIVERED_2HUB
+ANT-FRZ-0070,Depok,"Beji, Depok",Tangerang,"Karawaci, Tangerang",IN_TRANSIT,2026-09-18 14:25,2026-09-18 15:54,1,1,IN_TRANSIT_1HUB
