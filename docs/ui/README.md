@@ -151,10 +151,6 @@ Desktop menggunakan dua kolom untuk memisahkan ringkasan dan detail. Mobile meng
 
 Spesifikasi lengkap tersedia pada [DESIGN.md](./DESIGN.md).
 
-## Catatan Evaluasi
-
-Rancangan WebP merupakan dokumentasi visual per fitur dan state. Sebelum implementasi, isi layar perlu mengikuti koreksi pada [UI_AUDIT.md](./UI_AUDIT.md), terutama terkait konsistensi contoh suhu, penghapusan GPS/ETA, pembatasan data pribadi, penggunaan peta ilustratif, dan penyederhanaan riwayat suhu.
-
 ## Cakupan Branch
 
 Seluruh dokumen dan desain UI pada tugas ini disimpan di branch:
