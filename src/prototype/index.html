@@ -33,6 +33,7 @@
           <a href="index.html" aria-current="page">Beranda</a>
           <a href="tracking.html#shipment-summary-title">Ringkasan</a>
           <a href="tracking.html#timeline-title">Linimasa</a>
+          <a href="tracking.html#delivery-evidence">Dokumentasi</a>
           <a href="tracking.html#route">Rute</a>
           <a href="tracking.html#temperature">Suhu</a>
         </nav>
@@ -43,6 +44,7 @@
             <a href="index.html" aria-current="page">Beranda</a>
             <a href="tracking.html#shipment-summary-title">Ringkasan paket</a>
             <a href="tracking.html#timeline-title">Linimasa perjalanan</a>
+            <a href="tracking.html#delivery-evidence">Dokumentasi foto</a>
             <a href="tracking.html#route">Rute pengiriman</a>
             <a href="tracking.html#temperature">Pemantauan suhu</a>
             <a class="mobile-nav__help" href="#customer-care">Pusat Bantuan</a>
@@ -55,8 +57,8 @@
       <section class="hero" aria-labelledby="page-title">
         <div class="container hero__content">
           <p class="eyebrow">Anteraja Frozen</p>
-          <h1 id="page-title">Pelacakan cold chain yang <span>jelas</span> dalam satu tampilan</h1>
-          <p class="hero__lead">Masukkan satu nomor AWB untuk melihat tahap pengiriman, urutan titik singgah, dan suhu lingkungan aset termal yang tercatat.</p>
+          <h1 id="page-title">Pelacakan paket <span>cold chain</span> dalam satu tampilan</h1>
+          <p class="hero__lead">Masukkan satu nomor AWB untuk melihat tahap pengiriman, urutan titik singgah, dan suhu yang tercatat.</p>
 
           <form class="tracking-search" action="tracking.html" method="get" role="search">
             <div class="tracking-search__field">
@@ -74,45 +76,24 @@
           <div class="section-heading section-heading--center">
             <p class="eyebrow">Informasi utama</p>
             <h2 id="feature-title">Yang dapat Anda lihat</h2>
-            <p>Informasi ditampilkan bertahap agar status dan suhu terbaru mudah ditemukan tanpa memenuhi layar.</p>
           </div>
           <div class="feature-grid">
             <article class="feature-card">
               <span class="feature-card__number" aria-hidden="true">01</span>
               <h3>Status dan linimasa</h3>
-              <p>Lihat kejadian perjalanan yang benar-benar tercatat lengkap dengan tanggal dan waktu.</p>
+              <p>Lihat kejadian perjalanan yang tercatat tanggal dan waktu.</p>
             </article>
             <article class="feature-card">
               <span class="feature-card__number" aria-hidden="true">02</span>
               <h3>Rute titik singgah</h3>
-              <p>Pahami urutan pickup, hub, dan delivery melalui rute ilustratif—bukan lokasi GPS langsung.</p>
+              <p>Urutan pickup, hub, dan delivery.</p>
             </article>
             <article class="feature-card">
               <span class="feature-card__number" aria-hidden="true">03</span>
-              <h3>Suhu aset termal</h3>
-              <p>Lihat pembacaan suhu lingkungan cooler bag, freezer hub, atau mobil boks yang terkait.</p>
+              <h3>Suhu Terkini</h3>
+              <p>Lihat pembacaan suhu cooler bag, freezer hub, atau mobil boks yang terkait.</p>
             </article>
           </div>
-        </div>
-      </section>
-
-      <section class="info-band" aria-labelledby="temperature-info-title">
-        <div class="container info-band__inner">
-          <div>
-            <p class="eyebrow">Cara membaca data</p>
-            <h2 id="temperature-info-title">Suhu aset, bukan suhu inti produk</h2>
-            <p>Nilai yang tampil adalah pembacaan lingkungan tempat paket ditangani. Waktu observasi selalu ditampilkan terpisah agar Anda mengetahui kapan data terakhir dicatat.</p>
-          </div>
-          <dl class="data-facts">
-            <div>
-              <dt>Pembaruan terjadwal</dt>
-              <dd>Sekitar 30 menit</dd>
-            </div>
-            <div>
-              <dt>Riwayat awal</dt>
-              <dd>Maksimal 20 data</dd>
-            </div>
-          </dl>
         </div>
       </section>
 
@@ -152,22 +133,51 @@
     </main>
 
     <footer class="site-footer">
-      <div class="container">
+      <div class="container footer-cta">
+        <div>
+          <p class="eyebrow">Kirim bareng Anteraja</p>
+          <h2>Butuh mengirim paket lainnya?</h2>
+          <p>Temukan layanan pengiriman dan informasi terbaru melalui situs resmi Anteraja.</p>
+        </div>
+        <a class="button button--primary" href="https://anteraja.id/id/" target="_blank" rel="noopener noreferrer">Kunjungi Anteraja</a>
+      </div>
+      <div class="container site-footer__body">
         <div class="site-footer__grid">
           <section class="site-footer__brand" aria-labelledby="footer-brand-title">
             <h2 class="visually-hidden" id="footer-brand-title">Tentang Anteraja Frozen</h2>
-            <img class="brand-logo" src="assets/images/logo-anteraja.png" alt="Anteraja">
-            <p>Pelacakan pengiriman rantai dingin dengan pemantauan suhu lingkungan aset penyimpanan atau armada.</p>
+            <a href="https://anteraja.id/id/" target="_blank" rel="noopener noreferrer" aria-label="Buka situs resmi Anteraja">
+              <img class="brand-logo" src="assets/images/logo-anteraja.png" alt="Anteraja">
+            </a>
+            <p>Pelacakan pengiriman rantai dingin dengan informasi perjalanan dan suhu lingkungan aset yang mudah dipahami.</p>
+          </section>
+          <section aria-labelledby="footer-about-title">
+            <h2 id="footer-about-title">Anteraja</h2>
+            <ul class="footer-list">
+              <li><a href="https://blog.anteraja.id/tentang-kami/" target="_blank" rel="noopener noreferrer">Tentang Anteraja</a></li>
+              <li><a href="https://blog.anteraja.id/layanan-kami/" target="_blank" rel="noopener noreferrer">Produk &amp; layanan</a></li>
+              <li><a href="https://anteraja.id/id/" target="_blank" rel="noopener noreferrer">Lokasi layanan</a></li>
+            </ul>
+          </section>
+          <section aria-labelledby="footer-help-title">
+            <h2 id="footer-help-title">Bantuan</h2>
+            <ul class="footer-list">
+              <li><a href="#customer-care">Pusat Bantuan</a></li>
+              <li><a href="https://anteraja.id/id/" target="_blank" rel="noopener noreferrer">Syarat &amp; ketentuan</a></li>
+              <li><a href="https://anteraja.id/id/" target="_blank" rel="noopener noreferrer">Kebijakan privasi</a></li>
+            </ul>
           </section>
           <section aria-labelledby="footer-contact-title">
-            <h2 id="footer-contact-title">Customer Care</h2>
+            <h2 id="footer-contact-title">Hubungi Kami</h2>
             <ul class="footer-list">
-              <li><a href="tel:+622150663333">(021) 5066 3333</a></li>
-              <li><a href="mailto:cs@anteraja.id">cs@anteraja.id</a></li>
+              <li><a href="tel:+622150663333"><span aria-hidden="true">☎</span> (021) 5066 3333</a></li>
+              <li><a href="mailto:cs@anteraja.id"><span aria-hidden="true">✉</span> cs@anteraja.id</a></li>
+              <li><span>Setiap hari, 24 jam</span></li>
             </ul>
           </section>
         </div>
-        <p class="site-footer__legal">PT Tri Adi Bersama (Anteraja). Hak Cipta Dilindungi Undang-Undang.</p>
+        <div class="site-footer__legal">
+          <p>© 2026 PT Tri Adi Bersama (Anteraja). Hak Cipta Dilindungi Undang-Undang.</p>
+        </div>
       </div>
     </footer>
   </body>
