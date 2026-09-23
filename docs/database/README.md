@@ -13,10 +13,6 @@ Folder ini merupakan hasil tugas perancangan database relasional untuk fitur pel
 ├── erd/
 │   ├── anteraja-frozen-erd.webp
 │   └── anteraja-frozen-erd.svg
-├── docs/
-│   ├── DATABASE_ANALYSIS.md
-│   ├── DATABASE_DOCUMENTATION.md
-│   └── PANDUAN_DATABASE_PEMULA.md
 └── sample-data/
     ├── shipments.csv
     ├── hubs.csv
