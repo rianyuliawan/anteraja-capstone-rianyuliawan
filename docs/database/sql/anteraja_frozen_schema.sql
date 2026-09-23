@@ -1,0 +1,515 @@
+-- Anteraja Frozen - PostgreSQL DDL
+-- Target: PostgreSQL 15+
+-- Scope: public AWB tracking, illustrative route, shipment events,
+-- thermal-asset assignments, and temperature readings.
+--
+-- Dataset coverage:
+-- The seed consists of eight related CSV files: shipments, hubs, route stops,
+-- shipment events, thermal assets, asset assignments, temperature profiles,
+-- and temperature readings. Their text record IDs are retained in nullable
+-- seed_* columns while the database uses bigint identity primary keys.
+-- The shipment CSV also contains denormalized current-state fields. Load all
+-- CSV files into the seed schema for reconciliation; events remain the
+-- production source of truth for shipment status.
+
+BEGIN;
+
+CREATE EXTENSION IF NOT EXISTS btree_gist;
+CREATE SCHEMA IF NOT EXISTS seed;
+
+-- ---------------------------------------------------------------------------
+-- Shared trigger
+-- ---------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION set_updated_at()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    NEW.updated_at := CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$;
+
+-- ---------------------------------------------------------------------------
+-- Reference tables
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE temperature_profiles (
+    asset_type          varchar(30) PRIMARY KEY,
+    target_c            numeric(5,2) NOT NULL,
+    normal_low_c        numeric(5,2) NOT NULL,
+    normal_high_c       numeric(5,2) NOT NULL,
+    warning_low_c       numeric(5,2) NOT NULL,
+    warning_high_c      numeric(5,2) NOT NULL,
+    source_url          text,
+    created_at          timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT temperature_profiles_asset_type_chk
+        CHECK (asset_type IN ('COOLER_BAG', 'HUB_FREEZER', 'MOBIL_BOX')),
+    CONSTRAINT temperature_profiles_threshold_order_chk
+        CHECK (
+            warning_low_c < normal_low_c
+            AND normal_low_c <= target_c
+            AND target_c <= normal_high_c
+            AND normal_high_c < warning_high_c
+        )
+);
+
+CREATE TRIGGER temperature_profiles_set_updated_at
+BEFORE UPDATE ON temperature_profiles
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+CREATE TABLE hubs (
+    id                  bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    code                varchar(30) NOT NULL,
+    name                varchar(120) NOT NULL,
+    area                varchar(120) NOT NULL,
+    latitude            numeric(9,6) NOT NULL,
+    longitude           numeric(9,6) NOT NULL,
+    created_at          timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT hubs_code_uq UNIQUE (code),
+    CONSTRAINT hubs_code_format_chk CHECK (code ~ '^[A-Z0-9][A-Z0-9-]{1,29}$'),
+    CONSTRAINT hubs_latitude_chk CHECK (latitude BETWEEN -90 AND 90),
+    CONSTRAINT hubs_longitude_chk CHECK (longitude BETWEEN -180 AND 180)
+);
+
+CREATE TRIGGER hubs_set_updated_at
+BEFORE UPDATE ON hubs
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- ---------------------------------------------------------------------------
+-- Shipment and route
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE shipments (
+    id                  bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    awb                 varchar(50) NOT NULL,
+    pickup_area         varchar(120) NOT NULL,
+    pickup_point        varchar(180) NOT NULL,
+    delivery_area       varchar(120) NOT NULL,
+    delivery_point      varchar(180) NOT NULL,
+    created_at          timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT shipments_awb_uq UNIQUE (awb),
+    CONSTRAINT shipments_awb_format_chk
+        CHECK (awb ~ '^[A-Z0-9][A-Z0-9-]{5,49}$')
+);
+
+CREATE TRIGGER shipments_set_updated_at
+BEFORE UPDATE ON shipments
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+CREATE TABLE route_stops (
+    id                  bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    seed_route_stop_id  varchar(30),
+    shipment_id         bigint NOT NULL,
+    hub_id              bigint,
+    stop_order          smallint NOT NULL,
+    point_type          varchar(20) NOT NULL,
+    display_name        varchar(180) NOT NULL,
+    latitude            numeric(9,6) NOT NULL,
+    longitude           numeric(9,6) NOT NULL,
+    created_at          timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT route_stops_shipment_fk
+        FOREIGN KEY (shipment_id) REFERENCES shipments(id) ON DELETE CASCADE,
+    CONSTRAINT route_stops_hub_fk
+        FOREIGN KEY (hub_id) REFERENCES hubs(id) ON DELETE RESTRICT,
+    CONSTRAINT route_stops_seed_id_uq UNIQUE (seed_route_stop_id),
+    CONSTRAINT route_stops_order_uq UNIQUE (shipment_id, stop_order),
+    CONSTRAINT route_stops_order_chk CHECK (stop_order >= 0),
+    CONSTRAINT route_stops_point_type_chk
+        CHECK (point_type IN ('PICKUP', 'HUB', 'DELIVERY')),
+    CONSTRAINT route_stops_hub_presence_chk
+        CHECK (
+            (point_type = 'HUB' AND hub_id IS NOT NULL)
+            OR (point_type IN ('PICKUP', 'DELIVERY') AND hub_id IS NULL)
+        ),
+    CONSTRAINT route_stops_latitude_chk CHECK (latitude BETWEEN -90 AND 90),
+    CONSTRAINT route_stops_longitude_chk CHECK (longitude BETWEEN -180 AND 180)
+);
+
+CREATE TRIGGER route_stops_set_updated_at
+BEFORE UPDATE ON route_stops
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+CREATE TABLE shipment_events (
+    id                      bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    seed_event_id           varchar(30),
+    shipment_id             bigint NOT NULL,
+    hub_id                  bigint,
+    stage                   varchar(30) NOT NULL,
+    event_code              varchar(30) NOT NULL,
+    occurred_at             timestamptz NOT NULL,
+    completed_stop_order    smallint,
+    source                  varchar(30) NOT NULL DEFAULT 'SEED',
+    source_event_key        varchar(120),
+    created_at              timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT shipment_events_shipment_fk
+        FOREIGN KEY (shipment_id) REFERENCES shipments(id) ON DELETE CASCADE,
+    CONSTRAINT shipment_events_hub_fk
+        FOREIGN KEY (hub_id) REFERENCES hubs(id) ON DELETE RESTRICT,
+    CONSTRAINT shipment_events_seed_id_uq UNIQUE (seed_event_id),
+    CONSTRAINT shipment_events_route_stop_fk
+        FOREIGN KEY (shipment_id, completed_stop_order)
+        REFERENCES route_stops (shipment_id, stop_order)
+        ON DELETE RESTRICT,
+    CONSTRAINT shipment_events_stage_chk
+        CHECK (stage IN (
+            'PICKED_UP', 'AT_HUB', 'IN_TRANSIT',
+            'OUT_FOR_DELIVERY', 'DELIVERED'
+        )),
+    CONSTRAINT shipment_events_code_chk
+        CHECK (event_code IN (
+            'PICKED_UP', 'ARRIVED_HUB', 'LEFT_HUB', 'IN_TRANSIT',
+            'OUT_FOR_DELIVERY', 'DELIVERED'
+        )),
+    CONSTRAINT shipment_events_code_stage_chk
+        CHECK (
+            (event_code = 'PICKED_UP' AND stage = 'PICKED_UP')
+            OR (event_code = 'ARRIVED_HUB' AND stage = 'AT_HUB')
+            OR (event_code IN ('LEFT_HUB', 'IN_TRANSIT') AND stage = 'IN_TRANSIT')
+            OR (event_code = 'OUT_FOR_DELIVERY' AND stage = 'OUT_FOR_DELIVERY')
+            OR (event_code = 'DELIVERED' AND stage = 'DELIVERED')
+        ),
+    CONSTRAINT shipment_events_hub_presence_chk
+        CHECK (
+            event_code NOT IN ('ARRIVED_HUB', 'LEFT_HUB')
+            OR hub_id IS NOT NULL
+        ),
+    CONSTRAINT shipment_events_completed_order_chk
+        CHECK (completed_stop_order IS NULL OR completed_stop_order >= 0)
+);
+
+CREATE UNIQUE INDEX shipment_events_source_key_uq
+    ON shipment_events (source, source_event_key)
+    WHERE source_event_key IS NOT NULL;
+
+CREATE INDEX shipment_events_latest_idx
+    ON shipment_events (shipment_id, occurred_at DESC, id DESC);
+
+CREATE INDEX shipment_events_hub_idx
+    ON shipment_events (hub_id, occurred_at DESC)
+    WHERE hub_id IS NOT NULL;
+
+-- ---------------------------------------------------------------------------
+-- Thermal assets and temperature readings
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE thermal_assets (
+    id                  bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    asset_code          varchar(50) NOT NULL,
+    asset_type          varchar(30) NOT NULL,
+    display_name        varchar(120) NOT NULL,
+    is_active           boolean NOT NULL DEFAULT true,
+    created_at          timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT thermal_assets_code_uq UNIQUE (asset_code),
+    CONSTRAINT thermal_assets_profile_fk
+        FOREIGN KEY (asset_type)
+        REFERENCES temperature_profiles(asset_type)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT thermal_assets_code_format_chk
+        CHECK (asset_code ~ '^[A-Z0-9][A-Z0-9-]{1,49}$')
+);
+
+CREATE INDEX thermal_assets_type_active_idx
+    ON thermal_assets (asset_type, is_active);
+
+CREATE TRIGGER thermal_assets_set_updated_at
+BEFORE UPDATE ON thermal_assets
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+CREATE TABLE shipment_asset_assignments (
+    id                  bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    seed_assignment_id  varchar(30),
+    shipment_id         bigint NOT NULL,
+    thermal_asset_id    bigint NOT NULL,
+    segment             varchar(30) NOT NULL,
+    started_at          timestamptz NOT NULL,
+    ended_at            timestamptz,
+    active_period       tstzrange GENERATED ALWAYS AS
+                        (tstzrange(started_at, ended_at, '[)')) STORED,
+    created_at          timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT assignments_shipment_fk
+        FOREIGN KEY (shipment_id) REFERENCES shipments(id) ON DELETE CASCADE,
+    CONSTRAINT assignments_asset_fk
+        FOREIGN KEY (thermal_asset_id) REFERENCES thermal_assets(id) ON DELETE RESTRICT,
+    CONSTRAINT assignments_seed_id_uq UNIQUE (seed_assignment_id),
+    CONSTRAINT assignments_segment_chk
+        CHECK (segment IN ('PICKUP', 'AT_HUB', 'IN_TRANSIT', 'LAST_MILE')),
+    CONSTRAINT assignments_time_order_chk
+        CHECK (ended_at IS NULL OR ended_at > started_at),
+    CONSTRAINT assignments_start_uq UNIQUE (shipment_id, started_at),
+    CONSTRAINT assignments_no_overlap_excl
+        EXCLUDE USING gist (
+            shipment_id WITH =,
+            active_period WITH &&
+        )
+        DEFERRABLE INITIALLY IMMEDIATE
+);
+
+CREATE INDEX assignments_asset_period_idx
+    ON shipment_asset_assignments USING gist (thermal_asset_id, active_period);
+
+CREATE INDEX assignments_active_asset_idx
+    ON shipment_asset_assignments (thermal_asset_id, started_at DESC)
+    WHERE ended_at IS NULL;
+
+CREATE UNIQUE INDEX assignments_active_shipment_uq
+    ON shipment_asset_assignments (shipment_id)
+    WHERE ended_at IS NULL;
+
+CREATE TRIGGER assignments_set_updated_at
+BEFORE UPDATE ON shipment_asset_assignments
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+CREATE TABLE temperature_readings (
+    id                      bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    seed_reading_id         varchar(30),
+    thermal_asset_id        bigint NOT NULL,
+    source                  varchar(30) NOT NULL,
+    message_id              varchar(120) NOT NULL,
+    request_id              uuid,
+    trigger_type            varchar(20) NOT NULL,
+    observed_at             timestamptz NOT NULL,
+    received_at             timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    temperature_c           numeric(5,2) NOT NULL,
+    temperature_status      varchar(20),
+    created_at              timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT temperature_readings_asset_fk
+        FOREIGN KEY (thermal_asset_id) REFERENCES thermal_assets(id) ON DELETE RESTRICT,
+    CONSTRAINT temperature_readings_seed_id_uq UNIQUE (seed_reading_id),
+    CONSTRAINT temperature_readings_message_uq UNIQUE (source, message_id),
+    CONSTRAINT temperature_readings_source_chk
+        CHECK (source IN ('SEED', 'NODE_RED', 'IOT')),
+    CONSTRAINT temperature_readings_trigger_chk
+        CHECK (trigger_type IN ('SEED', 'SCHEDULED', 'ON_DEMAND')),
+    CONSTRAINT temperature_readings_status_chk
+        CHECK (
+            temperature_status IS NULL
+            OR temperature_status IN ('NORMAL', 'WARNING', 'CRITICAL')
+        ),
+    CONSTRAINT temperature_readings_value_chk
+        CHECK (temperature_c BETWEEN -100 AND 100),
+    CONSTRAINT temperature_readings_time_chk
+        CHECK (received_at >= observed_at - interval '5 minutes'),
+    CONSTRAINT temperature_readings_request_chk
+        CHECK (
+            (trigger_type = 'ON_DEMAND' AND request_id IS NOT NULL)
+            OR (trigger_type <> 'ON_DEMAND' AND request_id IS NULL)
+        )
+);
+
+CREATE UNIQUE INDEX temperature_readings_request_uq
+    ON temperature_readings (thermal_asset_id, request_id)
+    WHERE request_id IS NOT NULL;
+
+CREATE INDEX temperature_readings_asset_time_idx
+    ON temperature_readings (thermal_asset_id, observed_at DESC, id DESC);
+
+CREATE INDEX temperature_readings_anomaly_idx
+    ON temperature_readings (thermal_asset_id, observed_at DESC)
+    WHERE temperature_status IN ('WARNING', 'CRITICAL');
+
+-- ---------------------------------------------------------------------------
+-- Raw seed tables
+-- Import the eight CSV files here first, then run the separate seed transform.
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE seed.shipments (
+    awb                     varchar(50) NOT NULL,
+    pickup_area             varchar(120) NOT NULL,
+    pickup_point            varchar(180) NOT NULL,
+    delivery_area           varchar(120) NOT NULL,
+    delivery_point          varchar(180) NOT NULL,
+    current_stage           varchar(30) NOT NULL,
+    pickup_at               timestamptz NOT NULL,
+    last_stage_at           timestamptz NOT NULL,
+    completed_stop_order    smallint NOT NULL,
+    route_hub_count         smallint NOT NULL,
+    scenario_key            varchar(80) NOT NULL,
+    loaded_at               timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT seed_shipments_pk PRIMARY KEY (awb),
+    CONSTRAINT seed_shipments_stage_chk
+        CHECK (current_stage IN (
+            'PICKED_UP', 'AT_HUB', 'IN_TRANSIT',
+            'OUT_FOR_DELIVERY', 'DELIVERED'
+        )),
+    CONSTRAINT seed_shipments_time_chk
+        CHECK (last_stage_at >= pickup_at),
+    CONSTRAINT seed_shipments_completed_stop_chk
+        CHECK (completed_stop_order >= 0),
+    CONSTRAINT seed_shipments_hub_count_chk
+        CHECK (route_hub_count >= 0),
+    CONSTRAINT seed_shipments_scenario_chk
+        CHECK (scenario_key = current_stage || '_' || route_hub_count || 'HUB')
+);
+
+CREATE TABLE seed.hubs (
+    hub_code                varchar(30) PRIMARY KEY,
+    display_name            varchar(120) NOT NULL,
+    area                    varchar(120) NOT NULL,
+    latitude                numeric(9,6) NOT NULL,
+    longitude               numeric(9,6) NOT NULL,
+    loaded_at               timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE seed.route_stops (
+    route_stop_id           varchar(30) PRIMARY KEY,
+    awb                     varchar(50) NOT NULL,
+    stop_order              smallint NOT NULL,
+    point_type              varchar(20) NOT NULL,
+    hub_code                varchar(30),
+    display_name            varchar(180) NOT NULL,
+    latitude                numeric(9,6) NOT NULL,
+    longitude               numeric(9,6) NOT NULL,
+    loaded_at               timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT seed_route_stops_order_uq UNIQUE (awb, stop_order)
+);
+
+CREATE TABLE seed.shipment_events (
+    event_id                varchar(30) PRIMARY KEY,
+    awb                     varchar(50) NOT NULL,
+    event_code              varchar(30) NOT NULL,
+    stage                   varchar(30) NOT NULL,
+    occurred_at             timestamptz NOT NULL,
+    hub_code                varchar(30),
+    completed_stop_order    smallint,
+    source_event_key        varchar(120) NOT NULL UNIQUE,
+    loaded_at               timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE seed.temperature_profiles (
+    asset_type              varchar(30) PRIMARY KEY,
+    target_c                numeric(5,2) NOT NULL,
+    normal_low_c            numeric(5,2) NOT NULL,
+    normal_high_c           numeric(5,2) NOT NULL,
+    warning_low_c           numeric(5,2) NOT NULL,
+    warning_high_c          numeric(5,2) NOT NULL,
+    source_url              text,
+    loaded_at               timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE seed.thermal_assets (
+    asset_code              varchar(50) PRIMARY KEY,
+    asset_type              varchar(30) NOT NULL,
+    display_name            varchar(120) NOT NULL,
+    loaded_at               timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE seed.shipment_asset_assignments (
+    assignment_id           varchar(30) PRIMARY KEY,
+    awb                     varchar(50) NOT NULL,
+    asset_code              varchar(50) NOT NULL,
+    asset_type              varchar(30) NOT NULL,
+    segment                 varchar(30) NOT NULL,
+    started_at              timestamptz NOT NULL,
+    ended_at                timestamptz,
+    loaded_at               timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE seed.temperature_readings (
+    reading_id              varchar(30) PRIMARY KEY,
+    asset_code              varchar(50) NOT NULL,
+    source                  varchar(30) NOT NULL,
+    message_id              varchar(120) NOT NULL,
+    request_id              uuid,
+    trigger_type            varchar(20) NOT NULL,
+    observed_at             timestamptz NOT NULL,
+    received_at             timestamptz NOT NULL,
+    temperature_c           numeric(5,2) NOT NULL,
+    temperature_status      varchar(20),
+    loaded_at               timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT seed_temperature_readings_message_uq UNIQUE (source, message_id)
+);
+
+COMMENT ON SCHEMA seed IS
+    'Raw CSV seed data. Application reads normalized public tables, not this schema.';
+
+COMMENT ON COLUMN route_stops.seed_route_stop_id IS
+    'Optional route_stop_id from the seed dataset, for example RS-00001.';
+
+COMMENT ON COLUMN shipment_events.seed_event_id IS
+    'Optional event_id from the seed dataset, for example EV-00001.';
+
+COMMENT ON COLUMN shipment_asset_assignments.seed_assignment_id IS
+    'Optional assignment_id from the seed dataset, for example AS-00001.';
+
+COMMENT ON COLUMN temperature_readings.seed_reading_id IS
+    'Optional reading_id from the seed dataset, for example TR-00001.';
+
+-- ---------------------------------------------------------------------------
+-- Read views for the Laravel tracking API
+-- ---------------------------------------------------------------------------
+
+CREATE VIEW shipment_current_status AS
+SELECT DISTINCT ON (e.shipment_id)
+    e.shipment_id,
+    e.stage AS current_stage,
+    e.event_code AS current_event_code,
+    e.occurred_at AS last_stage_at,
+    e.completed_stop_order,
+    e.id AS shipment_event_id
+FROM shipment_events e
+ORDER BY e.shipment_id, e.occurred_at DESC, e.id DESC;
+
+CREATE VIEW shipment_temperature_history AS
+SELECT
+    a.shipment_id,
+    a.id AS assignment_id,
+    a.segment,
+    a.thermal_asset_id,
+    ta.asset_code,
+    ta.asset_type,
+    r.id AS temperature_reading_id,
+    r.observed_at,
+    r.temperature_c,
+    r.temperature_status,
+    r.source,
+    r.trigger_type
+FROM shipment_asset_assignments a
+JOIN thermal_assets ta
+  ON ta.id = a.thermal_asset_id
+JOIN temperature_readings r
+  ON r.thermal_asset_id = a.thermal_asset_id
+ AND r.observed_at <@ a.active_period;
+
+CREATE VIEW shipment_latest_temperature AS
+SELECT DISTINCT ON (h.shipment_id)
+    h.shipment_id,
+    h.assignment_id,
+    h.segment,
+    h.thermal_asset_id,
+    h.asset_code,
+    h.asset_type,
+    h.temperature_reading_id,
+    h.observed_at,
+    h.temperature_c,
+    h.temperature_status,
+    h.source,
+    h.trigger_type
+FROM shipment_temperature_history h
+ORDER BY h.shipment_id, h.observed_at DESC, h.temperature_reading_id DESC;
+
+COMMENT ON VIEW shipment_temperature_history IS
+    'A reading is visible to an AWB only while the AWB assignment to that asset is active.';
+
+COMMENT ON VIEW shipment_latest_temperature IS
+    'Latest valid asset reading per shipment; delivered shipments receive no new readings after assignment closure.';
+
+COMMIT;
