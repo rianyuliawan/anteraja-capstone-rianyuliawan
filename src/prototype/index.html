@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Prototype pelacakan paket dan pemantauan suhu lingkungan aset Anteraja Frozen.">
+    <title>Lacak Paket | Anteraja Frozen</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Anteraja Frozen Cold Chain Tracking",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "inLanguage": "id-ID",
+        "description": "Prototype pelacakan paket dan pemantauan suhu lingkungan aset termal."
+      }
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Lewati ke konten utama</a>
+    <p class="prototype-note">Prototype perancangan — bukan layanan operasional Anteraja</p>
+
+    <header class="site-header">
+      <div class="container site-header__inner">
+        <a href="index.html" aria-label="Anteraja Frozen — halaman pencarian">
+          <img class="brand-logo" src="https://anteraja.id/assets/img/icons/logo-anteraja.png" alt="Anteraja">
+        </a>
+        <a class="help-link" href="#customer-care">Pusat Bantuan</a>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <section class="container" aria-labelledby="page-title">
+        <h1 id="page-title">Pelacakan Cold Chain Anteraja</h1>
+        <p>Pantau perjalanan paket dan suhu lingkungan aset termal yang menanganinya.</p>
+
+        <form action="tracking.html" method="get" role="search">
+          <label for="tracking-number">Nomor resi / AWB</label>
+          <input id="tracking-number" name="awb" type="text" placeholder="Contoh: ANT-FRZ-0002" autocomplete="off" autocapitalize="characters" pattern="[A-Za-z0-9-]{6,24}" required>
+          <button class="button button--primary" type="submit">Lacak Paket</button>
+        </form>
+      </section>
+    </main>
+
+    <footer class="site-footer" id="customer-care">
+      <div class="container">
+        <div class="site-footer__grid">
+          <section class="site-footer__brand" aria-labelledby="footer-brand-title">
+            <h2 class="visually-hidden" id="footer-brand-title">Tentang prototype</h2>
+            <img class="brand-logo" src="https://anteraja.id/assets/img/icons/logo-anteraja.png" alt="Anteraja">
+            <p>Prototype pelacakan pengiriman rantai dingin dengan pemantauan suhu lingkungan aset penyimpanan atau armada.</p>
+          </section>
+          <nav aria-labelledby="footer-help-title">
+            <h2 id="footer-help-title">Bantuan</h2>
+            <ul class="footer-list">
+              <li><a href="index.html">Lacak paket</a></li>
+              <li><a href="mailto:cs@anteraja.id">Kirim email</a></li>
+            </ul>
+          </nav>
+          <section aria-labelledby="footer-contact-title">
+            <h2 id="footer-contact-title">Customer Care</h2>
+            <ul class="footer-list">
+              <li><a href="tel:+622150663333">(021) 5066 3333</a></li>
+              <li><a href="mailto:cs@anteraja.id">cs@anteraja.id</a></li>
+            </ul>
+          </section>
+        </div>
+        <p class="site-footer__legal">Prototype pembelajaran untuk proyek capstone Anteraja Frozen.</p>
+      </div>
+    </footer>
+  </body>
+</html>
