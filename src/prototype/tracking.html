@@ -68,6 +68,24 @@
                 </div>
               </dl>
             </article>
+
+            <section class="panel temperature-card" id="temperature" aria-labelledby="temperature-title">
+              <header class="panel__header">
+                <div>
+                  <h2 id="temperature-title">Suhu terbaru</h2>
+                  <p>Pembacaan aset aktif</p>
+                </div>
+                <span class="thermal-status">Normal</span>
+              </header>
+              <div class="temperature-reading">
+                <p class="temperature-reading__asset">Mobil boks pendingin</p>
+                <p class="temperature-reading__code">Kode aset: REEFER-BOX-01</p>
+                <p class="temperature-reading__value">−5,1°C</p>
+                <p class="temperature-reading__range">Rentang normal rancangan: −8°C s.d. −2°C</p>
+              </div>
+              <p class="observation-time">Terobservasi: <time datetime="2026-09-18T14:30:00+07:00">18 Sep 2026, 14.30 WIB</time></p>
+              <p class="temperature-disclaimer">Suhu yang ditampilkan merupakan suhu lingkungan aset penyimpanan atau armada, bukan suhu inti produk.</p>
+            </section>
           </aside>
 
           <div class="result-content">
@@ -191,6 +209,102 @@
                 </li>
               </ol>
             </section>
+
+            <section class="panel" id="temperature-history" aria-labelledby="segment-title">
+              <header class="panel__header">
+                <div>
+                  <h2 id="segment-title">Ringkasan suhu perjalanan</h2>
+                  <p>Pembacaan terakhir pada setiap segmen penanganan aset.</p>
+                </div>
+              </header>
+
+              <div class="segment-grid">
+                <article class="segment-card">
+                  <div class="segment-card__topline">
+                    <p class="label">Segmen 1</p>
+                    <span>Selesai</span>
+                  </div>
+                  <h3>Cooler Bag CB-12</h3>
+                  <p>Penjemputan awal</p>
+                  <dl>
+                    <dt>Pembacaan akhir</dt>
+                    <dd>−5,4°C</dd>
+                  </dl>
+                </article>
+                <article class="segment-card">
+                  <div class="segment-card__topline">
+                    <p class="label">Segmen 2</p>
+                    <span>Selesai</span>
+                  </div>
+                  <h3>Hub Freezer HF-03</h3>
+                  <p>Penyimpanan hub</p>
+                  <dl>
+                    <dt>Pembacaan akhir</dt>
+                    <dd>−4,1°C</dd>
+                  </dl>
+                </article>
+                <article class="segment-card segment-card--active">
+                  <div class="segment-card__topline">
+                    <p class="label">Segmen 3</p>
+                    <span>Aktif</span>
+                  </div>
+                  <h3>Mobil Boks BOX-01</h3>
+                  <p>Perjalanan antarhub</p>
+                  <dl>
+                    <dt>Pembacaan terbaru</dt>
+                    <dd>−5,1°C</dd>
+                  </dl>
+                </article>
+              </div>
+
+              <details class="temperature-history">
+                <summary>Lihat riwayat suhu (5 data terbaru)</summary>
+                <table class="history-table">
+                  <caption class="visually-hidden">Riwayat pembacaan suhu aset untuk ANT-FRZ-0002</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Waktu observasi</th>
+                      <th scope="col">Aset</th>
+                      <th scope="col">Suhu</th>
+                      <th scope="col">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td data-label="Waktu"><time datetime="2026-09-18T14:30:00+07:00">14.30 WIB</time></td>
+                      <td data-label="Aset">Mobil Boks BOX-01</td>
+                      <td class="temperature-value" data-label="Suhu">−5,1°C</td>
+                      <td data-label="Status"><span class="history-status">Normal</span></td>
+                    </tr>
+                    <tr>
+                      <td data-label="Waktu"><time datetime="2026-09-18T14:00:00+07:00">14.00 WIB</time></td>
+                      <td data-label="Aset">Mobil Boks BOX-01</td>
+                      <td class="temperature-value" data-label="Suhu">−5,3°C</td>
+                      <td data-label="Status"><span class="history-status">Normal</span></td>
+                    </tr>
+                    <tr>
+                      <td data-label="Waktu"><time datetime="2026-09-18T13:30:00+07:00">13.30 WIB</time></td>
+                      <td data-label="Aset">Mobil Boks BOX-01</td>
+                      <td class="temperature-value" data-label="Suhu">−5,0°C</td>
+                      <td data-label="Status"><span class="history-status">Normal</span></td>
+                    </tr>
+                    <tr>
+                      <td data-label="Waktu"><time datetime="2026-09-18T13:15:00+07:00">13.15 WIB</time></td>
+                      <td data-label="Aset">Hub Freezer HF-03</td>
+                      <td class="temperature-value" data-label="Suhu">−4,1°C</td>
+                      <td data-label="Status"><span class="history-status">Normal</span></td>
+                    </tr>
+                    <tr>
+                      <td data-label="Waktu"><time datetime="2026-09-18T09:15:00+07:00">09.15 WIB</time></td>
+                      <td data-label="Aset">Cooler Bag CB-12</td>
+                      <td class="temperature-value" data-label="Suhu">−5,4°C</td>
+                      <td data-label="Status"><span class="history-status">Normal</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p class="pagination-note">Prototype menampilkan 5 dari maksimal 20 pembacaan awal.</p>
+              </details>
+            </section>
           </div>
         </div>
       </div>
@@ -210,6 +324,7 @@
               <li><a href="index.html">Pencarian AWB</a></li>
               <li><a href="#timeline-title">Linimasa</a></li>
               <li><a href="#route">Rute pengiriman</a></li>
+              <li><a href="#temperature-history">Riwayat suhu</a></li>
             </ul>
           </nav>
           <section aria-labelledby="footer-contact-title">
