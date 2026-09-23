@@ -19,7 +19,7 @@ Kemudian buka `http://127.0.0.1:8080/`.
 | Halaman | FRD yang diwakili | Isi |
 |---|---|---|
 | [`index.html`](index.html) | FR-01 | Pencarian AWB, penjelasan informasi yang tersedia, FAQ, dan kontak bantuan. Form mengarah ke halaman hasil menggunakan metode `GET`. |
-| [`tracking.html`](tracking.html) | FR-02 sampai FR-05 | Ringkasan paket, linimasa, rute ilustratif dan fallback daftar titik, suhu terbaru, ringkasan segmen, riwayat suhu, serta tombol pembaruan suhu. |
+| [`tracking.html`](tracking.html) | FR-02 sampai FR-05 | Ringkasan paket, linimasa dan dokumentasi event, rute ilustratif dan fallback daftar titik, suhu terbaru, ringkasan segmen, riwayat suhu, serta tombol pembaruan suhu. |
 
 FR-06 tidak memiliki halaman sendiri karena berfungsi sebagai aturan state dan microcopy pada komponen suhu.
 
@@ -35,6 +35,7 @@ FR-06 tidak memiliki halaman sendiri karena berfungsi sebagai aturan state dan m
 
 - Ringkasan hanya menampilkan AWB, kawasan asal/tujuan, status, serta waktu event terakhir.
 - Linimasa menggunakan ordered list dan menampilkan kejadian terbaru di atas.
+- Bagian dokumentasi menyediakan slot foto pickup dan delivery yang terkait ke event; paket aktif tidak menampilkan foto delivery sebelum event sah.
 - Tidak menampilkan nama penerima, nomor telepon, kurir, nomor kendaraan, atau alamat pribadi.
 
 ### FR-03 — Rute ilustratif
@@ -60,7 +61,7 @@ FR-06 tidak memiliki halaman sendiri karena berfungsi sebagai aturan state dan m
 
 - CSS ditulis dengan pendekatan mobile-first.
 - Breakpoint utama: `48rem` untuk tablet dan `64rem` untuk layout desktop dua kolom.
-- Header menyediakan navigasi fitur pada desktop dan disclosure hamburger berbasis HTML/CSS pada mobile; footer tidak mengulang navigasi.
+- Header halaman awal hanya menyediakan navigasi umum. Navigasi menuju Ringkasan, Linimasa, Dokumentasi, Rute, dan Suhu baru tersedia pada halaman hasil setelah AWB ditemukan. Pada mobile, keduanya memakai disclosure hamburger berbasis HTML/CSS. Footer memakai CTA, informasi korporat, bantuan, dan kanal resmi tanpa mengulang navigasi fitur.
 - Kontrol memiliki tinggi minimum 44px, focus ring terlihat, dan dukungan `prefers-reduced-motion`.
 - Struktur memakai `header`, `main`, `section`, `article`, `aside`, `nav`, `footer`, heading berurutan, tabel semantik, dan skip link.
 - Halaman tidak memerlukan horizontal scroll pada lebar target 360px, 390px, 768px, dan desktop.
@@ -76,7 +77,9 @@ src/prototype/
     ├── css/
     │   └── styles.css
     └── images/
-        └── logo-anteraja.png
+        ├── logo-anteraja.png
+        └── evidence/
+            └── ANT-FRZ-0002-pickup.webp
 ```
 
-Halaman menggunakan salinan lokal dari aset logo yang ditampilkan pada situs resmi Anteraja. Hak penggunaan dan versi aset tetap perlu dikonfirmasi sebelum deployment produksi.
+Halaman menggunakan salinan lokal dari aset logo yang ditampilkan pada situs resmi Anteraja. Foto dokumentasi pada prototipe menggunakan foto stok berlisensi terbuka yang telah dipotong, dioptimalkan ke WebP, dan dibersihkan dari metadata EXIF. Sumber dan pemetaan foto dicatat di `docs/database/sample-data/media/README.md`; sebelum deployment produksi, seluruh foto tersebut diganti dengan bukti operasional yang lolos pemeriksaan privasi.
