@@ -1,140 +1,184 @@
-# DB — Model Data dan ERD Anteraja Frozen
+# DB — Model Data Anteraja Frozen
 
-**Acuan:** [PRD](prd.md) · [FRD global](frd.md) · [IA](ia.md) · **DBMS:** PostgreSQL
+**Acuan:** [PRD](prd.md) · [FRD global](frd.md) · [FRD per fitur](frd/README.md) · [IA](ia.md) · **DBMS:** PostgreSQL 15+
 
-## 1. Prinsip data
+Dokumen ini menjadi sumber utama dokumentasi database untuk fitur pelacakan paket dan pemantauan suhu Anteraja Frozen. Fokus data meliputi pencarian AWB, status dan linimasa perjalanan, rute pickup–hub–delivery, aset termal yang menangani paket, riwayat suhu, dan pembaruan suhu terjadwal maupun atas permintaan pengguna.
 
-Satu AWB = satu baris `shipments`. Rute, kejadian tahap **dengan jamnya**, penugasan aset, dan pembacaan suhu memakai tabel terpisah karena masing-masing dapat memiliki banyak baris. Node-RED mengirim suhu untuk **aset** (misalnya mobil boks atau freezer hub), bukan langsung untuk AWB. Semua waktu disimpan `timestamptz` UTC dan ditampilkan WIB; nilai suhu `numeric`, bukan teks. Data awal dan pembacaan baru dibedakan oleh kolom `source`/`trigger`; [dataset 70 AWB](frozen_dataset_70_20260918/README.md) merupakan data kerja tahap perancangan, bukan catatan operasional Anteraja.
+## 1. Isi folder
 
-## 2. ERD
-
-```mermaid
-erDiagram
-  SHIPMENTS ||--o{ ROUTE_STOPS : mempunyai
-  HUBS o|--o{ ROUTE_STOPS : dirujuk_jika_hub
-  SHIPMENTS ||--|{ SHIPMENT_EVENTS : mempunyai
-  HUBS o|--o{ SHIPMENT_EVENTS : lokasi_event
-  SHIPMENTS ||--o{ SHIPMENT_ASSET_ASSIGNMENTS : memakai
-  TEMPERATURE_PROFILES ||--o{ THERMAL_ASSETS : mengatur_ambang
-  THERMAL_ASSETS ||--o{ SHIPMENT_ASSET_ASSIGNMENTS : menaungi
-  THERMAL_ASSETS ||--o{ TEMPERATURE_READINGS : menghasilkan
-
-  SHIPMENTS {
-    bigint id PK
-    varchar awb UK
-    varchar pickup_area
-    varchar pickup_point
-    varchar delivery_area
-    varchar delivery_point
-  }
-  HUBS {
-    bigint id PK
-    varchar code UK
-    varchar name
-    numeric latitude
-    numeric longitude
-  }
-  ROUTE_STOPS {
-    bigint id PK
-    bigint shipment_id FK
-    bigint hub_id FK "nullable"
-    int stop_order
-    varchar point_type
-    varchar display_name
-    numeric latitude
-    numeric longitude
-  }
-  SHIPMENT_EVENTS {
-    bigint id PK
-    bigint shipment_id FK
-    bigint hub_id FK "nullable"
-    varchar stage
-    varchar event_code
-    timestamptz occurred_at
-    int completed_stop_order "nullable"
-  }
-  THERMAL_ASSETS {
-    bigint id PK
-    varchar asset_code UK
-    varchar asset_type
-  }
-  TEMPERATURE_PROFILES {
-    varchar asset_type PK
-    numeric target_c
-    numeric normal_low_c
-    numeric normal_high_c
-    numeric warning_low_c
-    numeric warning_high_c
-    varchar source_url "nullable"
-  }
-  SHIPMENT_ASSET_ASSIGNMENTS {
-    bigint id PK
-    bigint shipment_id FK
-    bigint thermal_asset_id FK
-    timestamptz started_at
-    timestamptz ended_at "nullable"
-  }
-  TEMPERATURE_READINGS {
-    bigint id PK
-    bigint thermal_asset_id FK
-    varchar source
-    varchar message_id
-    varchar request_id "nullable"
-    varchar trigger
-    timestamptz observed_at
-    timestamptz received_at
-    numeric temperature_c
-    varchar temperature_status
-  }
+```text
+docs/
+├── db.md
+└── database/
+    ├── sql/
+    │   ├── anteraja_frozen_schema.sql
+    │   └── anteraja_frozen_seed_transform.sql
+    ├── erd/
+    │   ├── anteraja-frozen-erd.webp
+    │   └── anteraja-frozen-erd.svg
+    └── sample-data/
+        ├── shipments.csv
+        ├── hubs.csv
+        ├── route_stops.csv
+        ├── shipment_events.csv
+        ├── temperature_profiles.csv
+        ├── thermal_assets.csv
+        ├── shipment_asset_assignments.csv
+        └── temperature_readings_seed.csv
 ```
 
-## 3. Kamus tabel minimum
+## 2. Analisis kebutuhan FRD dan UI
 
-| Tabel | Kolom wajib dan batasan penting | Fungsi |
+| Kebutuhan | Data yang diperlukan | Tabel pendukung |
 |---|---|---|
-| `shipments` | `id`, `awb` unik, `pickup_area`, `pickup_point`, `delivery_area`, `delivery_point`; `created_at/updated_at` | Identitas paket, satu per AWB; nama titik setingkat kawasan, tanpa data pribadi. |
-| `hubs` | `id`, `code` unik, `name`, `latitude`, `longitude` | Titik singgah pada peta. |
-| `route_stops` | `shipment_id`, `stop_order >= 0`, `point_type=PICKUP|HUB|DELIVERY`, `hub_id?`, `display_name`, `latitude`, `longitude`; unik (`shipment_id`,`stop_order`) | Urutan pickup → satu/beberapa hub → delivery pada peta. `hub_id` wajib hanya untuk titik HUB; koordinat hanya penanda kawasan. |
-| `shipment_events` | `shipment_id`, `stage`, `event_code`, `occurred_at`, `hub_id?`, `completed_stop_order?`, `source_event_key?` | Riwayat pickup/tiba hub/keluar hub/transit/pengantaran/delivered yang benar-benar tercatat beserta jam; indeks (`shipment_id`,`occurred_at DESC`,`id DESC`). |
-| `thermal_assets` | `asset_code` unik, `asset_type` mengacu ke `temperature_profiles.asset_type` | Identitas aset termal seperti cooler bag, freezer hub, atau mobil boks pada rancangan. |
-| `temperature_profiles` | `asset_type` unik, `target_c`, `normal_low_c`, `normal_high_c`, `warning_low_c`, `warning_high_c`, `source_url?`; `warning_low_c < normal_low_c <= normal_high_c < warning_high_c` | Parameter pembacaan dan klasifikasi suhu per jenis aset; `source_url` hanya diisi jika ada rujukan langsung. |
-| `shipment_asset_assignments` | `shipment_id`, `thermal_asset_id`, `started_at`, `ended_at?`; `ended_at > started_at` bila terisi | Relasi aset–paket dalam interval waktu. Satu aset boleh punya banyak AWB bersamaan. |
-| `temperature_readings` | `thermal_asset_id`, `source`, `message_id`, `request_id?`, `trigger`, `observed_at`, `received_at`, `temperature_c`, `temperature_status`; unik (`source`,`message_id`) | Pembacaan terjadwal/atas Refresh dari Node-RED, dideduplikasi; indeks (`thermal_asset_id`,`observed_at DESC`,`id DESC`). |
+| FR-01 — mencari paket berdasarkan AWB | Nomor AWB unik dan informasi asal/tujuan | `shipments` |
+| FR-02 — status dan linimasa perjalanan | Tahap, jenis kejadian, waktu kejadian, hub, dan titik yang sudah dicapai | `shipment_events`, `hubs`, `route_stops` |
+| FR-03 — peta dan urutan titik singgah | Urutan pickup, satu atau beberapa hub, tujuan, serta koordinat penanda | `route_stops`, `hubs` |
+| FR-04 — suhu dan riwayat telemetri | Identitas aset, profil ambang, nilai suhu, status, dan waktu observasi | `thermal_assets`, `temperature_profiles`, `temperature_readings` |
+| FR-05 — pembaruan suhu | Aset aktif paket, `request_id`, jenis pemicu, dan pembacaan terbaru | `shipment_asset_assignments`, `temperature_readings` |
+| FR-06 — sumber data suhu | Sumber pesan, ID pesan untuk deduplikasi, dan waktu diterima | `temperature_readings` |
 
-Nilai `stage`: `PICKED_UP`, `AT_HUB`, `IN_TRANSIT`, `OUT_FOR_DELIVERY`, `DELIVERED`. `event_code` minimum: `PICKED_UP`, `ARRIVED_HUB`, `LEFT_HUB`, `IN_TRANSIT`, `OUT_FOR_DELIVERY`, `DELIVERED`; kode dan tahap harus konsisten (misalnya `ARRIVED_HUB → AT_HUB`, `LEFT_HUB → IN_TRANSIT`). `trigger`: `SEED` untuk riwayat awal, lalu `SCHEDULED` atau `ON_DEMAND` untuk Node-RED; `request_id` hanya diperlukan untuk on-demand. `source` data awal adalah `SEED`, sedangkan pembacaan berikutnya `NODE_RED`. `temperature_status` dapat berupa `NORMAL`, `WARNING`, `CRITICAL` menurut profil ambang **per jenis aset** pada `temperature_profiles.csv`; tanpa profil, status boleh `NULL` dan UI menampilkan angka tanpa label. Rentang normal freezer hub −5 s.d. −2 °C merujuk [Anteraja](https://blog.anteraja.id/anteraja-frozen/); cooler bag dan mobil boks −8 s.d. −2 °C adalah parameter rancangan. Perubahan ambang tidak otomatis mengubah histori: keputusan hitung ulang harus eksplisit.
+Rancangan UI menampilkan status terkini, linimasa, peta, suhu terkini, ringkasan suhu per segmen, dan histori suhu. Karena itu, status paket tidak disimpan sebagai teks yang terus ditimpa. Status dihitung dari event terakhir. Suhu juga tidak ditempelkan langsung ke AWB karena sensor mengukur suhu aset seperti freezer hub, cooler bag, atau mobil boks.
 
-## 4. Aturan integritas dan query tracking
+## 3. ERD
 
-- Rute dimulai satu titik `PICKUP`, diikuti nol/lebih titik `HUB`, dan berakhir satu titik `DELIVERY`. Untuk skenario MVP, seed menyertakan contoh satu dan beberapa hub. Koordinat hub pada `route_stops` harus sesuai hub yang dirujuk saat impor. `completed_stop_order`, jika ada, harus menunjuk stop pada rute AWB tersebut; tidak boleh melebihi stop terakhir. Tanpa rute/progres yang valid, UI tidak mewarnai segmen sebagai telah dilalui.
-- Interval penugasan untuk **AWB yang sama** tidak boleh tumpang tindih: satu aset aktif pada suatu waktu, dan histori boleh berganti dari cooler bag ke freezer hub lalu mobil boks. Aset yang sama boleh ditugaskan ke beberapa AWB. Validasi ini berada di service/backend dan dapat diperkuat constraint rentang PostgreSQL. Penugasan ditutup saat `DELIVERED`; Refresh setelah itu tidak menghasilkan pembacaan baru.
-- Pembacaan suhu untuk AWB diambil dari `temperature_readings.thermal_asset_id = assignment.thermal_asset_id` dan `observed_at >= started_at` serta (`ended_at IS NULL` atau `observed_at < ended_at`). Pembacaan tanpa assignment sah **tidak** dipublikasikan pada AWB.
-- Status terbaru dipilih dari `shipment_events` menurut `occurred_at DESC, id DESC`; event tahap yang dilompati tidak dibuat. `DELIVERED` hanya mewarnai seluruh rute jika event/progres menunjukkan rute selesai.
-- Batasi riwayat suhu yang dikirim ke browser (misalnya 20 terbaru, urut waktu terbalik); tampilkan waktu pembacaan. Jika perlu histori lebih panjang, tambahkan pagination nanti.
-- Saat impor, tolak AWB ganda, referensi hub/aset yang tidak ada, urutan/rentang waktu tidak valid, dan transisi yang tidak sah. `AT_HUB → IN_TRANSIT → AT_HUB` **sah** untuk rute multi-hub; jangan menolak dengan aturan ranking linear. Jika sumber hanya snapshot, buat satu event status tanpa mengarang kejadian sebelumnya.
+![ERD Anteraja Frozen](database/erd/anteraja-frozen-erd.webp)
 
-## 5. Contoh alur penyimpanan
+Relasi utama:
 
-```mermaid
-sequenceDiagram
-  participant U as Browser
-  participant B as Laravel tracking
-  participant N as Node-RED
-  participant A as Laravel ingest
-  participant D as PostgreSQL
-  opt Jadwal sekitar 30 menit
-    N->>A: POST pembacaan aset terjadwal
-    A->>D: INSERT valid dan idempotent
-  end
-  U->>B: POST /api/track/{awb}/refresh-temperature
-  B->>D: Cari AWB dan aset aktif
-  B->>N: Pemicu internal asset_code + request_id
-  N->>A: POST asset_code, message_id, request_id, observed_at, temperature_c
-  A->>A: Validasi token, nilai, waktu, dan idempotensi
-  A->>D: INSERT pembacaan untuk thermal_asset_id
-  A-->>N: Pembacaan tersimpan
-  N-->>B: Selesai untuk request_id
-  B->>D: Ambil paket, event berjam, rute, assignment, suhu
-  B-->>U: Satu hasil tracking tersaring dengan suhu terbaru
+- satu `shipment` mempunyai banyak `route_stops`;
+- satu `shipment` mempunyai banyak `shipment_events`;
+- satu `hub` dapat dipakai oleh banyak route stop dan event;
+- satu `temperature_profile` digunakan banyak `thermal_assets` sejenis;
+- hubungan paket dengan aset bersifat banyak-ke-banyak dan diselesaikan oleh `shipment_asset_assignments`;
+- satu `thermal_asset` menghasilkan banyak `temperature_readings`;
+- satu pembacaan aset dapat berlaku bagi beberapa AWB yang berada pada aset tersebut dalam rentang waktu yang sama.
+
+## 4. Penjelasan tabel produksi
+
+| Tabel | Isi dan fungsi |
+|---|---|
+| `shipments` | Satu baris untuk satu AWB. Menyimpan kawasan/titik pickup dan delivery. |
+| `hubs` | Master titik hub beserta kode, nama, area, dan koordinat penanda peta. |
+| `route_stops` | Rencana urutan titik yang dilalui satu AWB. Kombinasi `shipment_id` dan `stop_order` harus unik. |
+| `shipment_events` | Catatan kejadian yang benar-benar terjadi, misalnya pickup, tiba hub, keluar hub, transit, sedang diantar, dan delivered. |
+| `temperature_profiles` | Target serta batas normal/peringatan suhu untuk setiap jenis aset. |
+| `thermal_assets` | Identitas cooler bag, freezer hub, dan mobil boks yang menghasilkan data suhu. |
+| `shipment_asset_assignments` | Interval waktu sebuah AWB berada pada aset tertentu. Satu AWB hanya boleh memiliki satu assignment aktif pada satu waktu. |
+| `temperature_readings` | Pembacaan suhu per aset, waktu observasi, sumber, jenis pemicu, dan status termal. |
+
+Schema `seed` juga berisi delapan tabel sementara dengan bentuk yang mendekati CSV. Aplikasi tidak membaca schema ini. Data dipindahkan ke tabel produksi oleh `anteraja_frozen_seed_transform.sql` setelah seluruh CSV selesai diimpor.
+
+## 5. Normalisasi
+
+Rancangan menerapkan prinsip normalisasi sampai bentuk yang sesuai untuk kebutuhan MVP:
+
+1. Setiap kolom menyimpan satu nilai atomik; rute, event, assignment, dan reading tidak disimpan sebagai daftar di dalam `shipments`.
+2. Data hub, profil suhu, dan aset hanya disimpan sekali pada tabel master masing-masing.
+3. Nama dan tipe aset tidak disalin ke setiap pembacaan suhu; reading cukup menyimpan foreign key `thermal_asset_id`.
+4. Hubungan banyak-ke-banyak shipment–aset dipisahkan ke tabel penghubung karena memiliki atribut waktu mulai dan selesai.
+5. Status terbaru diturunkan dari `shipment_events`, sehingga tidak ada dua sumber status yang dapat saling bertentangan.
+
+## 6. Integritas dan optimasi
+
+DDL menyediakan:
+
+- primary key dan unique constraint untuk AWB, kode hub, kode aset, serta ID pesan;
+- foreign key untuk menjaga semua hubungan tabel;
+- check constraint untuk tipe status, koordinat, suhu, dan urutan waktu;
+- exclusion constraint PostgreSQL agar periode assignment satu AWB tidak tumpang tindih;
+- unique partial index agar satu AWB hanya mempunyai satu assignment aktif;
+- index event terbaru, reading terbaru, assignment aktif, dan pembacaan anomali;
+- deduplikasi pesan suhu melalui kombinasi `source + message_id`;
+- view `shipment_current_status`, `shipment_temperature_history`, dan `shipment_latest_temperature` untuk kebutuhan API Laravel.
+
+## 7. Sample data
+
+Sample data terdiri dari delapan CSV yang saling berelasi:
+
+| File | Jumlah data | Tujuan |
+|---|---:|---|
+| `shipments.csv` | 70 | AWB dan ringkasan konteks pengiriman |
+| `hubs.csv` | 10 | Master hub |
+| `route_stops.csv` | 266 | Urutan pickup–hub–delivery |
+| `shipment_events.csv` | 274 | Riwayat kejadian pengiriman |
+| `temperature_profiles.csv` | 3 | Profil suhu per jenis aset |
+| `thermal_assets.csv` | 86 | Master aset termal |
+| `shipment_asset_assignments.csv` | 260 | Histori perpindahan paket antar-aset |
+| `temperature_readings_seed.csv` | 400 | Pembacaan suhu awal |
+
+Total sample data adalah **1.369 baris**. Data ini digunakan untuk perancangan dan pengujian, bukan data pengiriman operasional Anteraja.
+
+## 8. Cara membuat database PostgreSQL
+
+### Langkah 1 — buat database
+
+Contoh melalui PostgreSQL CLI:
+
+```bash
+createdb anteraja_frozen
 ```
 
-Skema ini disiapkan untuk sumber suhu Node-RED sekarang dan sensor kelak. Beralih ke perangkat nyata tetap memerlukan autentikasi perangkat, pemeriksaan kualitas data, serta integrasi status logistik tersendiri.
+Atau buat database bernama `anteraja_frozen` melalui DBeaver.
+
+### Langkah 2 — jalankan DDL
+
+```bash
+psql -U postgres -d anteraja_frozen \
+  -f docs/database/sql/anteraja_frozen_schema.sql
+```
+
+DDL membuat extension `btree_gist`, schema `seed`, tabel, constraint, index, trigger, dan view.
+
+### Langkah 3 — impor CSV ke schema `seed`
+
+Impor melalui fitur **Import Data** pada DBeaver dengan urutan:
+
+1. `temperature_profiles.csv` → `seed.temperature_profiles`
+2. `hubs.csv` → `seed.hubs`
+3. `thermal_assets.csv` → `seed.thermal_assets`
+4. `shipments.csv` → `seed.shipments`
+5. `route_stops.csv` → `seed.route_stops`
+6. `shipment_events.csv` → `seed.shipment_events`
+7. `shipment_asset_assignments.csv` → `seed.shipment_asset_assignments`
+8. `temperature_readings_seed.csv` → `seed.temperature_readings`
+
+Saat mengimpor file terakhir, petakan kolom CSV `trigger` ke kolom tabel `trigger_type`.
+
+### Langkah 4 — transformasikan seed
+
+```bash
+psql -U postgres -d anteraja_frozen \
+  -f docs/database/sql/anteraja_frozen_seed_transform.sql
+```
+
+Transformasi berjalan dalam transaksi. Jika validasi relasi atau rekonsiliasi gagal, transaksi dibatalkan agar tabel produksi tidak terisi sebagian.
+
+### Langkah 5 — verifikasi
+
+```sql
+SELECT count(*) FROM shipments;                    -- 70
+SELECT count(*) FROM hubs;                         -- 10
+SELECT count(*) FROM route_stops;                  -- 266
+SELECT count(*) FROM shipment_events;              -- 274
+SELECT count(*) FROM temperature_profiles;         -- 3
+SELECT count(*) FROM thermal_assets;                -- 86
+SELECT count(*) FROM shipment_asset_assignments;    -- 260
+SELECT count(*) FROM temperature_readings;          -- 400
+```
+
+Contoh memeriksa satu paket:
+
+```sql
+SELECT
+    s.awb,
+    cs.current_stage,
+    cs.last_stage_at,
+    lt.asset_code,
+    lt.temperature_c,
+    lt.observed_at
+FROM shipments s
+LEFT JOIN shipment_current_status cs ON cs.shipment_id = s.id
+LEFT JOIN shipment_latest_temperature lt ON lt.shipment_id = s.id
+WHERE s.awb = 'ANT-FRZ-0002';
+```

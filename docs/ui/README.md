@@ -47,10 +47,9 @@ FR-06 diterapkan sebagai aturan state sistem, bukan halaman tersendiri.
 ## Struktur Folder Pengumpulan
 
 ```text
-ui-design/
+ui/
 ├── README.md
-├── DESIGN.md
-├── UI_AUDIT.md
+├── design.md
 └── designs/
     ├── FR01 - Cari AWB (Default).webp
     ├── FR01 - Cari AWB (Loading State).webp
@@ -58,7 +57,7 @@ ui-design/
     └── FR05 - Perbarui Suhu (Success & Cooldown Guard).webp
 ```
 
-`DESIGN.md` memuat design system dan aturan implementasi. `UI_AUDIT.md` menjelaskan evaluasi dan koreksi yang perlu diterapkan sebelum implementasi produksi. Folder `designs/` memuat seluruh rancangan berformat WebP.
+`design.md` memuat design system dan aturan implementasi. Folder `designs/` memuat seluruh rancangan berformat WebP.
 
 ## Daftar Desain UI
 
@@ -149,11 +148,11 @@ Desktop menggunakan dua kolom untuk memisahkan ringkasan dan detail. Mobile meng
 | Radius | 16 px untuk kartu, pill untuk tombol utama dan badge |
 | Touch target | Minimum 44 × 44 px |
 
-Spesifikasi lengkap tersedia pada [DESIGN.md](./DESIGN.md).
+Spesifikasi lengkap tersedia pada [design.md](design.md).
 
 ## Catatan Evaluasi
 
-Rancangan WebP merupakan dokumentasi visual per fitur dan state. Sebelum implementasi, isi layar perlu mengikuti koreksi pada [UI_AUDIT.md](./UI_AUDIT.md), terutama terkait konsistensi contoh suhu, penghapusan GPS/ETA, pembatasan data pribadi, penggunaan peta ilustratif, dan penyederhanaan riwayat suhu.
+Rancangan WebP merupakan dokumentasi visual per fitur dan state. Implementasi tetap harus mengikuti ketentuan pada [design.md](design.md), terutama terkait konsistensi suhu, pembatasan data pribadi, penggunaan peta ilustratif, dan penyederhanaan riwayat suhu.
 
 ## Cakupan Branch
 

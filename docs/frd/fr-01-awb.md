@@ -1,6 +1,6 @@
 # FR-01 — Cari AWB
 
-**Acuan:**  **Pengguna:** pengunjung tanpa login · **Prioritas:** P0
+**Acuan:** [FRD global](../frd.md) · **Pengguna:** pengunjung tanpa login · **Prioritas:** P0
 
 **Tujuan:** pengguna dapat membuka detail satu paket melalui input AWB teks.
 

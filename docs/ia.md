@@ -17,7 +17,7 @@ flowchart TD
   M --> O[Popup hub opsional / P1]
 ```
 
-Hanya **satu halaman utama**; keadaan kosong, memuat, AWB tidak ditemukan, gangguan jaringan, dan detail hasil adalah *state*, bukan halaman baru. Pada ponsel urutannya: pencarian → ringkasan → suhu terbaru → linimasa → peta → riwayat suhu; peta tidak boleh menghalangi informasi inti. Rancangan visual FR-01 yang telah dibuat ada di [design.md](design.md).
+Hanya **satu halaman utama**; keadaan kosong, memuat, AWB tidak ditemukan, gangguan jaringan, dan detail hasil adalah *state*, bukan halaman baru. Pada ponsel urutannya: pencarian → ringkasan → suhu terbaru → linimasa → peta → riwayat suhu; peta tidak boleh menghalangi informasi inti. Rancangan visual FR-01 yang telah dibuat ada di [design.md](ui/design.md).
 
 ## 2. Teknologi yang dipilih
 

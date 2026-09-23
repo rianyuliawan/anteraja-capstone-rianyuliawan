@@ -1,3 +1,5 @@
-# Anteraja Capstone
+# Anteraja Frozen — Cold Chain Tracking
 
-Project capstone ini berfokus pada pengembangan Shipment Tracking Widget untuk membantu pengguna memantau status pengiriman secara sederhana dan informatif. Fitur utama akan mencakup pencarian berdasarkan nomor resi dan menampilkan informasi perjalanan paket. Project ini akan dikembangkan secara bertahap selama bootcamp dengan menerapkan teknologi dan praktik pengembangan software yang sedang dipelajari.
+Capstone ini berfokus pada website responsif untuk melacak paket Anteraja Frozen berdasarkan AWB, melihat linimasa dan rute perjalanan, serta memantau suhu lingkungan aset termal yang menangani paket. Lingkup MVP tidak mencakup pemesanan, pembayaran, akun kurir, dashboard operasi, GPS langsung, atau sensor produksi.
+
+Dokumentasi proyek tersedia di [`docs/README.md`](docs/README.md). Dokumen utama meliputi PRD, FRD global dan per fitur, IA, `db.md`, desain UI, DDL PostgreSQL, ERD, dan sample data.
