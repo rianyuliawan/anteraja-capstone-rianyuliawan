@@ -35,19 +35,106 @@
     </header>
 
     <main id="main-content">
-      <section class="container" aria-labelledby="page-title">
-        <h1 id="page-title">Pelacakan Cold Chain Anteraja</h1>
-        <p>Pantau perjalanan paket dan suhu lingkungan aset termal yang menanganinya.</p>
+      <section class="hero" aria-labelledby="page-title">
+        <div class="container hero__content">
+          <p class="eyebrow">Anteraja Frozen</p>
+          <h1 id="page-title">Pelacakan cold chain yang <span>jelas</span> dalam satu tampilan</h1>
+          <p class="hero__lead">Masukkan satu nomor AWB untuk melihat tahap pengiriman, urutan titik singgah, dan suhu lingkungan aset termal yang tercatat.</p>
 
-        <form action="tracking.html" method="get" role="search">
-          <label for="tracking-number">Nomor resi / AWB</label>
-          <input id="tracking-number" name="awb" type="text" placeholder="Contoh: ANT-FRZ-0002" autocomplete="off" autocapitalize="characters" pattern="[A-Za-z0-9-]{6,24}" required>
-          <button class="button button--primary" type="submit">Lacak Paket</button>
-        </form>
+          <form class="tracking-search" action="tracking.html" method="get" role="search">
+            <div class="tracking-search__field">
+              <label for="tracking-number">Nomor resi / AWB</label>
+              <input id="tracking-number" name="awb" type="text" placeholder="Contoh: ANT-FRZ-0002" aria-describedby="awb-hint" autocomplete="off" autocapitalize="characters" pattern="[A-Za-z0-9-]{6,24}" required>
+            </div>
+            <button class="button button--primary" type="submit">Lacak Paket</button>
+          </form>
+          <p class="search-hint" id="awb-hint">Gunakan nomor pada bukti pengiriman. Untuk prototype, <a href="tracking.html?awb=ANT-FRZ-0002">buka contoh ANT-FRZ-0002</a>.</p>
+        </div>
+      </section>
+
+      <section class="feature-section" aria-labelledby="feature-title">
+        <div class="container">
+          <div class="section-heading section-heading--center">
+            <p class="eyebrow">Informasi utama</p>
+            <h2 id="feature-title">Yang dapat Anda lihat</h2>
+            <p>Informasi ditampilkan bertahap agar status dan suhu terbaru mudah ditemukan tanpa memenuhi layar.</p>
+          </div>
+          <div class="feature-grid">
+            <article class="feature-card">
+              <span class="feature-card__number" aria-hidden="true">01</span>
+              <h3>Status dan linimasa</h3>
+              <p>Lihat kejadian perjalanan yang benar-benar tercatat lengkap dengan tanggal dan waktu.</p>
+            </article>
+            <article class="feature-card">
+              <span class="feature-card__number" aria-hidden="true">02</span>
+              <h3>Rute titik singgah</h3>
+              <p>Pahami urutan pickup, hub, dan delivery melalui rute ilustratif—bukan lokasi GPS langsung.</p>
+            </article>
+            <article class="feature-card">
+              <span class="feature-card__number" aria-hidden="true">03</span>
+              <h3>Suhu aset termal</h3>
+              <p>Lihat pembacaan suhu lingkungan cooler bag, freezer hub, atau mobil boks yang terkait.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="info-band" aria-labelledby="temperature-info-title">
+        <div class="container info-band__inner">
+          <div>
+            <p class="eyebrow">Cara membaca data</p>
+            <h2 id="temperature-info-title">Suhu aset, bukan suhu inti produk</h2>
+            <p>Nilai yang tampil adalah pembacaan lingkungan tempat paket ditangani. Waktu observasi selalu ditampilkan terpisah agar Anda mengetahui kapan data terakhir dicatat.</p>
+          </div>
+          <dl class="data-facts">
+            <div>
+              <dt>Pembaruan terjadwal</dt>
+              <dd>Sekitar 30 menit</dd>
+            </div>
+            <div>
+              <dt>Riwayat awal</dt>
+              <dd>Maksimal 20 data</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <section class="faq-section" aria-labelledby="faq-title">
+        <div class="container">
+          <div class="section-heading section-heading--center">
+            <p class="eyebrow">Pertanyaan umum</p>
+            <h2 id="faq-title">Tentang pelacakan paket</h2>
+          </div>
+          <div class="faq-list">
+            <details>
+              <summary>Apakah titik pada rute menunjukkan posisi paket saat ini?</summary>
+              <p>Tidak. Rute memperlihatkan urutan titik singgah yang tercatat dan bukan posisi GPS langsung.</p>
+            </details>
+            <details>
+              <summary>Apakah suhu yang tampil merupakan suhu produk?</summary>
+              <p>Tidak. Nilai tersebut merupakan suhu lingkungan aset penyimpanan atau armada yang menangani paket.</p>
+            </details>
+            <details>
+              <summary>Apa yang terjadi setelah paket terkirim?</summary>
+              <p>Riwayat tetap dapat dilihat, tetapi sistem tidak meminta pembacaan suhu baru setelah pengiriman selesai.</p>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <section class="container care-banner" id="customer-care" aria-labelledby="care-title">
+        <div>
+          <h2 id="care-title">Butuh bantuan terkait kiriman Anda?</h2>
+          <p>Hubungi Customer Care Anteraja melalui saluran resmi.</p>
+        </div>
+        <div class="care-banner__actions">
+          <a class="button button--secondary" href="mailto:cs@anteraja.id">Kirim Email</a>
+          <a class="button button--primary" href="tel:+622150663333">(021) 5066 3333</a>
+        </div>
       </section>
     </main>
 
-    <footer class="site-footer" id="customer-care">
+    <footer class="site-footer">
       <div class="container">
         <div class="site-footer__grid">
           <section class="site-footer__brand" aria-labelledby="footer-brand-title">
