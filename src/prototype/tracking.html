@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Hasil prototype pelacakan paket Anteraja Frozen untuk AWB ANT-FRZ-0002.">
+    <title>ANT-FRZ-0002 | Anteraja Frozen</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Lewati ke konten utama</a>
+    <p class="prototype-note">Prototype statis — data contoh untuk kebutuhan perancangan</p>
+
+    <header class="site-header">
+      <div class="container site-header__inner">
+        <a href="index.html" aria-label="Anteraja Frozen — halaman pencarian">
+          <img class="brand-logo" src="https://anteraja.id/assets/img/icons/logo-anteraja.png" alt="Anteraja">
+        </a>
+        <a class="help-link" href="#customer-care">Pusat Bantuan</a>
+      </div>
+    </header>
+
+    <main class="result-page" id="main-content">
+      <div class="container">
+        <form class="tracking-search compact-search" action="tracking.html" method="get" role="search">
+          <div class="tracking-search__field">
+            <label for="tracking-number">Nomor resi / AWB</label>
+            <input id="tracking-number" name="awb" type="text" value="ANT-FRZ-0002" autocomplete="off" autocapitalize="characters" pattern="[A-Za-z0-9-]{6,24}" required>
+          </div>
+          <button class="button button--primary" type="submit">Lacak Paket</button>
+        </form>
+
+        <a class="back-link" href="index.html">Kembali ke pencarian</a>
+
+        <div class="result-grid">
+          <aside class="result-sidebar" aria-label="Ringkasan paket">
+            <article class="panel" aria-labelledby="shipment-summary-title">
+              <header class="panel__header">
+                <div>
+                  <p class="label">Nomor resi / AWB</p>
+                  <h1 class="awb-code" id="shipment-summary-title">ANT-FRZ-0002</h1>
+                </div>
+                <span class="status-badge">Dalam perjalanan</span>
+              </header>
+
+              <dl class="shipment-path">
+                <div>
+                  <dt>Asal pengiriman</dt>
+                  <dd>Kawasan Kemayoran, Jakarta Pusat</dd>
+                </div>
+                <div>
+                  <dt>Tujuan pengiriman</dt>
+                  <dd>Kawasan Pasar Minggu, Jakarta Selatan</dd>
+                </div>
+              </dl>
+
+              <dl class="summary-meta">
+                <div>
+                  <dt>Status terakhir</dt>
+                  <dd>Dalam perjalanan</dd>
+                </div>
+                <div>
+                  <dt>Event terakhir</dt>
+                  <dd><time datetime="2026-09-18T14:30:00+07:00">18 Sep 2026, 14.30 WIB</time></dd>
+                </div>
+              </dl>
+            </article>
+          </aside>
+
+          <div class="result-content">
+            <section class="panel" aria-labelledby="timeline-title">
+              <header class="panel__header">
+                <div>
+                  <h2 id="timeline-title">Linimasa perjalanan</h2>
+                  <p>Urutan terbaru ditampilkan paling atas.</p>
+                </div>
+              </header>
+
+              <ol class="timeline">
+                <li class="timeline__item">
+                  <span class="timeline__marker" aria-hidden="true">4</span>
+                  <article class="timeline__card">
+                    <div class="timeline__topline">
+                      <span class="timeline__status">Dalam perjalanan</span>
+                      <time datetime="2026-09-18T14:30:00+07:00">18 Sep 2026 · 14.30 WIB</time>
+                    </div>
+                    <h3>Berangkat menuju hub tujuan</h3>
+                    <p>Perjalanan antartitik menuju Hub Pasar Minggu telah tercatat.</p>
+                  </article>
+                </li>
+                <li class="timeline__item">
+                  <span class="timeline__marker" aria-hidden="true">3</span>
+                  <article class="timeline__card">
+                    <div class="timeline__topline">
+                      <span class="timeline__status">Keluar dari hub</span>
+                      <time datetime="2026-09-18T13:15:00+07:00">18 Sep 2026 · 13.15 WIB</time>
+                    </div>
+                    <h3>Berangkat dari Hub Cempaka Mas</h3>
+                    <p>Paket tercatat keluar dari titik transit untuk melanjutkan perjalanan.</p>
+                  </article>
+                </li>
+                <li class="timeline__item">
+                  <span class="timeline__marker" aria-hidden="true">2</span>
+                  <article class="timeline__card">
+                    <div class="timeline__topline">
+                      <span class="timeline__status">Tiba di hub</span>
+                      <time datetime="2026-09-18T11:40:00+07:00">18 Sep 2026 · 11.40 WIB</time>
+                    </div>
+                    <h3>Tiba di Hub Cempaka Mas</h3>
+                    <p>Paket telah tercatat tiba di titik transit.</p>
+                  </article>
+                </li>
+                <li class="timeline__item">
+                  <span class="timeline__marker" aria-hidden="true">1</span>
+                  <article class="timeline__card">
+                    <div class="timeline__topline">
+                      <span class="timeline__status">Paket diambil</span>
+                      <time datetime="2026-09-18T09:15:00+07:00">18 Sep 2026 · 09.15 WIB</time>
+                    </div>
+                    <h3>Paket diambil dari titik pickup</h3>
+                    <p>Pengiriman dimulai dari kawasan Kemayoran, Jakarta Pusat.</p>
+                  </article>
+                </li>
+              </ol>
+            </section>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer" id="customer-care">
+      <div class="container">
+        <div class="site-footer__grid">
+          <section class="site-footer__brand" aria-labelledby="footer-brand-title">
+            <h2 class="visually-hidden" id="footer-brand-title">Tentang prototype</h2>
+            <img class="brand-logo" src="https://anteraja.id/assets/img/icons/logo-anteraja.png" alt="Anteraja">
+            <p>Prototype pelacakan pengiriman rantai dingin dengan pemantauan suhu lingkungan aset penyimpanan atau armada.</p>
+          </section>
+          <nav aria-labelledby="footer-nav-title">
+            <h2 id="footer-nav-title">Navigasi</h2>
+            <ul class="footer-list">
+              <li><a href="index.html">Pencarian AWB</a></li>
+              <li><a href="#timeline-title">Linimasa</a></li>
+            </ul>
+          </nav>
+          <section aria-labelledby="footer-contact-title">
+            <h2 id="footer-contact-title">Customer Care</h2>
+            <ul class="footer-list">
+              <li><a href="tel:+622150663333">(021) 5066 3333</a></li>
+              <li><a href="mailto:cs@anteraja.id">cs@anteraja.id</a></li>
+            </ul>
+          </section>
+        </div>
+        <p class="site-footer__legal">Prototype pembelajaran untuk proyek capstone Anteraja Frozen.</p>
+      </div>
+    </footer>
+  </body>
+</html>
