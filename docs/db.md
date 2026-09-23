@@ -14,6 +14,7 @@ erDiagram
   HUBS o|--o{ ROUTE_STOPS : dirujuk_jika_hub
   SHIPMENTS ||--|{ SHIPMENT_EVENTS : mempunyai
   HUBS o|--o{ SHIPMENT_EVENTS : lokasi_event
+  SHIPMENT_EVENTS ||--o{ SHIPMENT_EVENT_MEDIA : mempunyai
   SHIPMENTS ||--o{ SHIPMENT_ASSET_ASSIGNMENTS : memakai
   TEMPERATURE_PROFILES ||--o{ THERMAL_ASSETS : mengatur_ambang
   THERMAL_ASSETS ||--o{ SHIPMENT_ASSET_ASSIGNMENTS : menaungi
@@ -52,6 +53,17 @@ erDiagram
     varchar event_code
     timestamptz occurred_at
     int completed_stop_order "nullable"
+  }
+  SHIPMENT_EVENT_MEDIA {
+    bigint id PK
+    bigint shipment_event_id FK
+    varchar media_type
+    varchar storage_key UK
+    varchar mime_type
+    int file_size_bytes
+    timestamptz captured_at
+    varchar privacy_status
+    varchar checksum_sha256
   }
   THERMAL_ASSETS {
     bigint id PK
@@ -96,6 +108,7 @@ erDiagram
 | `hubs` | `id`, `code` unik, `name`, `latitude`, `longitude` | Titik singgah pada peta. |
 | `route_stops` | `shipment_id`, `stop_order >= 0`, `point_type=PICKUP|HUB|DELIVERY`, `hub_id?`, `display_name`, `latitude`, `longitude`; unik (`shipment_id`,`stop_order`) | Urutan pickup → satu/beberapa hub → delivery pada peta. `hub_id` wajib hanya untuk titik HUB; koordinat hanya penanda kawasan. |
 | `shipment_events` | `shipment_id`, `stage`, `event_code`, `occurred_at`, `hub_id?`, `completed_stop_order?`, `source_event_key?` | Riwayat pickup/tiba hub/keluar hub/transit/pengantaran/delivered yang benar-benar tercatat beserta jam; indeks (`shipment_id`,`occurred_at DESC`,`id DESC`). |
+| `shipment_event_media` | `shipment_event_id`, `media_type`, `storage_disk`, `storage_key`, `mime_type`, ukuran/dimensi, `captured_at`, `alt_text`, `privacy_status`, `checksum_sha256` | Metadata foto pickup/delivery. File disimpan di private storage, bukan di PostgreSQL; maksimal satu foto per jenis pada satu event. |
 | `thermal_assets` | `asset_code` unik, `asset_type` mengacu ke `temperature_profiles.asset_type` | Identitas aset termal seperti cooler bag, freezer hub, atau mobil boks pada rancangan. |
 | `temperature_profiles` | `asset_type` unik, `target_c`, `normal_low_c`, `normal_high_c`, `warning_low_c`, `warning_high_c`, `source_url?`; `warning_low_c < normal_low_c <= normal_high_c < warning_high_c` | Parameter pembacaan dan klasifikasi suhu per jenis aset; `source_url` hanya diisi jika ada rujukan langsung. |
 | `shipment_asset_assignments` | `shipment_id`, `thermal_asset_id`, `started_at`, `ended_at?`; `ended_at > started_at` bila terisi | Relasi aset–paket dalam interval waktu. Satu aset boleh punya banyak AWB bersamaan. |
@@ -109,6 +122,7 @@ Nilai `stage`: `PICKED_UP`, `AT_HUB`, `IN_TRANSIT`, `OUT_FOR_DELIVERY`, `DELIVER
 - Interval penugasan untuk **AWB yang sama** tidak boleh tumpang tindih: satu aset aktif pada suatu waktu, dan histori boleh berganti dari cooler bag ke freezer hub lalu mobil boks. Aset yang sama boleh ditugaskan ke beberapa AWB. Validasi ini berada di service/backend dan dapat diperkuat constraint rentang PostgreSQL. Penugasan ditutup saat `DELIVERED`; Refresh setelah itu tidak menghasilkan pembacaan baru.
 - Pembacaan suhu untuk AWB diambil dari `temperature_readings.thermal_asset_id = assignment.thermal_asset_id` dan `observed_at >= started_at` serta (`ended_at IS NULL` atau `observed_at < ended_at`). Pembacaan tanpa assignment sah **tidak** dipublikasikan pada AWB.
 - Status terbaru dipilih dari `shipment_events` menurut `occurred_at DESC, id DESC`; event tahap yang dilompati tidak dibuat. `DELIVERED` hanya mewarnai seluruh rute jika event/progres menunjukkan rute selesai.
+- Media `PICKUP_PHOTO` hanya boleh terkait event `PICKED_UP`, sedangkan `DELIVERY_PHOTO` hanya untuk `DELIVERED`. API publik hanya mengirim media `APPROVED`/`REDACTED` melalui URL sementara; `storage_key`, EXIF/GPS, wajah, dan label alamat tidak diekspos.
 - Batasi riwayat suhu yang dikirim ke browser (misalnya 20 terbaru, urut waktu terbalik); tampilkan waktu pembacaan. Jika perlu histori lebih panjang, tambahkan pagination nanti.
 - Saat impor, tolak AWB ganda, referensi hub/aset yang tidak ada, urutan/rentang waktu tidak valid, dan transisi yang tidak sah. `AT_HUB → IN_TRANSIT → AT_HUB` **sah** untuk rute multi-hub; jangan menolak dengan aturan ranking linear. Jika sumber hanya snapshot, buat satu event status tanpa mengarang kejadian sebelumnya.
 

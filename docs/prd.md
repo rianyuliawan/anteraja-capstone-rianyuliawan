@@ -33,7 +33,7 @@ Ini adalah kriteria penerimaan prototipe, bukan target SLA layanan produksi. Pen
 
 ## 4. Lingkup
 
-**Termasuk (P0):** input AWB teks; lookup satu paket; nama titik pickup dan delivery; riwayat pengantaran bertanggal/jam (pickup, tiba/keluar hub, transit, pengantaran, delivered sesuai kejadian yang ada); peta rute melalui satu atau beberapa hub dengan marker pickup dan delivery serta progres pink/abu-abu; aset termal seperti cooler bag, mobil boks pendingin, atau freezer hub; suhu terbaru dan riwayat; tombol Refresh yang meminta pembacaan baru dari Node-RED untuk paket aktif; pembacaan suhu terjadwal ±30 menit; UI responsif; dataset simulasi.
+**Termasuk (P0):** input AWB teks; lookup satu paket; nama titik pickup dan delivery; riwayat pengantaran bertanggal/jam (pickup, tiba/keluar hub, transit, pengantaran, delivered sesuai kejadian yang ada); satu foto dokumentasi pada event pickup dan satu foto pada event delivered bila tersedia; peta rute melalui satu atau beberapa hub dengan marker pickup dan delivery serta progres pink/abu-abu; aset termal seperti cooler bag, mobil boks pendingin, atau freezer hub; suhu terbaru dan riwayat; tombol Refresh yang meminta pembacaan baru dari Node-RED untuk paket aktif; pembacaan suhu terjadwal ±30 menit; UI responsif; dataset simulasi.
 
 **Tidak termasuk:** pemesanan/pembuatan AWB, akun dan dashboard operasi, scan kamera/barcode, input checkpoint manual, perpindahan oleh kurir, sensor IoT asli, MQTT, GPS/posisi kendaraan langsung, ETA, notifikasi, pembayaran, optimasi rute, manajemen insiden, serta integrasi Anteraja resmi. Polling otomatis dan popup hub yang lebih kaya ditunda ke P1.
 
@@ -50,6 +50,7 @@ Peta menampilkan urutan titik singgah ilustratif, bukan jalur jalan sebenarnya. 
 | Sumber suhu | Node-RED menyediakan pembacaan untuk aset yang ditugaskan ke paket sebagai data simulasi terkini; target interval ±30 menit, ditambah pemicu saat Refresh. Belum terhubung ke sensor fisik. |
 | Tombol Refresh | Untuk paket aktif, backend meminta Node-RED membuat pembacaan **saat itu** bagi aset aktif, menyimpannya, lalu mengambil respons tracking terbaru. Untuk `DELIVERED`, hanya membaca riwayat terakhir; tidak menciptakan suhu setelah paket selesai. |
 | Data dan merek | Dataset kerja untuk perancangan; tidak memuat data pribadi atau mengklaim cakupan, lokasi, armada, dan ambang resmi di luar rujukan yang disebut. |
+| Dokumentasi foto | File disimpan di storage privat; database hanya menyimpan kunci dan metadata. Wajah, label alamat, lokasi GPS/EXIF, serta informasi sensitif wajib dihapus atau disamarkan sebelum foto dapat tampil pada tracking publik. |
 
 ## 6. Skala rancangan
 
@@ -70,12 +71,12 @@ Dataset kerja saat ini memuat 70 AWB, 10 titik hub, dan 86 aset. Angka ini dapat
 
 | ID | Prioritas | Fitur | Hasil singkat | Rincian |
 |---|---|---|---|---|
-| FR-01 | P0 | Cari AWB | Input teks dan hasil satu AWB atau pesan kesalahan. | [Spesifikasi](frd/fr-01-awb.md) |
-| FR-02 | P0 | Ringkasan dan linimasa | Titik pickup/tujuan, status terakhir, serta tahap yang benar-benar tercatat. | [Spesifikasi](frd/fr-02-status.md) |
-| FR-03 | P0 | Peta rute | Marker pickup, hub, dan delivery; segmen tercatat dilalui pink, sisanya abu-abu. | [Spesifikasi](frd/fr-03-peta.md) |
-| FR-04 | P0 | Suhu dan riwayat | Nilai °C, “Terakhir diperbarui: jam/tanggal WIB”, jenis aset, dan pembacaan sebelumnya. | [Spesifikasi](frd/fr-04-suhu.md) |
-| FR-05 | P0 | Refresh | Memicu pembacaan Node-RED saat itu untuk paket aktif, lalu menampilkan hasil; tidak memajukan status. | [Spesifikasi](frd/fr-05-perbarui.md) |
-| FR-06 | P0 | Sumber suhu Node-RED | Node-RED menyediakan suhu terjadwal dan atas permintaan backend. | [Spesifikasi](frd/fr-06-suhu-node-red.md) |
+| FR-01 | P0 | Cari AWB | Input teks dan hasil satu AWB atau pesan kesalahan. | [Spesifikasi](fr-01-awb.md) |
+| FR-02 | P0 | Ringkasan, linimasa, dan dokumentasi | Titik pickup/tujuan, status terakhir, tahap yang tercatat, serta foto pickup/delivery yang lolos pemeriksaan privasi. | [Spesifikasi](fr-02-status.md) |
+| FR-03 | P0 | Peta rute | Marker pickup, hub, dan delivery; segmen tercatat dilalui pink, sisanya abu-abu. | [Spesifikasi](fr-03-peta.md) |
+| FR-04 | P0 | Suhu dan riwayat | Nilai °C, “Terakhir diperbarui: jam/tanggal WIB”, jenis aset, dan pembacaan sebelumnya. | [Spesifikasi](fr-04-suhu.md) |
+| FR-05 | P0 | Refresh | Memicu pembacaan Node-RED saat itu untuk paket aktif, lalu menampilkan hasil; tidak memajukan status. | [Spesifikasi](fr-05-perbarui.md) |
+| FR-06 | P0 | Sumber suhu Node-RED | Node-RED menyediakan suhu terjadwal dan atas permintaan backend. | [Spesifikasi](fr-06-suhu-node-red.md) |
 | NF-01 | P0 | Web responsif | Alur utama terbaca pada ponsel dan desktop. | [IA](ia.md) |
 | — | P1 | Polling otomatis/popup hub lanjutan | Peningkatan kenyamanan, bukan syarat alur inti. | Belum dirinci |
 
@@ -87,5 +88,4 @@ Tahap acuan: `PICKED_UP`, `AT_HUB`, `IN_TRANSIT`, `OUT_FOR_DELIVERY`, `DELIVERED
 |---|---|---|
 | Format AWB seed dan validasi yang diterima. | Pemilik produk bersama pengembang | Sebelum implementasi FR-01 |
 | Pilihan host/tile peta pengujian dan akses HTTPS bila prototipe dibuka dari luar. | Pengembang/pemilik produk | Sebelum deployment |
-
 

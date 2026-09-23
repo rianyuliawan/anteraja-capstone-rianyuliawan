@@ -8,6 +8,7 @@ Rancangan UI membantu pengguna untuk:
 
 - mencari paket menggunakan nomor AWB;
 - melihat status dan linimasa perjalanan paket;
+- melihat dokumentasi foto pada event pickup dan delivery bila aman ditampilkan;
 - melihat urutan pickup point, hub, dan delivery point;
 - melihat suhu lingkungan aset termal yang membawa atau menyimpan paket;
 - meminta pembaruan suhu terbaru;
@@ -36,7 +37,7 @@ Halaman Awal
     ├── Tidak ditemukan
     └── AWB ditemukan
         └── Halaman Hasil Pelacakan
-            ├── FR-02 — Ringkasan dan linimasa
+            ├── FR-02 — Ringkasan, linimasa, dan dokumentasi
             ├── FR-03 — Peta ilustratif / daftar titik
             ├── FR-04 — Suhu dan riwayat
             └── FR-05 — Pembaruan suhu
@@ -47,10 +48,9 @@ FR-06 diterapkan sebagai aturan state sistem, bukan halaman tersendiri.
 ## Struktur Folder Pengumpulan
 
 ```text
-ui-design/
+ui/
 ├── README.md
-├── DESIGN.md
-├── UI_AUDIT.md
+├── design.md
 └── designs/
     ├── FR01 - Cari AWB (Default).webp
     ├── FR01 - Cari AWB (Loading State).webp
@@ -58,7 +58,7 @@ ui-design/
     └── FR05 - Perbarui Suhu (Success & Cooldown Guard).webp
 ```
 
-`DESIGN.md` memuat design system dan aturan implementasi. `UI_AUDIT.md` menjelaskan evaluasi dan koreksi yang perlu diterapkan sebelum implementasi produksi. Folder `designs/` memuat seluruh rancangan berformat WebP.
+`design.md` memuat design system dan aturan implementasi. Folder `designs/` memuat seluruh rancangan berformat WebP.
 
 ## Daftar Desain UI
 
@@ -149,7 +149,11 @@ Desktop menggunakan dua kolom untuk memisahkan ringkasan dan detail. Mobile meng
 | Radius | 16 px untuk kartu, pill untuk tombol utama dan badge |
 | Touch target | Minimum 44 × 44 px |
 
-Spesifikasi lengkap tersedia pada [DESIGN.md](./DESIGN.md).
+Spesifikasi lengkap tersedia pada [design.md](design.md).
+
+## Catatan Evaluasi
+
+Rancangan WebP merupakan dokumentasi visual per fitur dan state. Implementasi tetap harus mengikuti ketentuan pada [design.md](design.md), terutama terkait konsistensi suhu, pembatasan data pribadi, penggunaan peta ilustratif, dan penyederhanaan riwayat suhu.
 
 ## Cakupan Branch
 
