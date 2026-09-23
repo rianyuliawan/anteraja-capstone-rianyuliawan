@@ -1029,6 +1029,37 @@ a {
   font-size: 0.75rem;
 }
 
+.refresh-control {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--ink-200);
+}
+
+.refresh-control .button {
+  width: 100%;
+}
+
+.refresh-control__hint {
+  margin: 0.65rem 0 0;
+  color: var(--ink-500);
+  font-size: 0.72rem;
+  text-align: center;
+}
+
+.refresh-control__status {
+  margin: 0 0 0.75rem;
+  padding: 0.75rem;
+  border-radius: var(--radius-sm);
+  color: var(--green-700);
+  background: var(--green-100);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.result-care {
+  margin-top: 1.5rem;
+}
+
 .segment-grid {
   display: grid;
   gap: 0.75rem;

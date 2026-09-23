@@ -84,6 +84,11 @@
                 <p class="temperature-reading__range">Rentang normal rancangan: −8°C s.d. −2°C</p>
               </div>
               <p class="observation-time">Terobservasi: <time datetime="2026-09-18T14:30:00+07:00">18 Sep 2026, 14.30 WIB</time></p>
+              <div class="refresh-control">
+                <p class="refresh-control__status" id="refresh-status" role="status">Pembacaan terakhir tersedia dan siap diperbarui.</p>
+                <button class="button button--primary js-refresh-temperature" id="refresh-temperature" type="button" aria-describedby="refresh-status refresh-hint">Perbarui Suhu</button>
+                <p class="refresh-control__hint" id="refresh-hint">Interaksi tombol akan ditambahkan pada tahap JavaScript berikutnya.</p>
+              </div>
               <p class="temperature-disclaimer">Suhu yang ditampilkan merupakan suhu lingkungan aset penyimpanan atau armada, bukan suhu inti produk.</p>
             </section>
           </aside>
@@ -307,10 +312,21 @@
             </section>
           </div>
         </div>
+
+        <section class="care-banner result-care" id="customer-care" aria-labelledby="result-care-title">
+          <div>
+            <h2 id="result-care-title">Butuh bantuan terkait kiriman Anda?</h2>
+            <p>Hubungi Customer Care Anteraja melalui saluran resmi.</p>
+          </div>
+          <div class="care-banner__actions">
+            <a class="button button--secondary" href="mailto:cs@anteraja.id">Kirim Email</a>
+            <a class="button button--primary" href="tel:+622150663333">(021) 5066 3333</a>
+          </div>
+        </section>
       </div>
     </main>
 
-    <footer class="site-footer" id="customer-care">
+    <footer class="site-footer">
       <div class="container">
         <div class="site-footer__grid">
           <section class="site-footer__brand" aria-labelledby="footer-brand-title">
