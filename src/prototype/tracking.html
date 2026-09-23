@@ -126,6 +126,71 @@
                 </li>
               </ol>
             </section>
+
+            <section class="panel" id="route" aria-labelledby="route-title">
+              <header class="panel__header">
+                <div>
+                  <h2 id="route-title">Rute dan titik singgah</h2>
+                  <p>Progres berdasarkan kejadian pengiriman yang telah tercatat.</p>
+                </div>
+              </header>
+
+              <p class="route-intro">Rute ilustratif berdasarkan urutan titik singgah, bukan posisi langsung.</p>
+
+              <details class="route-map-disclosure">
+                <summary>Tampilkan peta ilustratif</summary>
+                <figure class="route-map">
+                  <svg viewBox="0 0 760 330" role="img" aria-labelledby="route-map-title route-map-desc">
+                    <title id="route-map-title">Rute ilustratif paket ANT-FRZ-0002</title>
+                    <desc id="route-map-desc">Rute dari Kemayoran, melewati Hub Cempaka Mas, sedang menuju Hub Pasar Minggu, kemudian ke tujuan pengiriman.</desc>
+                    <path class="route-map__grid" d="M0 80H760M0 165H760M0 250H760M150 0V330M380 0V330M610 0V330"></path>
+                    <path class="route-map__completed" d="M90 100 C180 65 230 145 320 150 S430 220 505 160"></path>
+                    <path class="route-map__remaining" d="M505 160 C575 105 650 150 690 235"></path>
+                    <circle class="route-map__stop" cx="90" cy="100" r="12"></circle>
+                    <circle class="route-map__stop" cx="320" cy="150" r="12"></circle>
+                    <circle class="route-map__stop route-map__stop--current" cx="505" cy="160" r="13"></circle>
+                    <circle class="route-map__stop route-map__stop--remaining" cx="690" cy="235" r="12"></circle>
+                    <text x="45" y="72">Kemayoran</text>
+                    <text x="255" y="120">Hub Cempaka Mas</text>
+                    <text x="455" y="130">Hub Pasar Minggu</text>
+                    <text x="610" y="278">Tujuan pengiriman</text>
+                  </svg>
+                  <figcaption>Garis magenta menunjukkan segmen yang selesai, penanda biru menunjukkan titik yang sedang dituju, dan garis abu-abu menunjukkan perjalanan berikutnya.</figcaption>
+                </figure>
+              </details>
+
+              <h3 class="visually-hidden" id="route-stop-list-title">Daftar titik singgah</h3>
+              <ol class="route-stops" aria-labelledby="route-stop-list-title">
+                <li class="route-stop">
+                  <div class="route-stop__topline">
+                    <h3>Kawasan Kemayoran</h3>
+                    <span class="route-stop__state">Selesai</span>
+                  </div>
+                  <p>Pickup point · 18 Sep 2026, 09.15 WIB</p>
+                </li>
+                <li class="route-stop">
+                  <div class="route-stop__topline">
+                    <h3>Hub Cempaka Mas</h3>
+                    <span class="route-stop__state">Selesai</span>
+                  </div>
+                  <p>Titik transit · Berangkat 13.15 WIB</p>
+                </li>
+                <li class="route-stop route-stop--current">
+                  <div class="route-stop__topline">
+                    <h3>Hub Pasar Minggu</h3>
+                    <span class="route-stop__state">Sedang dituju</span>
+                  </div>
+                  <p>Hub tujuan berikutnya</p>
+                </li>
+                <li class="route-stop route-stop--remaining">
+                  <div class="route-stop__topline">
+                    <h3>Kawasan tujuan</h3>
+                    <span class="route-stop__state">Belum tiba</span>
+                  </div>
+                  <p>Delivery point · Jakarta Selatan</p>
+                </li>
+              </ol>
+            </section>
           </div>
         </div>
       </div>
@@ -144,6 +209,7 @@
             <ul class="footer-list">
               <li><a href="index.html">Pencarian AWB</a></li>
               <li><a href="#timeline-title">Linimasa</a></li>
+              <li><a href="#route">Rute pengiriman</a></li>
             </ul>
           </nav>
           <section aria-labelledby="footer-contact-title">
