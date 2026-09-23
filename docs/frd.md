@@ -12,7 +12,7 @@ MVP menguji tujuan PRD: pemilik AWB dapat memahami riwayat pengantaran bertangga
 
 | Aktor | Boleh lihat | Boleh buat/ubah | Field/akses terlarang |
 |---|---|---|---|
-| Pengunjung dengan AWB | Satu respons tracking publik melalui `GET /api/track/{awb}`. | Meminta pembacaan suhu baru melalui `POST /api/track/{awb}/refresh-temperature` untuk paket aktif; tidak dapat menulis nilainya sendiri. | Daftar semua AWB, data pribadi, kredensial, endpoint ingest. |
+| Pengunjung dengan AWB | Satu respons tracking publik melalui `GET /api/track/{awb}`, termasuk dokumentasi event yang telah lolos pemeriksaan privasi. | Meminta pembacaan suhu baru melalui `POST /api/track/{awb}/refresh-temperature` untuk paket aktif; tidak dapat menulis nilai suhu atau foto. | Daftar semua AWB, data pribadi, storage key asli, EXIF/GPS, kredensial, endpoint ingest. |
 | Node-RED | Respons sukses/gagal atas kiriman sendiri. | Membuat pembacaan suhu melalui POST internal bertoken; retry idempotent. | Mengubah AWB, tahap, rute, atau penugasan aset. |
 | Pengembang/pengelola seed | Data pengujian pada lingkungan pengembangan. | Menjalankan migrasi, seed, dan konfigurasi di luar UI. | Bukan akun atau hak akses produk publik. |
 
@@ -55,6 +55,7 @@ Kegagalan jaringan/tile tidak disamakan dengan AWB tidak ditemukan. Bila API gag
 | BR-02 | Tahap terbaru berasal dari event sah terakhir berdasarkan `occurred_at`, lalu ID. Setiap event memiliki waktu dan kode kejadian, misalnya `ARRIVED_HUB`/`LEFT_HUB`, agar riwayat terbaca. | Suhu, refresh, dan jam tidak memajukan status. |
 | BR-03 | Tahap boleh dilompati. `AT_HUB → IN_TRANSIT → AT_HUB` sah bila paket bergerak dari satu hub ke hub lain. `DELIVERED` adalah akhir. | Event di luar transisi yang diizinkan atau setelah `DELIVERED` ditolak saat impor; jangan menguji “maju” dengan peringkat angka sederhana. |
 | BR-04 | Tiba/keluar hub dan beberapa event `AT_HUB`/`IN_TRANSIT` boleh berulang jika kejadian berbeda dan waktunya sah. | Duplikat sumber dengan kunci event sama tidak membuat event baru. |
+| BR-04A | Satu event pickup dapat memiliki maksimal satu `PICKUP_PHOTO`; satu event delivered dapat memiliki maksimal satu `DELIVERY_PHOTO`. API publik hanya mengirim media `APPROVED`/`REDACTED` melalui URL bertanda tangan sementara. | Jenis foto yang tidak cocok dengan event, file >10 MB, MIME selain JPEG/PNG/WebP, atau media yang belum lolos privasi ditolak/disembunyikan. |
 | BR-05 | Rute pink hanya sampai `completed_stop_order` yang tercatat; bagian sesudahnya abu-abu. | Tanpa progres sah, garis netral; jangan menebak lokasi dari status atau suhu. |
 | BR-06 | Suhu aset ditampilkan pada AWB hanya jika `observed_at` berada dalam interval penugasan aset ke AWB. | Aset tanpa assignment sah tidak muncul dalam tracking AWB. |
 | BR-07 | Ingest memakai token mesin, aset dikenal, nilai/waktu valid, `message_id` unik per sumber. | Retry dengan ID sama tidak menggandakan baris; payload tak sah `422`, tanpa otorisasi `401/403`. |
@@ -73,11 +74,12 @@ Kegagalan jaringan/tile tidak disamakan dengan AWB tidak ditemukan. Bila API gag
 | Progres | Stop terakhir yang secara eksplisit tercatat sudah dilalui (`completed_stop_order`). |
 | Aset termal | Perlengkapan tempat pembacaan suhu dikaitkan dengan paket, misalnya cooler bag, freezer hub, atau mobil boks pendingin. Mobil boks dalam rancangan bukan klaim armada Anteraja. |
 | Pembacaan suhu | Suhu lingkungan aset pada satu waktu; bukan pengukuran kontinu atau suhu inti makanan. |
+| Dokumentasi event | Foto pickup atau delivery yang terkait ke satu event, disimpan privat, dan ditampilkan hanya setelah pemeriksaan privasi. |
 | Data awal | Dataset kerja yang disiapkan pengembang di luar UI. |
 
 ## 6. Data utama dan status
 
-Data utama: `shipments`, `shipment_events` (termasuk `event_code`, `occurred_at`, dan hub bila relevan), `hubs`, `route_stops`, `thermal_assets`, `shipment_asset_assignments`, dan `temperature_readings`; relasi/constraint di [DB](db.md). Respons tracking membawa `awb`, `pickup_area`, `pickup_point`, `delivery_area`, `delivery_point`, `current_stage`, `last_stage_at`, `stage_timeline[]`, `route_stops[]`, `completed_stop_order?`, `latest_temperature?`, dan `temperature_history[]`. API publik tidak mengirim seluruh kolom DB. Nama titik hanya kawasan, bukan alamat rinci.
+Data utama: `shipments`, `shipment_events` (termasuk `event_code`, `occurred_at`, dan hub bila relevan), `shipment_event_media`, `hubs`, `route_stops`, `thermal_assets`, `shipment_asset_assignments`, dan `temperature_readings`; relasi/constraint di [DB](db.md). Respons tracking membawa `awb`, `pickup_area`, `pickup_point`, `delivery_area`, `delivery_point`, `current_stage`, `last_stage_at`, `stage_timeline[]`, `event_media[]?`, `route_stops[]`, `completed_stop_order?`, `latest_temperature?`, dan `temperature_history[]`. API publik tidak mengirim seluruh kolom DB. Nama titik hanya kawasan, bukan alamat rinci.
 
 | Status paket | Boleh ke depan | Makna tampilan |
 |---|---|---|
@@ -94,7 +96,7 @@ Status awal sebelum `PICKED_UP` tidak diperlukan pada dataset tracking P0. Untuk
 | ID | Fungsi | Ringkasan | 
 |---|---|---|
 | FR-01 | Cari AWB | Validasi dan ambil satu hasil. | 
-| FR-02 | Ringkasan/linimasa | Menyajikan status dan event yang ada. | 
+| FR-02 | Ringkasan/linimasa/dokumentasi | Menyajikan status, event, serta foto pickup/delivery yang aman ditampilkan. |
 | FR-03 | Peta rute | Menyajikan hub dan progres ilustratif. | 
 | FR-04 | Suhu/riwayat | Menyajikan suhu aset terkait dengan waktu dan sumber. | 
 | FR-05 | Refresh | Memicu pembacaan suhu sekarang untuk paket aktif, lalu membaca tracking. | 
@@ -106,11 +108,11 @@ Status awal sebelum `PICKED_UP` tidak diperlukan pada dataset tracking P0. Untuk
 2. Dengan AWB uji yang tidak ada, Budi melihat “AWB tidak ditemukan” tanpa detail AWB lain. Format salah dan gangguan API mempunyai pesan berbeda.
 3. Contoh paket dengan rute pickup → hub asal → hub tujuan → delivery menampilkan titik-titik tersebut sesuai data awal dan membedakan segmen yang dilalui/belum. Paket yang melompati `AT_HUB` tidak menampilkan event `AT_HUB` buatan. Paket tanpa data progres tidak menampilkan segmen pink.
 4. Budi melihat riwayat “Pickup 09.00 → Tiba di hub A 10.15 → Keluar dari hub A 11.05 → Tiba di hub B 12.20” bila event tersebut ada di seed; status dapat berganti `AT_HUB → IN_TRANSIT → AT_HUB`.
-5. Saat Budi menekan Refresh pada paket aktif, backend memicu Node-RED untuk aset aktif. Setelah pembacaan tersimpan, “Suhu terakhir” dan “Terakhir diperbarui” menunjukkan nilai/waktu baru **saat itu**, sedangkan status dan rute tetap. Paket delivered tidak dibuatkan pembacaan baru.
-6. Kiriman ulang dengan `message_id` sama tidak menghasilkan dua pembacaan. Jika Node-RED gagal/timeout, UI menampilkan nilai terakhir dengan pesan gagal; bila pembacaan aktif >60 menit, UI menyatakan data belum diperbarui.
-7. Pada ponsel, AWB, status, dan suhu tetap terbaca ketika peta/tile tidak tersedia; keterangan rute ilustratif dan suhu lingkungan aset tampak jelas.
+5. Jika event pickup memiliki media yang lolos pemeriksaan, Budi melihat foto pickup. Foto delivery belum muncul sebelum event `DELIVERED`; setelah delivered, media yang aman ditampilkan menggunakan URL sementara dan tanpa metadata sensitif.
+6. Saat Budi menekan Refresh pada paket aktif, backend memicu Node-RED untuk aset aktif. Setelah pembacaan tersimpan, “Suhu terakhir” dan “Terakhir diperbarui” menunjukkan nilai/waktu baru **saat itu**, sedangkan status dan rute tetap. Paket delivered tidak dibuatkan pembacaan baru.
+7. Kiriman ulang dengan `message_id` sama tidak menghasilkan dua pembacaan. Jika Node-RED gagal/timeout, UI menampilkan nilai terakhir dengan pesan gagal; bila pembacaan aktif >60 menit, UI menyatakan data belum diperbarui.
+8. Pada ponsel, AWB, status, dan suhu tetap terbaca ketika peta/tile tidak tersedia; keterangan rute ilustratif dan suhu lingkungan aset tampak jelas.
 
 ## 9. Tidak termasuk
 
-Pembuatan pesanan/AWB, kamera/scanner, akun pelanggan/operasi/kurir, input checkpoint manual, sensor asli/MQTT, GPS langsung, ETA, notifikasi, pembayaran, optimasi rute, dan integrasi sistem resmi. Node-RED P0 hanya untuk suhu; tidak ada pembaruan tahap otomatis. Polling UI otomatis dan popup peta yang lebih kaya adalah P1, bukan kriteria penerimaan P0.
-
+Pembuatan pesanan/AWB, kamera/scanner oleh pengunjung, unggah foto melalui UI publik, akun pelanggan/operasi/kurir, input checkpoint manual, sensor asli/MQTT, GPS langsung, ETA, notifikasi, pembayaran, optimasi rute, dan integrasi sistem resmi. Node-RED P0 hanya untuk suhu; tidak ada pembaruan tahap otomatis. Polling UI otomatis dan popup peta yang lebih kaya adalah P1, bukan kriteria penerimaan P0.
