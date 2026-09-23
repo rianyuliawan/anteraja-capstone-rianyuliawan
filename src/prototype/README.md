@@ -72,8 +72,10 @@ src/prototype/
 ├── tracking.html
 ├── README.md
 └── assets/
-    └── css/
-        └── styles.css
+    ├── css/
+    │   └── styles.css
+    └── images/
+        └── logo-anteraja.png
 ```
 
-Logo pada prototype memakai URL aset resmi Anteraja sebagai referensi visual. Untuk deployment produksi, aset perlu disimpan dan dilayani dari aplikasi sendiri setelah hak penggunaan serta versi aset dikonfirmasi.
+Logo prototype menggunakan salinan lokal dari aset yang ditampilkan pada situs resmi Anteraja. Hak penggunaan dan versi aset tetap perlu dikonfirmasi sebelum deployment produksi.
