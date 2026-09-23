@@ -405,31 +405,6 @@ LEFT JOIN shipment_current_status cs ON cs.shipment_id = s.id
 LEFT JOIN shipment_latest_temperature lt ON lt.shipment_id = s.id
 WHERE s.awb = 'ANT-FRZ-0002';
 ```
-
-## 14. Konfigurasi Laravel lokal
-
-Contoh `.env` lokal:
-
-```dotenv
-DB_CONNECTION=pgsql
-DB_HOST=127.0.0.1
-DB_PORT=5432
-DB_DATABASE=anteraja_frozen
-DB_USERNAME=anteraja_app
-DB_PASSWORD=ganti-password-lokal-ini
-```
-
-Simpan nilai asli hanya di `.env`. Repository cukup menyimpan `.env.example` dengan placeholder.
-
-Ketika pengembangan Laravel dimulai, DDL ini dapat diterjemahkan menjadi migration. Jangan menjalankan migration yang membuat tabel yang sama di atas database yang sudah diisi menggunakan DDL tanpa menentukan satu sumber schema yang menjadi acuan.
-
-## 15. Supabase sebagai opsi berikutnya
-
-Supabase menggunakan PostgreSQL sehingga model tabel tetap dapat digunakan. Untuk tahap awal, PostgreSQL lokal lebih sederhana karena tidak membutuhkan internet dan bebas melakukan reset selama pengembangan. Setelah aplikasi stabil, DDL dapat dijalankan pada SQL Editor Supabase, seed dapat diimpor, dan konfigurasi Laravel diarahkan ke connection string Supabase.
-
-Sebelum deployment cloud:
-
-- simpan credential sebagai secret;
 - aktifkan SSL;
 - jangan mengekspos schema `seed` melalui API publik;
 - batasi akses database hanya untuk backend;
