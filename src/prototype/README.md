@@ -1,10 +1,10 @@
-# Prototype HTML/CSS — Anteraja Frozen
+# Implementasi HTML/CSS — Anteraja Frozen
 
-Prototype ini mengonversi rancangan UI Anteraja Frozen menjadi kerangka web semantik, responsif, dan saling terhubung. Implementasi tahap ini hanya menggunakan **HTML dan CSS murni**. Tidak ada file JavaScript, framework CSS, Bootstrap, Tailwind, atau request API.
+Implementasi ini mengonversi desain UI Anteraja Frozen menjadi kerangka web semantik, responsif, dan saling terhubung. Implementasi tahap ini hanya menggunakan **HTML dan CSS murni**. Tidak ada file JavaScript, framework CSS, Bootstrap, Tailwind, atau request API.
 
 Elemen `script` pada `index.html` hanya berisi data terstruktur `application/ld+json` sesuai persyaratan tugas dan tidak menjalankan perilaku antarmuka.
 
-## Menjalankan prototype
+## Menjalankan halaman
 
 Dari root repository:
 
@@ -28,7 +28,7 @@ FR-06 tidak memiliki halaman sendiri karena berfungsi sebagai aturan state dan m
 ### FR-01 — Cari AWB
 
 - Form menggunakan landmark pencarian, label yang terlihat, `required`, dan pola dasar input.
-- Contoh AWB mengarah ke halaman hasil agar alur prototype dapat diperiksa tanpa JavaScript.
+- Form AWB mengarah ke halaman hasil agar alur halaman dapat diperiksa tanpa JavaScript.
 - `index.html` memuat JSON-LD bertipe [`WebApplication`](https://schema.org/WebApplication).
 
 ### FR-02 — Ringkasan dan linimasa
@@ -45,7 +45,7 @@ FR-06 tidak memiliki halaman sendiri karena berfungsi sebagai aturan state dan m
 
 ### FR-04 — Suhu dan riwayat
 
-- Nilai contoh mengikuti profil rancangan: cooler bag dan mobil boks −8°C s.d. −2°C, freezer hub −5°C s.d. −2°C.
+- Nilai contoh mengikuti profil data: cooler bag dan mobil boks −8°C s.d. −2°C, freezer hub −5°C s.d. −2°C.
 - Nilai suhu dipisahkan dari waktu observasi.
 - Riwayat tertutup secara default melalui `details`; tabel berubah menjadi susunan kartu di layar kecil.
 - Tidak menggunakan grafik kontinu.
@@ -60,6 +60,7 @@ FR-06 tidak memiliki halaman sendiri karena berfungsi sebagai aturan state dan m
 
 - CSS ditulis dengan pendekatan mobile-first.
 - Breakpoint utama: `48rem` untuk tablet dan `64rem` untuk layout desktop dua kolom.
+- Header menyediakan navigasi fitur pada desktop dan disclosure hamburger berbasis HTML/CSS pada mobile; footer tidak mengulang navigasi.
 - Kontrol memiliki tinggi minimum 44px, focus ring terlihat, dan dukungan `prefers-reduced-motion`.
 - Struktur memakai `header`, `main`, `section`, `article`, `aside`, `nav`, `footer`, heading berurutan, tabel semantik, dan skip link.
 - Halaman tidak memerlukan horizontal scroll pada lebar target 360px, 390px, 768px, dan desktop.
@@ -78,4 +79,4 @@ src/prototype/
         └── logo-anteraja.png
 ```
 
-Logo prototype menggunakan salinan lokal dari aset yang ditampilkan pada situs resmi Anteraja. Hak penggunaan dan versi aset tetap perlu dikonfirmasi sebelum deployment produksi.
+Halaman menggunakan salinan lokal dari aset logo yang ditampilkan pada situs resmi Anteraja. Hak penggunaan dan versi aset tetap perlu dikonfirmasi sebelum deployment produksi.

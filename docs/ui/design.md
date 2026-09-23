@@ -234,8 +234,9 @@ Status tidak boleh disampaikan dengan warna saja. Selalu gunakan kombinasi ikon,
 
 - Tinggi desktop 72–80 px; mobile 64 px.
 - Logo resmi yang telah disetujui di kiri, tanpa digambar ulang atau didistorsi.
-- Tautan `Pusat Bantuan` di kanan.
-- Tidak ada navigasi yang tidak berfungsi.
+- Pada desktop, tampilkan navigasi fitur `Lacak Paket/Beranda`, `Ringkasan`, `Linimasa`, `Rute`, dan `Suhu`, diikuti tautan `Pusat Bantuan`.
+- Pada mobile dan tablet, navigasi diringkas menjadi tombol hamburger berbasis disclosure yang dapat dipakai dengan keyboard.
+- Semua tautan fitur harus menuju halaman atau section yang benar-benar tersedia; header boleh sticky agar perpindahan antarbagian tetap mudah.
 
 ### Search AWB
 
@@ -259,7 +260,7 @@ Status tidak boleh disampaikan dengan warna saja. Selalu gunakan kombinasi ikon,
 
 - Logo resmi.
 - Deskripsi singkat tanpa klaim berlebihan.
-- Tautan hanya yang benar-benar tersedia.
+- Hanya tampilkan identitas layanan dan kontak Customer Care; navigasi fitur ditempatkan pada header agar tidak berulang di bagian bawah.
 - Tahun hak cipta harus dinamis, bukan hard-coded.
 
 ---
