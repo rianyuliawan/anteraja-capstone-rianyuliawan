@@ -22,6 +22,7 @@
           <a href="index.html">Lacak Paket</a>
           <a href="#shipment-summary-title">Ringkasan</a>
           <a href="#timeline-title">Linimasa</a>
+          <a href="#delivery-evidence">Dokumentasi</a>
           <a href="#route">Rute</a>
           <a href="#temperature">Suhu</a>
         </nav>
@@ -32,6 +33,7 @@
             <a href="index.html">Lacak paket lain</a>
             <a href="#shipment-summary-title">Ringkasan paket</a>
             <a href="#timeline-title">Linimasa perjalanan</a>
+            <a href="#delivery-evidence">Dokumentasi foto</a>
             <a href="#route">Rute pengiriman</a>
             <a href="#temperature">Pemantauan suhu</a>
             <a class="mobile-nav__help" href="#customer-care">Pusat Bantuan</a>
@@ -90,7 +92,6 @@
               <header class="panel__header">
                 <div>
                   <h2 id="temperature-title">Suhu terbaru</h2>
-                  <p>Pembacaan aset aktif</p>
                 </div>
                 <span class="thermal-status">Normal</span>
               </header>
@@ -102,11 +103,10 @@
               </div>
               <p class="observation-time">Terobservasi: <time datetime="2026-09-18T14:30:00+07:00">18 Sep 2026, 14.30 WIB</time></p>
               <div class="refresh-control">
-                <p class="refresh-control__status" id="refresh-status" role="status">Pembacaan terakhir tersedia dan siap diperbarui.</p>
                 <button class="button button--primary js-refresh-temperature" id="refresh-temperature" type="button" aria-describedby="refresh-status refresh-hint">Perbarui Suhu</button>
                 <p class="refresh-control__hint" id="refresh-hint">Pembaruan suhu tidak mengubah status maupun rute pengiriman.</p>
               </div>
-              <p class="temperature-disclaimer">Suhu yang ditampilkan merupakan suhu lingkungan aset penyimpanan atau armada, bukan suhu inti produk.</p>
+              <p class="temperature-disclaimer">Suhu yang ditampilkan merupakan suhu lingkungan aset penyimpanan atau armada.</p>
             </section>
           </aside>
 
@@ -167,6 +167,58 @@
               </ol>
             </section>
 
+            <section class="panel evidence-section" id="delivery-evidence" aria-labelledby="evidence-title">
+              <header class="panel__header">
+                <div>
+                  <p class="eyebrow">Dokumentasi perjalanan</p>
+                  <h2 id="evidence-title">Foto pickup dan penerimaan</h2>
+                </div>
+                <span class="evidence-count" aria-label="Satu dari dua dokumentasi tersedia">1/2 tersedia</span>
+              </header>
+
+              <div class="evidence-grid">
+                <article class="evidence-card">
+                  <div class="evidence-card__topline">
+                    <span class="evidence-card__status evidence-card__status--available">Tersedia</span>
+                    <time datetime="2026-09-18T09:15:00+07:00">18 Sep 2026 · 09.15 WIB</time>
+                  </div>
+                  <figure class="evidence-preview" aria-labelledby="pickup-photo-caption">
+                    <img
+                      src="assets/images/evidence/ANT-FRZ-0002-pickup.webp"
+                      width="1280"
+                      height="720"
+                      loading="lazy"
+                      decoding="async"
+                      alt="Sejumlah paket telah diterima di titik pickup"
+                    >
+                    <figcaption id="pickup-photo-caption">
+                      <strong>Foto pickup</strong>
+                      <span>Kawasan Kemayoran, Jakarta Pusat</span>
+                    </figcaption>
+                  </figure>
+                  <details class="evidence-details">
+                    <summary>Lihat informasi dokumentasi</summary>
+                    <p>Foto terkait dengan event pickup. Metadata lokasi presisi dan identitas perangkat tidak ditampilkan kepada publik.</p>
+                  </details>
+                </article>
+
+                <article class="evidence-card evidence-card--pending">
+                  <div class="evidence-card__topline">
+                    <span class="evidence-card__status">Menunggu</span>
+                    <span>Belum ada event</span>
+                  </div>
+                  <div class="evidence-placeholder" role="img" aria-label="Foto penerimaan belum tersedia">
+                    <span class="evidence-placeholder__icon" aria-hidden="true"></span>
+                    <div>
+                      <h3>Foto penerimaan</h3>
+                      <p>Akan tersedia setelah paket tercatat berstatus Terkirim.</p>
+                    </div>
+                  </div>
+                </article>
+              </div>
+
+            </section>
+
             <section class="panel" id="route" aria-labelledby="route-title">
               <header class="panel__header">
                 <div>
@@ -175,27 +227,79 @@
                 </div>
               </header>
 
-              <p class="route-intro">Rute ilustratif berdasarkan urutan titik singgah, bukan posisi langsung.</p>
-
               <details class="route-map-disclosure" open>
-                <summary>Peta ilustratif</summary>
+                <summary>Peta Perjalanan</summary>
                 <figure class="route-map">
-                  <svg viewBox="0 0 760 330" role="img" aria-labelledby="route-map-title route-map-desc">
-                    <title id="route-map-title">Rute ilustratif paket ANT-FRZ-0002</title>
-                    <desc id="route-map-desc">Rute dari Kemayoran, melewati Hub Cempaka Mas, sedang menuju Hub Pasar Minggu, kemudian ke tujuan pengiriman.</desc>
-                    <path class="route-map__grid" d="M0 80H760M0 165H760M0 250H760M150 0V330M380 0V330M610 0V330"></path>
-                    <path class="route-map__completed" d="M90 100 C180 65 230 145 320 150 S430 220 505 160"></path>
-                    <path class="route-map__remaining" d="M505 160 C575 105 650 150 690 235"></path>
-                    <circle class="route-map__stop" cx="90" cy="100" r="12"></circle>
-                    <circle class="route-map__stop" cx="320" cy="150" r="12"></circle>
-                    <circle class="route-map__stop route-map__stop--current" cx="505" cy="160" r="13"></circle>
-                    <circle class="route-map__stop route-map__stop--remaining" cx="690" cy="235" r="12"></circle>
-                    <text x="45" y="72">Kemayoran</text>
-                    <text x="255" y="120">Hub Cempaka Mas</text>
-                    <text x="455" y="130">Hub Pasar Minggu</text>
-                    <text x="610" y="278">Tujuan pengiriman</text>
+                  <svg viewBox="0 0 760 380" role="img" aria-labelledby="route-map-title route-map-desc">
+                    <title id="route-map-title">Rute perjalanan paket ANT-FRZ-0002</title>
+                    <desc id="route-map-desc">Peta statis menunjukkan perjalanan dari Kemayoran ke Hub Cempaka Mas, sedang menuju Hub Pasar Minggu, lalu dilanjutkan ke kawasan tujuan.</desc>
+
+                    <g aria-hidden="true">
+                      <rect class="route-map__land" width="760" height="380"></rect>
+                      <path class="route-map__district" d="M15 28H370V205H15ZM390 18H742V178H390ZM18 224H420V362H18ZM440 198H744V362H440Z"></path>
+                      <path class="route-map__park" d="M28 242h118l38 42-34 60H42l-25-48Z"></path>
+                      <path class="route-map__park" d="M585 35h132l20 54-54 39-111-28Z"></path>
+                      <path class="route-map__water" d="M-20 312C115 268 163 335 278 297s164-22 254 8 166 5 248-31"></path>
+                      <path class="route-map__road route-map__road--major" d="M10 72C160 120 245 80 360 125S590 197 750 154"></path>
+                      <path class="route-map__road route-map__road--major" d="M88 8C115 104 93 190 150 246s146 55 224 121"></path>
+                      <path class="route-map__road" d="M26 170C145 145 205 205 320 194s205-48 385 32"></path>
+                      <path class="route-map__road" d="M250 4c-14 88 14 151 69 206s106 99 118 169"></path>
+                      <path class="route-map__road" d="M470 0c18 84-11 139 23 198s93 103 108 182"></path>
+                      <path class="route-map__road" d="M16 265c107-15 178 2 250 50M540 92c75 37 129 29 211 5"></path>
+                      <text class="route-map__area-label" x="30" y="50">JAKARTA PUSAT</text>
+                      <text class="route-map__area-label" x="565" y="350">JAKARTA SELATAN</text>
+                    </g>
+
+                    <path class="route-map__route-shadow" d="M88 112C165 82 220 131 294 151"></path>
+                    <path class="route-map__route-shadow" d="M294 151C370 145 433 203 525 214"></path>
+                    <path class="route-map__route-shadow" d="M525 214C592 225 640 257 688 306"></path>
+                    <path class="route-map__completed" d="M88 112C165 82 220 131 294 151"></path>
+                    <path class="route-map__active" d="M294 151C370 145 433 203 525 214"></path>
+                    <path class="route-map__remaining" d="M525 214C592 225 640 257 688 306"></path>
+
+                    <g aria-hidden="true" transform="translate(405 176)">
+                      <rect class="route-map__vehicle-body" width="34" height="19" rx="5"></rect>
+                      <path class="route-map__vehicle-body" d="M25 5h9l8 8v6H25Z"></path>
+                      <circle class="route-map__vehicle-wheel" cx="9" cy="21" r="4"></circle>
+                      <circle class="route-map__vehicle-wheel" cx="32" cy="21" r="4"></circle>
+                    </g>
+
+                    <circle class="route-map__stop" cx="88" cy="112" r="13"></circle>
+                    <text class="route-map__stop-number" x="88" y="116">1</text>
+                    <circle class="route-map__stop" cx="294" cy="151" r="13"></circle>
+                    <text class="route-map__stop-number" x="294" y="155">2</text>
+                    <circle class="route-map__stop route-map__stop--current" cx="525" cy="214" r="14"></circle>
+                    <text class="route-map__stop-number" x="525" y="218">3</text>
+                    <circle class="route-map__stop route-map__stop--remaining" cx="688" cy="306" r="13"></circle>
+                    <text class="route-map__stop-number" x="688" y="310">4</text>
+
+                    <g transform="translate(30 128)">
+                      <rect class="route-map__label-box" width="155" height="48" rx="8"></rect>
+                      <text class="route-map__label-title" x="12" y="20">Kawasan Kemayoran</text>
+                      <text class="route-map__label-meta" x="12" y="37">Pickup · selesai 09.15 WIB</text>
+                    </g>
+                    <g transform="translate(218 65)">
+                      <rect class="route-map__label-box" width="165" height="48" rx="8"></rect>
+                      <text class="route-map__label-title" x="12" y="20">Hub Cempaka Mas</text>
+                      <text class="route-map__label-meta" x="12" y="37">Transit · berangkat 13.15 WIB</text>
+                    </g>
+                    <g transform="translate(492 119)">
+                      <rect class="route-map__label-box" width="170" height="48" rx="8"></rect>
+                      <text class="route-map__label-title" x="12" y="20">Hub Pasar Minggu</text>
+                      <text class="route-map__label-meta" x="12" y="37">Titik berikutnya · sedang dituju</text>
+                    </g>
+                    <g transform="translate(570 315)">
+                      <rect class="route-map__label-box" width="160" height="45" rx="8"></rect>
+                      <text class="route-map__label-title" x="12" y="19">Kawasan tujuan</text>
+                      <text class="route-map__label-meta" x="12" y="35">Delivery point · belum tiba</text>
+                    </g>
                   </svg>
-                  <figcaption>Garis magenta menunjukkan segmen yang selesai, penanda biru menunjukkan titik yang sedang dituju, dan garis abu-abu menunjukkan perjalanan berikutnya.</figcaption>
+                  <figcaption>
+                    <span><i class="route-legend__line" aria-hidden="true"></i>Segmen selesai</span>
+                    <span><i class="route-legend__line route-legend__line--active" aria-hidden="true"></i>Sedang berjalan</span>
+                    <span><i class="route-legend__line route-legend__line--remaining" aria-hidden="true"></i>Belum dilalui</span>
+                    <span class="route-map__caption-note">Peta bersifat ilustratif berdasarkan urutan titik singgah, bukan posisi GPS langsung.</span>
+                  </figcaption>
                 </figure>
               </details>
 
@@ -344,22 +448,52 @@
     </main>
 
     <footer class="site-footer">
-      <div class="container">
+      <div class="container footer-cta">
+        <div>
+          <p class="eyebrow">Kirim bareng Anteraja</p>
+          <h2>Butuh mengirim paket lainnya?</h2>
+          <p>Temukan layanan pengiriman dan informasi terbaru melalui situs resmi Anteraja.</p>
+        </div>
+        <a class="button button--secondary" href="https://anteraja.id/id/" target="_blank" rel="noopener noreferrer">Kunjungi Anteraja</a>
+      </div>
+      <div class="container site-footer__body">
         <div class="site-footer__grid">
           <section class="site-footer__brand" aria-labelledby="footer-brand-title">
             <h2 class="visually-hidden" id="footer-brand-title">Tentang Anteraja Frozen</h2>
-            <img class="brand-logo" src="assets/images/logo-anteraja.png" alt="Anteraja">
-            <p>Pelacakan pengiriman rantai dingin dengan pemantauan suhu lingkungan aset penyimpanan atau armada.</p>
+            <a href="https://anteraja.id/id/" target="_blank" rel="noopener noreferrer" aria-label="Buka situs resmi Anteraja">
+              <img class="brand-logo" src="assets/images/logo-anteraja.png" alt="Anteraja">
+            </a>
+            <p>Pelacakan pengiriman rantai dingin dengan informasi perjalanan dan suhu lingkungan aset yang mudah dipahami.</p>
+            <p class="site-footer__note">Rute bersifat ilustratif. Suhu yang ditampilkan bukan suhu inti produk.</p>
+          </section>
+          <section aria-labelledby="footer-about-title">
+            <h2 id="footer-about-title">Anteraja</h2>
+            <ul class="footer-list">
+              <li><a href="https://blog.anteraja.id/tentang-kami/" target="_blank" rel="noopener noreferrer">Tentang Anteraja</a></li>
+              <li><a href="https://blog.anteraja.id/layanan-kami/" target="_blank" rel="noopener noreferrer">Produk &amp; layanan</a></li>
+              <li><a href="https://anteraja.id/id/" target="_blank" rel="noopener noreferrer">Lokasi layanan</a></li>
+            </ul>
+          </section>
+          <section aria-labelledby="footer-help-title">
+            <h2 id="footer-help-title">Bantuan</h2>
+            <ul class="footer-list">
+              <li><a href="#customer-care">Pusat Bantuan</a></li>
+              <li><a href="https://anteraja.id/id/" target="_blank" rel="noopener noreferrer">Syarat &amp; ketentuan</a></li>
+              <li><a href="https://anteraja.id/id/" target="_blank" rel="noopener noreferrer">Kebijakan privasi</a></li>
+            </ul>
           </section>
           <section aria-labelledby="footer-contact-title">
-            <h2 id="footer-contact-title">Customer Care</h2>
+            <h2 id="footer-contact-title">Hubungi Kami</h2>
             <ul class="footer-list">
-              <li><a href="tel:+622150663333">(021) 5066 3333</a></li>
-              <li><a href="mailto:cs@anteraja.id">cs@anteraja.id</a></li>
+              <li><a href="tel:+622150663333"><span aria-hidden="true">☎</span> (021) 5066 3333</a></li>
+              <li><a href="mailto:cs@anteraja.id"><span aria-hidden="true">✉</span> cs@anteraja.id</a></li>
+              <li><span>Setiap hari, 24 jam</span></li>
             </ul>
           </section>
         </div>
-        <p class="site-footer__legal">PT Tri Adi Bersama (Anteraja). Hak Cipta Dilindungi Undang-Undang.</p>
+        <div class="site-footer__legal">
+          <p>© 2026 PT Tri Adi Bersama (Anteraja). Hak Cipta Dilindungi Undang-Undang.</p>
+        </div>
       </div>
     </footer>
   </body>
