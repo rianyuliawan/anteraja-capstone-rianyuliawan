@@ -4,16 +4,6 @@ Implementasi ini mengonversi desain UI Anteraja Frozen menjadi kerangka web sema
 
 Elemen `script` pada `index.html` hanya berisi data terstruktur `application/ld+json` sesuai persyaratan tugas dan tidak menjalankan perilaku antarmuka.
 
-## Menjalankan halaman
-
-Dari root repository:
-
-```bash
-python3 -m http.server 8080 --directory src/prototype
-```
-
-Kemudian buka `http://127.0.0.1:8080/`.
-
 ## Halaman
 
 | Halaman | FRD yang diwakili | Isi |
