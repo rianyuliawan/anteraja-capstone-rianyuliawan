@@ -183,13 +183,3 @@ LEFT JOIN shipment_current_status cs ON cs.shipment_id = s.id
 LEFT JOIN shipment_latest_temperature lt ON lt.shipment_id = s.id
 WHERE s.awb = 'ANT-FRZ-0002';
 ```
-
-## 9. Dokumen pendukung
-
-- [`docs/DATABASE_ANALYSIS.md`](docs/DATABASE_ANALYSIS.md) menjelaskan hasil analisis dataset dan pemetaan ke database.
-- [`docs/DATABASE_DOCUMENTATION.md`](docs/DATABASE_DOCUMENTATION.md) menjelaskan entitas, relasi, constraint, index, dan alur penggunaan.
-- [`docs/PANDUAN_DATABASE_PEMULA.md`](docs/PANDUAN_DATABASE_PEMULA.md) membedah konsep serta DDL secara bertahap untuk pembaca yang sedang belajar database.
-
-## 10. Catatan pelaksanaan
-
-Struktur dan dataset sudah diperiksa secara statis: referensi antardata konsisten, assignment satu AWB tidak tumpang tindih, dan tidak ada AWB yang memiliki lebih dari satu assignment aktif. Eksekusi akhir tetap harus dilakukan pada PostgreSQL lokal untuk menghasilkan bukti database berjalan.
