@@ -39,6 +39,7 @@ MVP mencakup:
 - pencarian AWB berbasis teks;
 - ringkasan paket dan status terakhir;
 - linimasa event logistik;
+- foto dokumentasi pickup dan delivered yang aman ditampilkan;
 - peta rute ilustratif dan fallback daftar titik;
 - suhu terakhir aset aktif;
 - ringkasan suhu terakhir per segmen;
@@ -52,7 +53,7 @@ MVP tidak mencakup:
 - login, pemesanan, atau panel operasi;
 - pemindaian kamera/barcode;
 - GPS langsung, posisi kendaraan real-time, ETA, dan navigasi jalan;
-- bukti serah terima digital;
+- unggah foto melalui UI publik atau dokumentasi selain event pickup/delivered;
 - pembagian status;
 - notifikasi;
 - incident management atau dispatcher workflow;
@@ -73,7 +74,7 @@ Halaman Awal
        ├─ AWB tidak ditemukan
        └─ AWB ditemukan
             └─ Halaman Hasil Pelacakan
-                 ├─ Ringkasan & linimasa (FR-02)
+                 ├─ Ringkasan, linimasa & dokumentasi (FR-02)
                  ├─ Peta / daftar titik (FR-03)
                  ├─ Suhu & riwayat (FR-04)
                  └─ Perbarui suhu (FR-05)
@@ -88,11 +89,12 @@ FR-06 berlaku sebagai aturan state sistem lintas komponen.
 3. Ringkasan status paket.
 4. Suhu terakhir dan aksi pembaruan.
 5. Linimasa perjalanan.
-6. Peta ilustratif / daftar titik singgah.
-7. Ringkasan suhu per segmen.
-8. Riwayat suhu bertahap.
-9. Bantuan Customer Care.
-10. Footer global.
+6. Dokumentasi foto pickup/delivery.
+7. Peta ilustratif / daftar titik singgah.
+8. Ringkasan suhu per segmen.
+9. Riwayat suhu bertahap.
+10. Bantuan Customer Care.
+11. Footer global.
 
 ---
 
@@ -106,6 +108,7 @@ FR-06 berlaku sebagai aturan state sistem lintas komponen.
 - `pickup_area` dan `pickup_point`
 - `delivery_area` dan `delivery_point`
 - daftar shipment event
+- media event pickup/delivery yang berstatus `APPROVED` atau `REDACTED`
 - daftar route stop dan urutannya
 - `thermal_asset_type` dan `thermal_asset_id`
 - `temperature_c`
@@ -122,7 +125,7 @@ Kecuali kontrak API dan FRD diperbarui, UI tidak boleh menampilkan:
 - nomor polisi kendaraan;
 - jenis, foto, berat, atau isi paket;
 - catatan operasional internal;
-- bukti serah terima;
+- foto operasional selain pickup/delivery atau media yang belum lolos pemeriksaan privasi;
 - posisi GPS, nama jalan aktif, dan ETA;
 - tindakan dispatcher atau penanganan insiden.
 
@@ -234,8 +237,9 @@ Status tidak boleh disampaikan dengan warna saja. Selalu gunakan kombinasi ikon,
 
 - Tinggi desktop 72–80 px; mobile 64 px.
 - Logo resmi yang telah disetujui di kiri, tanpa digambar ulang atau didistorsi.
-- Tautan `Pusat Bantuan` di kanan.
-- Tidak ada navigasi yang tidak berfungsi.
+- Pada desktop, tampilkan navigasi fitur `Lacak Paket/Beranda`, `Ringkasan`, `Linimasa`, `Dokumentasi`, `Rute`, dan `Suhu`, diikuti tautan `Pusat Bantuan`.
+- Pada mobile dan tablet, navigasi diringkas menjadi tombol hamburger berbasis disclosure yang dapat dipakai dengan keyboard.
+- Semua tautan fitur harus menuju halaman atau section yang benar-benar tersedia; header boleh sticky agar perpindahan antarbagian tetap mudah.
 
 ### Search AWB
 
@@ -257,9 +261,9 @@ Status tidak boleh disampaikan dengan warna saja. Selalu gunakan kombinasi ikon,
 
 ### Footer
 
-- Logo resmi.
-- Deskripsi singkat tanpa klaim berlebihan.
-- Tautan hanya yang benar-benar tersedia.
+- Gunakan pola pre-footer CTA magenta, logo resmi, deskripsi singkat, kelompok informasi perusahaan/bantuan, serta Customer Care agar terasa selaras dengan situs Anteraja.
+- Navigasi fitur tetap ditempatkan pada header dan tidak diulang di bagian bawah. Tautan footer diarahkan ke informasi korporat, bantuan, serta kanal resmi.
+- Nomor telepon dan email harus berasal dari kanal resmi terverifikasi.
 - Tahun hak cipta harus dinamis, bukan hard-coded.
 
 ---
@@ -321,6 +325,15 @@ Status utama:
 - Setiap event menampilkan status, lokasi umum, serta tanggal dan waktu.
 - Multi-hub diperbolehkan: `AT_HUB → IN_TRANSIT → AT_HUB`.
 - Jangan menyisipkan nama petugas, nomor kendaraan, tindakan internal, atau detail alamat jika tidak ada pada respons API.
+
+### Dokumentasi foto
+
+- Gunakan dua slot: `Foto pickup` dan `Foto penerimaan`.
+- Setiap foto harus melekat pada event dan waktu yang sesuai, bukan pada ringkasan shipment secara langsung.
+- Paket aktif boleh menampilkan pickup yang tersedia dan keadaan `Menunggu` untuk delivery.
+- Foto delivery baru boleh muncul setelah event `DELIVERED` sah.
+- Tampilkan hanya media `APPROVED`/`REDACTED` melalui URL sementara. Jangan mengekspos storage key, URL permanen, EXIF/GPS, identitas perangkat, wajah, atau label alamat.
+- Bila media gagal dimuat, pertahankan event dan tampilkan fallback informatif; jangan menghilangkan linimasa.
 
 ### Delivered
 
@@ -524,6 +537,7 @@ AppShell
 │  ├─ ActiveTemperatureCard
 │  │  └─ TemperatureRefreshButton
 │  ├─ ShipmentTimeline
+│  ├─ ShipmentEventMedia
 │  ├─ RouteSection
 │  │  ├─ RouteViewToggle
 │  │  ├─ IllustrativeMap
@@ -544,7 +558,7 @@ Desain dinyatakan siap dikembangkan jika:
 
 - [ ] seluruh contoh suhu sesuai profil aset;
 - [ ] tidak ada klaim GPS/live tracking/ETA;
-- [ ] tidak ada data pribadi atau data yang tidak tersedia;
+- [ ] tidak ada data pribadi; media publik telah lolos pemeriksaan privasi;
 - [ ] FR-02 sampai FR-05 tersusun dalam satu halaman hasil;
 - [ ] riwayat tertutup secara default dan memakai pagination;
 - [ ] refresh gagal mempertahankan suhu serta waktu observasi terakhir;
@@ -563,7 +577,7 @@ Desain dinyatakan siap dikembangkan jika:
 Mockup saat ini tetap dapat digunakan sebagai referensi visual untuk warna, komposisi, kartu, dan hierarki. Sebelum menjadi desain final, lakukan perubahan berikut:
 
 1. ganti seluruh contoh suhu dan status yang tidak sesuai;
-2. hapus GPS, ETA, bukti serah terima, berbagi status, dan data pribadi;
+2. hapus GPS, ETA, berbagi status, dan data pribadi; foto pickup/delivery hanya dipakai bila terkait event dan lolos pemeriksaan privasi;
 3. ubah peta menjadi ilustrasi titik singgah;
 4. satukan FR-02 sampai FR-05 dalam satu halaman hasil;
 5. sederhanakan riwayat menjadi progressive disclosure;

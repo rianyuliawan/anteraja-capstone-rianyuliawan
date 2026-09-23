@@ -1,5 +1,5 @@
 -- Anteraja Frozen - transform raw CSV seed into normalized production tables
--- Prerequisite: run anteraja_frozen_schema.sql, then import all eight CSV files
+-- Prerequisite: run anteraja_frozen_schema.sql, then import all nine CSV files
 -- into the matching tables in schema seed.
 
 BEGIN;
@@ -116,6 +116,41 @@ ON CONFLICT (seed_event_id) DO UPDATE SET
     source = EXCLUDED.source,
     source_event_key = EXCLUDED.source_event_key;
 
+INSERT INTO shipment_event_media (
+    seed_media_id, shipment_event_id, media_type, storage_disk, storage_key,
+    mime_type, file_size_bytes, width_px, height_px, captured_at, alt_text,
+    privacy_status, checksum_sha256
+)
+SELECT
+    m.media_id,
+    e.id,
+    m.media_type,
+    m.storage_disk,
+    m.storage_key,
+    m.mime_type,
+    m.file_size_bytes,
+    m.width_px,
+    m.height_px,
+    m.captured_at,
+    m.alt_text,
+    m.privacy_status,
+    m.checksum_sha256
+FROM seed.shipment_event_media m
+JOIN shipment_events e ON e.seed_event_id = m.event_id
+ON CONFLICT (seed_media_id) DO UPDATE SET
+    shipment_event_id = EXCLUDED.shipment_event_id,
+    media_type = EXCLUDED.media_type,
+    storage_disk = EXCLUDED.storage_disk,
+    storage_key = EXCLUDED.storage_key,
+    mime_type = EXCLUDED.mime_type,
+    file_size_bytes = EXCLUDED.file_size_bytes,
+    width_px = EXCLUDED.width_px,
+    height_px = EXCLUDED.height_px,
+    captured_at = EXCLUDED.captured_at,
+    alt_text = EXCLUDED.alt_text,
+    privacy_status = EXCLUDED.privacy_status,
+    checksum_sha256 = EXCLUDED.checksum_sha256;
+
 INSERT INTO shipment_asset_assignments (
     seed_assignment_id, shipment_id, thermal_asset_id,
     segment, started_at, ended_at
@@ -199,6 +234,17 @@ BEGIN
     IF mismatch_count > 0 THEN
         RAISE EXCEPTION '% shipment routes do not match route_hub_count', mismatch_count;
     END IF;
+
+    SELECT count(*)
+      INTO mismatch_count
+      FROM seed.shipment_event_media raw
+      LEFT JOIN shipment_event_media media
+        ON media.seed_media_id = raw.media_id
+     WHERE media.id IS NULL;
+
+    IF mismatch_count > 0 THEN
+        RAISE EXCEPTION '% shipment event media rows were not transformed', mismatch_count;
+    END IF;
 END;
 $$;
 
@@ -206,5 +252,6 @@ COMMIT;
 
 -- Expected normalized row counts for the supplied seed:
 -- shipments 70; hubs 10; route_stops 266; shipment_events 274;
+-- shipment_event_media 3;
 -- thermal_assets 86; shipment_asset_assignments 260;
 -- temperature_profiles 3; temperature_readings 400.

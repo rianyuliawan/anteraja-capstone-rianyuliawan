@@ -199,6 +199,76 @@ CREATE INDEX shipment_events_hub_idx
     ON shipment_events (hub_id, occurred_at DESC)
     WHERE hub_id IS NOT NULL;
 
+-- Image files stay in private Laravel/object storage. This table stores only
+-- the storage key and metadata needed to authorize, render, and audit them.
+CREATE TABLE shipment_event_media (
+    id                      bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    seed_media_id           varchar(30),
+    shipment_event_id       bigint NOT NULL,
+    media_type              varchar(30) NOT NULL,
+    storage_disk            varchar(30) NOT NULL DEFAULT 'private',
+    storage_key             varchar(512) NOT NULL,
+    mime_type               varchar(50) NOT NULL,
+    file_size_bytes         integer NOT NULL,
+    width_px                integer NOT NULL,
+    height_px               integer NOT NULL,
+    captured_at             timestamptz NOT NULL,
+    alt_text                varchar(255) NOT NULL,
+    privacy_status          varchar(20) NOT NULL DEFAULT 'PENDING',
+    checksum_sha256         varchar(64) NOT NULL,
+    created_at              timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT shipment_event_media_event_fk
+        FOREIGN KEY (shipment_event_id)
+        REFERENCES shipment_events(id) ON DELETE CASCADE,
+    CONSTRAINT shipment_event_media_seed_id_uq UNIQUE (seed_media_id),
+    CONSTRAINT shipment_event_media_storage_key_uq UNIQUE (storage_disk, storage_key),
+    CONSTRAINT shipment_event_media_event_type_uq UNIQUE (shipment_event_id, media_type),
+    CONSTRAINT shipment_event_media_type_chk
+        CHECK (media_type IN ('PICKUP_PHOTO', 'DELIVERY_PHOTO')),
+    CONSTRAINT shipment_event_media_mime_chk
+        CHECK (mime_type IN ('image/jpeg', 'image/png', 'image/webp')),
+    CONSTRAINT shipment_event_media_size_chk
+        CHECK (file_size_bytes BETWEEN 1 AND 10485760),
+    CONSTRAINT shipment_event_media_dimensions_chk
+        CHECK (width_px BETWEEN 1 AND 10000 AND height_px BETWEEN 1 AND 10000),
+    CONSTRAINT shipment_event_media_privacy_chk
+        CHECK (privacy_status IN ('PENDING', 'APPROVED', 'REDACTED', 'REJECTED')),
+    CONSTRAINT shipment_event_media_checksum_chk
+        CHECK (checksum_sha256 ~ '^[0-9a-f]{64}$')
+);
+
+CREATE INDEX shipment_event_media_public_idx
+    ON shipment_event_media (shipment_event_id, captured_at DESC)
+    WHERE privacy_status IN ('APPROVED', 'REDACTED');
+
+CREATE OR REPLACE FUNCTION validate_shipment_event_media()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    linked_event_code varchar(30);
+BEGIN
+    SELECT event_code
+    INTO linked_event_code
+    FROM shipment_events
+    WHERE id = NEW.shipment_event_id;
+
+    IF (NEW.media_type = 'PICKUP_PHOTO' AND linked_event_code <> 'PICKED_UP')
+       OR (NEW.media_type = 'DELIVERY_PHOTO' AND linked_event_code <> 'DELIVERED') THEN
+        RAISE EXCEPTION 'media_type % does not match shipment event %',
+            NEW.media_type, linked_event_code;
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER shipment_event_media_validate_event
+BEFORE INSERT OR UPDATE OF shipment_event_id, media_type
+ON shipment_event_media
+FOR EACH ROW EXECUTE FUNCTION validate_shipment_event_media();
+
 -- ---------------------------------------------------------------------------
 -- Thermal assets and temperature readings
 -- ---------------------------------------------------------------------------
@@ -325,7 +395,7 @@ CREATE INDEX temperature_readings_anomaly_idx
 
 -- ---------------------------------------------------------------------------
 -- Raw seed tables
--- Import the eight CSV files here first, then run the separate seed transform.
+-- Import the nine CSV files here first, then run the separate seed transform.
 -- ---------------------------------------------------------------------------
 
 CREATE TABLE seed.shipments (
@@ -393,6 +463,23 @@ CREATE TABLE seed.shipment_events (
     loaded_at               timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE seed.shipment_event_media (
+    media_id                varchar(30) PRIMARY KEY,
+    event_id                varchar(30) NOT NULL,
+    media_type              varchar(30) NOT NULL,
+    storage_disk            varchar(30) NOT NULL,
+    storage_key             varchar(512) NOT NULL,
+    mime_type               varchar(50) NOT NULL,
+    file_size_bytes         integer NOT NULL,
+    width_px                integer NOT NULL,
+    height_px               integer NOT NULL,
+    captured_at             timestamptz NOT NULL,
+    alt_text                varchar(255) NOT NULL,
+    privacy_status          varchar(20) NOT NULL,
+    checksum_sha256         varchar(64) NOT NULL,
+    loaded_at               timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE seed.temperature_profiles (
     asset_type              varchar(30) PRIMARY KEY,
     target_c                numeric(5,2) NOT NULL,
@@ -447,6 +534,9 @@ COMMENT ON COLUMN route_stops.seed_route_stop_id IS
 COMMENT ON COLUMN shipment_events.seed_event_id IS
     'Optional event_id from the seed dataset, for example EV-00001.';
 
+COMMENT ON COLUMN shipment_event_media.storage_key IS
+    'Private storage key used by Laravel to issue a short-lived signed URL; never serialize this value directly to public clients.';
+
 COMMENT ON COLUMN shipment_asset_assignments.seed_assignment_id IS
     'Optional assignment_id from the seed dataset, for example AS-00001.';
 
@@ -467,6 +557,25 @@ SELECT DISTINCT ON (e.shipment_id)
     e.id AS shipment_event_id
 FROM shipment_events e
 ORDER BY e.shipment_id, e.occurred_at DESC, e.id DESC;
+
+CREATE VIEW shipment_public_event_media AS
+SELECT
+    e.shipment_id,
+    m.shipment_event_id,
+    e.event_code,
+    m.id AS media_id,
+    m.media_type,
+    m.storage_disk,
+    m.storage_key,
+    m.mime_type,
+    m.width_px,
+    m.height_px,
+    m.captured_at,
+    m.alt_text,
+    m.privacy_status
+FROM shipment_event_media m
+JOIN shipment_events e ON e.id = m.shipment_event_id
+WHERE m.privacy_status IN ('APPROVED', 'REDACTED');
 
 CREATE VIEW shipment_temperature_history AS
 SELECT
@@ -511,5 +620,8 @@ COMMENT ON VIEW shipment_temperature_history IS
 
 COMMENT ON VIEW shipment_latest_temperature IS
     'Latest valid asset reading per shipment; delivered shipments receive no new readings after assignment closure.';
+
+COMMENT ON VIEW shipment_public_event_media IS
+    'Privacy-cleared pickup and delivery media. Laravel converts storage keys to short-lived signed URLs before responding.';
 
 COMMIT;

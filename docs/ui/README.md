@@ -8,6 +8,7 @@ Rancangan UI membantu pengguna untuk:
 
 - mencari paket menggunakan nomor AWB;
 - melihat status dan linimasa perjalanan paket;
+- melihat dokumentasi foto pada event pickup dan delivery bila aman ditampilkan;
 - melihat urutan pickup point, hub, dan delivery point;
 - melihat suhu lingkungan aset termal yang membawa atau menyimpan paket;
 - meminta pembaruan suhu terbaru;
@@ -36,7 +37,7 @@ Halaman Awal
     ├── Tidak ditemukan
     └── AWB ditemukan
         └── Halaman Hasil Pelacakan
-            ├── FR-02 — Ringkasan dan linimasa
+            ├── FR-02 — Ringkasan, linimasa, dan dokumentasi
             ├── FR-03 — Peta ilustratif / daftar titik
             ├── FR-04 — Suhu dan riwayat
             └── FR-05 — Pembaruan suhu

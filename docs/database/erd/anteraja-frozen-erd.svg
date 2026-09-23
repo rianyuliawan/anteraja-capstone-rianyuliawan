@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1320" viewBox="0 0 1600 1320" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="2050" height="1320" viewBox="0 0 2050 1320" role="img" aria-labelledby="title desc">
   <title id="title">ERD Anteraja Frozen Cold Chain Tracking</title>
-  <desc id="desc">Delapan tabel produksi PostgreSQL beserta primary key, foreign key, dan relasinya.</desc>
+  <desc id="desc">Sembilan tabel produksi PostgreSQL beserta primary key, foreign key, dan relasinya.</desc>
   <defs>
     <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
       <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#172033" flood-opacity="0.10"/>
@@ -26,7 +26,7 @@
     </style>
   </defs>
 
-  <rect class="page" width="1600" height="1320"/>
+  <rect class="page" width="2050" height="1320"/>
   <text class="title" x="50" y="52">ERD Anteraja Frozen — Cold Chain Tracking</text>
   <text class="subtitle" x="50" y="82">PostgreSQL • tabel produksi ternormalisasi • suhu melekat pada aset termal</text>
 
@@ -54,6 +54,9 @@
 
   <path class="edge" d="M 900 1115 C 970 1115, 960 1010, 1020 1010"/>
   <text class="edge-label" x="940" y="1080">1 : N</text>
+
+  <path class="edge" d="M 900 700 C 1160 700, 1340 360, 1580 360"/>
+  <text class="edge-label" x="1240" y="535">1 : 0..N</text>
 
   <!-- SHIPMENTS -->
   <g transform="translate(50 130)">
@@ -177,6 +180,26 @@
     <text class="field" x="22" y="353">temperature_c</text><text class="type" x="405" y="353">numeric(5,2)</text>
     <text class="field" x="22" y="389">temperature_status</text><text class="type" x="405" y="389">varchar(20)?</text>
     <text class="key" x="22" y="429">UK</text><text class="field" x="62" y="429">source + message_id</text>
+  </g>
+
+  <!-- SHIPMENT_EVENT_MEDIA -->
+  <g transform="translate(1580 140)">
+    <rect class="card" width="420" height="500" rx="18"/>
+    <path class="header" d="M18 0 H402 Q420 0 420 18 V58 H0 V18 Q0 0 18 0Z"/>
+    <text class="entity" x="22" y="37">SHIPMENT_EVENT_MEDIA</text>
+    <text class="key" x="22" y="88">PK</text><text class="field" x="62" y="88">id</text><text class="type" x="315" y="88">bigint</text>
+    <line class="rule" x1="20" y1="105" x2="400" y2="105"/>
+    <text class="key" x="22" y="137">FK</text><text class="field" x="62" y="137">shipment_event_id</text><text class="type" x="315" y="137">bigint</text>
+    <text class="field" x="22" y="173">media_type</text><text class="type" x="315" y="173">varchar(30)</text>
+    <text class="field" x="22" y="209">storage_disk / storage_key</text><text class="type" x="315" y="209">varchar</text>
+    <text class="field" x="22" y="245">mime_type</text><text class="type" x="315" y="245">varchar(50)</text>
+    <text class="field" x="22" y="281">file_size_bytes</text><text class="type" x="315" y="281">integer</text>
+    <text class="field" x="22" y="317">width_px / height_px</text><text class="type" x="315" y="317">integer</text>
+    <text class="field" x="22" y="353">captured_at</text><text class="type" x="315" y="353">timestamptz</text>
+    <text class="field" x="22" y="389">privacy_status</text><text class="type" x="315" y="389">varchar(20)</text>
+    <text class="field" x="22" y="425">alt_text / checksum_sha256</text><text class="type" x="315" y="425">varchar</text>
+    <line class="rule" x1="20" y1="445" x2="400" y2="445"/>
+    <text class="key" x="22" y="477">UK</text><text class="field" x="62" y="477">event + media_type; storage key</text>
   </g>
 
   <g transform="translate(1020 1230)">

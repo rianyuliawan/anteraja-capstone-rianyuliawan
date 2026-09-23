@@ -1,0 +1,4 @@
+media_id,event_id,media_type,storage_disk,storage_key,mime_type,file_size_bytes,width_px,height_px,captured_at,alt_text,privacy_status,checksum_sha256
+MED-00001,EV-00002,PICKUP_PHOTO,private,shipment-events/ANT-FRZ-0002/pickup.webp,image/webp,31502,1280,720,2026-09-18T14:55:00.000Z,Foto paket yang telah diterima di titik pickup kawasan Kemayoran,APPROVED,fbebf30480f076bf0cda0026ac77c4ea1eac514ca86198c7213b1293bde6a4d3
+MED-00002,EV-00033,PICKUP_PHOTO,private,shipment-events/ANT-FRZ-0012/pickup.webp,image/webp,95934,1280,720,2026-09-18T12:33:00.000Z,Foto paket yang telah diterima petugas di titik pickup,APPROVED,cc1111b783c85ddbbc7bacffcebc545c346f336c0f474284074d0fa731e49544
+MED-00003,EV-00037,DELIVERY_PHOTO,private,shipment-events/ANT-FRZ-0012/delivery.webp,image/webp,78408,1280,720,2026-09-18T15:52:00.000Z,Foto paket yang telah diletakkan di titik penerimaan,APPROVED,6ef939c6becbd0b9c4a6159ddedf72ecea7cebfc7b3c25d717582763f14d57f7

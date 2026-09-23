@@ -14,7 +14,7 @@ Repositori dokumen ini berisi rancangan MVP pelacakan paket Anteraja Frozen. Pen
 | [IA — arsitektur informasi dan aplikasi](ia.md) | Susunan halaman, React/Leaflet, Laravel, PostgreSQL, Node-RED, serta deployment. | 4 |
 | [DB — model data dan ERD](db.md) | Entitas, relasi, aturan integritas, dan cara menghubungkan AWB dengan pembacaan suhu. | 5 |
 | [Desain UI](ui/README.md) | Dokumentasi dan hasil desain antarmuka FR-01 sampai FR-05. | 6 |
-| [Sample data database](database/sample-data/) | Delapan CSV yang saling berelasi untuk seed PostgreSQL. | 7 |
+| [Sample data database](database/sample-data/) | Sembilan CSV yang saling berelasi untuk seed PostgreSQL. | 7 |
 
 `IA` berarti *information architecture*, bukan dokumen AI. Dokumen pada tabel di atas adalah acuan bila ada perbedaan dengan berkas lain.
 
@@ -23,8 +23,9 @@ Repositori dokumen ini berisi rancangan MVP pelacakan paket Anteraja Frozen. Pen
 1. Pengguna mencari satu AWB tanpa login.
 2. Aplikasi menampilkan status dan kejadian yang memang tercatat. Tidak setiap paket harus melewati semua tahap atau semua hub.
 3. Peta Leaflet menampilkan titik pickup, hub, dan tujuan. Segmen yang sudah dilalui berwarna pink; sisanya abu-abu. Garis ini menggambarkan urutan titik singgah, **bukan posisi GPS langsung atau jalur jalan sebenarnya**.
-4. Aplikasi menampilkan pembacaan suhu terakhir dan riwayatnya. Suhu melekat pada aset termal, misalnya mobil boks atau freezer hub, bukan pada AWB secara terpisah. Dua paket pada aset yang sama dan pada waktu yang sama dapat memakai satu pembacaan suhu yang sama.
-5. Node-RED dirancang menyediakan pembacaan untuk aset aktif tiap ±30 menit atau saat pengguna menekan **Refresh**. Refresh suhu tidak mengubah status maupun posisi paket.
+4. Event pickup dan delivered dapat memiliki masing-masing satu foto dokumentasi yang telah lolos pemeriksaan privasi. File berada di storage privat, bukan di database.
+5. Aplikasi menampilkan pembacaan suhu terakhir dan riwayatnya. Suhu melekat pada aset termal, misalnya mobil boks atau freezer hub, bukan pada AWB secara terpisah. Dua paket pada aset yang sama dan pada waktu yang sama dapat memakai satu pembacaan suhu yang sama.
+6. Node-RED dirancang menyediakan pembacaan untuk aset aktif tiap ±30 menit atau saat pengguna menekan **Refresh**. Refresh suhu tidak mengubah status maupun posisi paket.
 
 Suhu yang dimaksud adalah **suhu lingkungan aset**, bukan suhu inti produk. [Publikasi Anteraja Frozen](https://blog.anteraja.id/anteraja-frozen/) menyebut freezer di titik operasional pada −5 hingga −2 °C. Rentang −8 hingga −2 °C untuk cooler bag dan mobil boks dalam dataset adalah parameter rancangan, bukan klaim spesifikasi resmi.
 
@@ -38,4 +39,4 @@ Data pada folder ini adalah contoh untuk merancang dan menguji aplikasi, bukan c
 
 ## Batas MVP
 
-Termasuk: pencarian AWB, ringkasan dan linimasa, peta rute, suhu dan riwayat, Refresh suhu, sumber suhu Node-RED, serta tampilan responsif. Tidak termasuk: pembuatan pesanan, akun operasi/kurir, pemindaian barcode, sensor fisik, GPS langsung, notifikasi, pembayaran, dan integrasi dengan sistem resmi Anteraja.
+Termasuk: pencarian AWB, ringkasan dan linimasa, dokumentasi foto pickup/delivery, peta rute, suhu dan riwayat, Refresh suhu, sumber suhu Node-RED, serta tampilan responsif. Tidak termasuk: pembuatan pesanan, akun operasi/kurir, unggah foto dari UI publik, pemindaian barcode, sensor fisik, GPS langsung, notifikasi, pembayaran, dan integrasi dengan sistem resmi Anteraja.

@@ -21,6 +21,10 @@ docs/
         ├── hubs.csv
         ├── route_stops.csv
         ├── shipment_events.csv
+        ├── shipment_event_media.csv
+        ├── media/
+        │   ├── README.md
+        │   └── shipment-events/   # 3 foto WebP sesuai storage_key CSV
         ├── temperature_profiles.csv
         ├── thermal_assets.csv
         ├── shipment_asset_assignments.csv
@@ -32,7 +36,7 @@ docs/
 | Kebutuhan | Data yang diperlukan | Tabel pendukung |
 |---|---|---|
 | FR-01 — mencari paket berdasarkan AWB | Nomor AWB unik dan informasi asal/tujuan | `shipments` |
-| FR-02 — status dan linimasa perjalanan | Tahap, jenis kejadian, waktu kejadian, hub, dan titik yang sudah dicapai | `shipment_events`, `hubs`, `route_stops` |
+| FR-02 — status, linimasa, dan dokumentasi | Tahap, jenis kejadian, waktu kejadian, hub, titik yang dicapai, serta metadata foto pickup/delivery | `shipment_events`, `shipment_event_media`, `hubs`, `route_stops` |
 | FR-03 — peta dan urutan titik singgah | Urutan pickup, satu atau beberapa hub, tujuan, serta koordinat penanda | `route_stops`, `hubs` |
 | FR-04 — suhu dan riwayat telemetri | Identitas aset, profil ambang, nilai suhu, status, dan waktu observasi | `thermal_assets`, `temperature_profiles`, `temperature_readings` |
 | FR-05 — pembaruan suhu | Aset aktif paket, `request_id`, jenis pemicu, dan pembacaan terbaru | `shipment_asset_assignments`, `temperature_readings` |
@@ -48,6 +52,7 @@ Relasi utama:
 
 - satu `shipment` mempunyai banyak `route_stops`;
 - satu `shipment` mempunyai banyak `shipment_events`;
+- satu `shipment_event` dapat memiliki maksimal satu media untuk jenis yang sesuai;
 - satu `hub` dapat dipakai oleh banyak route stop dan event;
 - satu `temperature_profile` digunakan banyak `thermal_assets` sejenis;
 - hubungan paket dengan aset bersifat banyak-ke-banyak dan diselesaikan oleh `shipment_asset_assignments`;
@@ -62,12 +67,13 @@ Relasi utama:
 | `hubs` | Master titik hub beserta kode, nama, area, dan koordinat penanda peta. |
 | `route_stops` | Rencana urutan titik yang dilalui satu AWB. Kombinasi `shipment_id` dan `stop_order` harus unik. |
 | `shipment_events` | Catatan kejadian yang benar-benar terjadi, misalnya pickup, tiba hub, keluar hub, transit, sedang diantar, dan delivered. |
+| `shipment_event_media` | Metadata foto pickup/delivery. File gambar tidak disimpan di PostgreSQL; tabel hanya menyimpan storage key privat, MIME, ukuran, dimensi, waktu, status privasi, alt text, dan checksum. |
 | `temperature_profiles` | Target serta batas normal/peringatan suhu untuk setiap jenis aset. |
 | `thermal_assets` | Identitas cooler bag, freezer hub, dan mobil boks yang menghasilkan data suhu. |
 | `shipment_asset_assignments` | Interval waktu sebuah AWB berada pada aset tertentu. Satu AWB hanya boleh memiliki satu assignment aktif pada satu waktu. |
 | `temperature_readings` | Pembacaan suhu per aset, waktu observasi, sumber, jenis pemicu, dan status termal. |
 
-Schema `seed` juga berisi delapan tabel sementara dengan bentuk yang mendekati CSV. Aplikasi tidak membaca schema ini. Data dipindahkan ke tabel produksi oleh `anteraja_frozen_seed_transform.sql` setelah seluruh CSV selesai diimpor.
+Schema `seed` juga berisi sembilan tabel sementara dengan bentuk yang mendekati CSV. Aplikasi tidak membaca schema ini. Data dipindahkan ke tabel produksi oleh `anteraja_frozen_seed_transform.sql` setelah seluruh CSV selesai diimpor.
 
 ## 5. Normalisasi
 
@@ -78,6 +84,7 @@ Rancangan menerapkan prinsip normalisasi sampai bentuk yang sesuai untuk kebutuh
 3. Nama dan tipe aset tidak disalin ke setiap pembacaan suhu; reading cukup menyimpan foreign key `thermal_asset_id`.
 4. Hubungan banyak-ke-banyak shipment–aset dipisahkan ke tabel penghubung karena memiliki atribut waktu mulai dan selesai.
 5. Status terbaru diturunkan dari `shipment_events`, sehingga tidak ada dua sumber status yang dapat saling bertentangan.
+6. Metadata foto dipisahkan dari event agar event tetap atomik dan storage file dapat dikelola Laravel tanpa menyimpan binary besar di PostgreSQL.
 
 ## 6. Integritas dan optimasi
 
@@ -89,12 +96,13 @@ DDL menyediakan:
 - exclusion constraint PostgreSQL agar periode assignment satu AWB tidak tumpang tindih;
 - unique partial index agar satu AWB hanya mempunyai satu assignment aktif;
 - index event terbaru, reading terbaru, assignment aktif, dan pembacaan anomali;
+- unique constraint satu foto per jenis per event, index media publik, checksum SHA-256, batas 10 MB, MIME/dimensi, serta trigger pencocokan jenis foto dengan event pickup/delivered;
 - deduplikasi pesan suhu melalui kombinasi `source + message_id`;
-- view `shipment_current_status`, `shipment_temperature_history`, dan `shipment_latest_temperature` untuk kebutuhan API Laravel.
+- view `shipment_current_status`, `shipment_public_event_media`, `shipment_temperature_history`, dan `shipment_latest_temperature` untuk kebutuhan API Laravel.
 
 ## 7. Sample data
 
-Sample data terdiri dari delapan CSV yang saling berelasi:
+Sample data terdiri dari sembilan CSV yang saling berelasi:
 
 | File | Jumlah data | Tujuan |
 |---|---:|---|
@@ -102,12 +110,23 @@ Sample data terdiri dari delapan CSV yang saling berelasi:
 | `hubs.csv` | 10 | Master hub |
 | `route_stops.csv` | 266 | Urutan pickup–hub–delivery |
 | `shipment_events.csv` | 274 | Riwayat kejadian pengiriman |
+| `shipment_event_media.csv` | 3 | Metadata contoh foto pickup/delivery; storage key tidak menunjuk file publik |
 | `temperature_profiles.csv` | 3 | Profil suhu per jenis aset |
 | `thermal_assets.csv` | 86 | Master aset termal |
 | `shipment_asset_assignments.csv` | 260 | Histori perpindahan paket antar-aset |
 | `temperature_readings_seed.csv` | 400 | Pembacaan suhu awal |
 
-Total sample data adalah **1.369 baris**. Data ini digunakan untuk perancangan dan pengujian, bukan data pengiriman operasional Anteraja.
+Total sample data adalah **1.372 baris**. Data ini digunakan untuk perancangan dan pengujian, bukan data pengiriman operasional Anteraja.
+
+### Alur penyimpanan foto
+
+1. Laravel menerima file dari proses internal yang berwenang, bukan dari halaman tracking publik.
+2. Backend memvalidasi MIME, ukuran maksimal 10 MB, dimensi, serta event yang dituju.
+3. EXIF/GPS dihapus; wajah dan label alamat disamarkan bila diperlukan.
+4. File disimpan pada disk privat Laravel atau object storage. PostgreSQL hanya menerima `storage_disk`, `storage_key`, metadata, status privasi, dan checksum.
+5. API tracking hanya mengembalikan foto berstatus `APPROVED` atau `REDACTED` melalui URL bertanda tangan yang berumur pendek. `storage_key` asli tidak dikirim ke browser.
+
+Pemisahan ini menghindari penyimpanan binary besar di PostgreSQL, mempermudah penggunaan CDN/object storage, dan menjaga kontrol akses tetap berada di backend.
 
 ## 8. Cara membuat database PostgreSQL
 
@@ -140,8 +159,9 @@ Impor melalui fitur **Import Data** pada DBeaver dengan urutan:
 4. `shipments.csv` → `seed.shipments`
 5. `route_stops.csv` → `seed.route_stops`
 6. `shipment_events.csv` → `seed.shipment_events`
-7. `shipment_asset_assignments.csv` → `seed.shipment_asset_assignments`
-8. `temperature_readings_seed.csv` → `seed.temperature_readings`
+7. `shipment_event_media.csv` → `seed.shipment_event_media`
+8. `shipment_asset_assignments.csv` → `seed.shipment_asset_assignments`
+9. `temperature_readings_seed.csv` → `seed.temperature_readings`
 
 Saat mengimpor file terakhir, petakan kolom CSV `trigger` ke kolom tabel `trigger_type`.
 
@@ -161,6 +181,7 @@ SELECT count(*) FROM shipments;                    -- 70
 SELECT count(*) FROM hubs;                         -- 10
 SELECT count(*) FROM route_stops;                  -- 266
 SELECT count(*) FROM shipment_events;              -- 274
+SELECT count(*) FROM shipment_event_media;         -- 3
 SELECT count(*) FROM temperature_profiles;         -- 3
 SELECT count(*) FROM thermal_assets;                -- 86
 SELECT count(*) FROM shipment_asset_assignments;    -- 260
