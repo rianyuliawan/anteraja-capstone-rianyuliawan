@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Prototype pelacakan paket dan pemantauan suhu lingkungan aset Anteraja Frozen.">
+    <meta name="description" content="Pelacakan paket dan pemantauan suhu lingkungan aset Anteraja Frozen.">
     <title>Lacak Paket | Anteraja Frozen</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,20 +17,37 @@
         "applicationCategory": "BusinessApplication",
         "operatingSystem": "Web",
         "inLanguage": "id-ID",
-        "description": "Prototype pelacakan paket dan pemantauan suhu lingkungan aset termal."
+        "description": "Pelacakan paket dan pemantauan suhu lingkungan aset termal."
       }
     </script>
   </head>
   <body>
     <a class="skip-link" href="#main-content">Lewati ke konten utama</a>
-    <p class="prototype-note">Prototype perancangan — bukan layanan operasional Anteraja</p>
 
     <header class="site-header">
       <div class="container site-header__inner">
         <a href="index.html" aria-label="Anteraja Frozen — halaman pencarian">
           <img class="brand-logo" src="assets/images/logo-anteraja.png" alt="Anteraja">
         </a>
-        <a class="help-link" href="#customer-care">Pusat Bantuan</a>
+        <nav class="primary-nav desktop-nav" aria-label="Navigasi utama">
+          <a href="index.html" aria-current="page">Beranda</a>
+          <a href="tracking.html#shipment-summary-title">Ringkasan</a>
+          <a href="tracking.html#timeline-title">Linimasa</a>
+          <a href="tracking.html#route">Rute</a>
+          <a href="tracking.html#temperature">Suhu</a>
+        </nav>
+        <a class="help-link desktop-help" href="#customer-care">Pusat Bantuan</a>
+        <details class="mobile-menu">
+          <summary><span class="hamburger-icon" aria-hidden="true"></span>Menu</summary>
+          <nav class="mobile-nav" aria-label="Navigasi mobile">
+            <a href="index.html" aria-current="page">Beranda</a>
+            <a href="tracking.html#shipment-summary-title">Ringkasan paket</a>
+            <a href="tracking.html#timeline-title">Linimasa perjalanan</a>
+            <a href="tracking.html#route">Rute pengiriman</a>
+            <a href="tracking.html#temperature">Pemantauan suhu</a>
+            <a class="mobile-nav__help" href="#customer-care">Pusat Bantuan</a>
+          </nav>
+        </details>
       </div>
     </header>
 
@@ -48,7 +65,7 @@
             </div>
             <button class="button button--primary" type="submit">Lacak Paket</button>
           </form>
-          <p class="search-hint" id="awb-hint">Gunakan nomor pada bukti pengiriman. Untuk prototype, <a href="tracking.html?awb=ANT-FRZ-0002">buka contoh ANT-FRZ-0002</a>.</p>
+          <p class="search-hint" id="awb-hint">Pastikan nomor AWB sesuai dengan yang tercantum pada bukti pengiriman Anda.</p>
         </div>
       </section>
 
@@ -138,17 +155,10 @@
       <div class="container">
         <div class="site-footer__grid">
           <section class="site-footer__brand" aria-labelledby="footer-brand-title">
-            <h2 class="visually-hidden" id="footer-brand-title">Tentang prototype</h2>
+            <h2 class="visually-hidden" id="footer-brand-title">Tentang Anteraja Frozen</h2>
             <img class="brand-logo" src="assets/images/logo-anteraja.png" alt="Anteraja">
-            <p>Prototype pelacakan pengiriman rantai dingin dengan pemantauan suhu lingkungan aset penyimpanan atau armada.</p>
+            <p>Pelacakan pengiriman rantai dingin dengan pemantauan suhu lingkungan aset penyimpanan atau armada.</p>
           </section>
-          <nav aria-labelledby="footer-help-title">
-            <h2 id="footer-help-title">Bantuan</h2>
-            <ul class="footer-list">
-              <li><a href="index.html">Lacak paket</a></li>
-              <li><a href="mailto:cs@anteraja.id">Kirim email</a></li>
-            </ul>
-          </nav>
           <section aria-labelledby="footer-contact-title">
             <h2 id="footer-contact-title">Customer Care</h2>
             <ul class="footer-list">
@@ -157,7 +167,7 @@
             </ul>
           </section>
         </div>
-        <p class="site-footer__legal">Prototype pembelajaran untuk proyek capstone Anteraja Frozen.</p>
+        <p class="site-footer__legal">PT Tri Adi Bersama (Anteraja). Hak Cipta Dilindungi Undang-Undang.</p>
       </div>
     </footer>
   </body>

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Hasil prototype pelacakan paket Anteraja Frozen untuk AWB ANT-FRZ-0002.">
+    <meta name="description" content="Hasil pelacakan paket Anteraja Frozen untuk AWB ANT-FRZ-0002.">
     <title>ANT-FRZ-0002 | Anteraja Frozen</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,14 +12,31 @@
   </head>
   <body>
     <a class="skip-link" href="#main-content">Lewati ke konten utama</a>
-    <p class="prototype-note">Prototype statis — data contoh untuk kebutuhan perancangan</p>
 
     <header class="site-header">
       <div class="container site-header__inner">
         <a href="index.html" aria-label="Anteraja Frozen — halaman pencarian">
           <img class="brand-logo" src="assets/images/logo-anteraja.png" alt="Anteraja">
         </a>
-        <a class="help-link" href="#customer-care">Pusat Bantuan</a>
+        <nav class="primary-nav desktop-nav" aria-label="Navigasi utama">
+          <a href="index.html">Lacak Paket</a>
+          <a href="#shipment-summary-title">Ringkasan</a>
+          <a href="#timeline-title">Linimasa</a>
+          <a href="#route">Rute</a>
+          <a href="#temperature">Suhu</a>
+        </nav>
+        <a class="help-link desktop-help" href="#customer-care">Pusat Bantuan</a>
+        <details class="mobile-menu">
+          <summary><span class="hamburger-icon" aria-hidden="true"></span>Menu</summary>
+          <nav class="mobile-nav" aria-label="Navigasi mobile">
+            <a href="index.html">Lacak paket lain</a>
+            <a href="#shipment-summary-title">Ringkasan paket</a>
+            <a href="#timeline-title">Linimasa perjalanan</a>
+            <a href="#route">Rute pengiriman</a>
+            <a href="#temperature">Pemantauan suhu</a>
+            <a class="mobile-nav__help" href="#customer-care">Pusat Bantuan</a>
+          </nav>
+        </details>
       </div>
     </header>
 
@@ -81,13 +98,13 @@
                 <p class="temperature-reading__asset">Mobil boks pendingin</p>
                 <p class="temperature-reading__code">Kode aset: REEFER-BOX-01</p>
                 <p class="temperature-reading__value">−5,1°C</p>
-                <p class="temperature-reading__range">Rentang normal rancangan: −8°C s.d. −2°C</p>
+                <p class="temperature-reading__range">Rentang normal aset: −8°C s.d. −2°C</p>
               </div>
               <p class="observation-time">Terobservasi: <time datetime="2026-09-18T14:30:00+07:00">18 Sep 2026, 14.30 WIB</time></p>
               <div class="refresh-control">
                 <p class="refresh-control__status" id="refresh-status" role="status">Pembacaan terakhir tersedia dan siap diperbarui.</p>
                 <button class="button button--primary js-refresh-temperature" id="refresh-temperature" type="button" aria-describedby="refresh-status refresh-hint">Perbarui Suhu</button>
-                <p class="refresh-control__hint" id="refresh-hint">Interaksi tombol akan ditambahkan pada tahap JavaScript berikutnya.</p>
+                <p class="refresh-control__hint" id="refresh-hint">Pembaruan suhu tidak mengubah status maupun rute pengiriman.</p>
               </div>
               <p class="temperature-disclaimer">Suhu yang ditampilkan merupakan suhu lingkungan aset penyimpanan atau armada, bukan suhu inti produk.</p>
             </section>
@@ -307,7 +324,7 @@
                     </tr>
                   </tbody>
                 </table>
-                <p class="pagination-note">Prototype menampilkan 5 dari maksimal 20 pembacaan awal.</p>
+                <p class="pagination-note">Menampilkan 5 data terbaru dari maksimal 20 pembacaan per halaman.</p>
               </details>
             </section>
           </div>
@@ -330,19 +347,10 @@
       <div class="container">
         <div class="site-footer__grid">
           <section class="site-footer__brand" aria-labelledby="footer-brand-title">
-            <h2 class="visually-hidden" id="footer-brand-title">Tentang prototype</h2>
+            <h2 class="visually-hidden" id="footer-brand-title">Tentang Anteraja Frozen</h2>
             <img class="brand-logo" src="assets/images/logo-anteraja.png" alt="Anteraja">
-            <p>Prototype pelacakan pengiriman rantai dingin dengan pemantauan suhu lingkungan aset penyimpanan atau armada.</p>
+            <p>Pelacakan pengiriman rantai dingin dengan pemantauan suhu lingkungan aset penyimpanan atau armada.</p>
           </section>
-          <nav aria-labelledby="footer-nav-title">
-            <h2 id="footer-nav-title">Navigasi</h2>
-            <ul class="footer-list">
-              <li><a href="index.html">Pencarian AWB</a></li>
-              <li><a href="#timeline-title">Linimasa</a></li>
-              <li><a href="#route">Rute pengiriman</a></li>
-              <li><a href="#temperature-history">Riwayat suhu</a></li>
-            </ul>
-          </nav>
           <section aria-labelledby="footer-contact-title">
             <h2 id="footer-contact-title">Customer Care</h2>
             <ul class="footer-list">
@@ -351,7 +359,7 @@
             </ul>
           </section>
         </div>
-        <p class="site-footer__legal">Prototype pembelajaran untuk proyek capstone Anteraja Frozen.</p>
+        <p class="site-footer__legal">PT Tri Adi Bersama (Anteraja). Hak Cipta Dilindungi Undang-Undang.</p>
       </div>
     </footer>
   </body>
