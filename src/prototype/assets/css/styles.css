@@ -1558,22 +1558,25 @@ main [id] {
   padding-block: 1.5rem 0;
 }
 
-.breadcrumb {
-  display: flex;
+.search-again-link {
+  width: fit-content;
+  min-height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
   gap: 0.5rem;
-  color: var(--ink-500);
-  font-size: 0.78rem;
+  color: var(--ink-600);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
 }
 
-.breadcrumb a {
+.search-again-link:hover {
   color: var(--brand-700);
-  font-weight: 700;
 }
 
 .results-heading {
-  padding-block: 2rem 1.5rem;
-  display: grid;
-  gap: 1rem;
+  max-width: 48rem;
+  padding-block: 1.25rem 1.5rem;
 }
 
 .results-heading h1 {
@@ -1595,13 +1598,20 @@ main [id] {
 }
 
 .shipment-result-card {
-  padding: 1.1rem;
+  padding: 1.15rem;
   display: grid;
   gap: 1rem;
   border: 1px solid var(--ink-200);
   border-radius: var(--radius-md);
   background: var(--white);
   box-shadow: var(--shadow-sm);
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.shipment-result-card:hover {
+  border-color: var(--brand-300);
+  box-shadow: 0 12px 28px rgb(15 23 42 / 0.08);
+  transform: translateY(-1px);
 }
 
 .shipment-result-card--active {
@@ -1640,6 +1650,7 @@ main [id] {
   margin: 0.2rem 0 0;
   color: var(--ink-700);
   font-size: 0.82rem;
+  line-height: 1.55;
 }
 
 .shipment-result-card__latest time {
@@ -1648,6 +1659,10 @@ main [id] {
   color: var(--ink-500);
   font-size: 0.72rem;
   font-variant-numeric: tabular-nums;
+}
+
+.shipment-result-card > .button {
+  width: 100%;
 }
 
 .status-badge--delivery {
@@ -2063,14 +2078,15 @@ main [id] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .results-heading {
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: end;
-  }
-
   .shipment-result-card {
     grid-template-columns: minmax(10rem, 0.9fr) minmax(11rem, 1fr) minmax(15rem, 1.7fr) auto;
     align-items: center;
+    padding: 1.25rem 1.4rem;
+  }
+
+  .shipment-result-card > .button {
+    width: auto;
+    min-width: 8.5rem;
   }
 
   .timeline__topline {
