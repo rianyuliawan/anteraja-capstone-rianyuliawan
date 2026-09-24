@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Pelacakan paket dan pemantauan suhu lingkungan aset Anteraja Frozen.">
     <title>Lacak Paket | Anteraja Frozen</title>
-    <link rel="icon" href="assets/images/logo-anteraja.png" type="image/png">
+    <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/styles.css?v=3">
+    <link rel="stylesheet" href="assets/css/styles.css?v=4">
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -59,7 +59,7 @@
             <p class="batch-search-copy">Masukkan nomor resi/AWB maksimal 10, lalu pisahkan dengan koma.</p>
             <fieldset class="awb-token-field">
               <legend>Nomor resi / AWB</legend>
-              <div class="awb-token-list" id="awb-token-list">
+              <div class="awb-token-list" id="awb-token-list" role="list">
                 <span class="awb-token" data-awb="ANT-FRZ-0002">ANT-FRZ-0002<button type="button" aria-label="Hapus ANT-FRZ-0002">×</button></span>
                 <span class="awb-token" data-awb="ANT-FRZ-0006">ANT-FRZ-0006<button type="button" aria-label="Hapus ANT-FRZ-0006">×</button></span>
                 <span class="awb-token" data-awb="ANT-FRZ-0012">ANT-FRZ-0012<button type="button" aria-label="Hapus ANT-FRZ-0012">×</button></span>
@@ -70,6 +70,7 @@
             <button class="button button--primary" type="submit">Cek Status Paket</button>
           </form>
           <p class="search-hint" id="awb-hint">Tekan koma setelah setiap AWB. Sistem akan mengubahnya menjadi daftar paket terpisah.</p>
+          <p class="form-message" id="awb-feedback" role="status" aria-live="polite"></p>
         </div>
       </section>
 
@@ -182,5 +183,6 @@
         </div>
       </div>
     </footer>
+    <script type="module" src="assets/js/search.js"></script>
   </body>
 </html>
