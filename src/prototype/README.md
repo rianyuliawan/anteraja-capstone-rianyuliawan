@@ -59,8 +59,9 @@ FR-06 tidak memiliki halaman sendiri karena berfungsi sebagai aturan state dan m
 4. Menyalin nomor AWB ke clipboard dengan umpan balik aksesibel.
 5. Membuka foto pickup/penerimaan dalam dialog dan menutupnya melalui tombol atau backdrop.
 6. Mengambil suhu simulasi dengan loading, klasifikasi normal/warning/critical, dan cooldown lima detik.
-7. Memuat peta Leaflet/OpenStreetMap dengan polyline, marker, popup, serta fallback SVG.
-8. Menutup menu mobile otomatis setelah pengguna memilih tautan navigasi.
+7. Memuat peta Leaflet/OpenStreetMap dengan progres perjalanan, marker bernomor, popup, legenda, serta fallback SVG.
+8. Menampilkan toast aksesibel untuk tindakan penting: tambah/hapus/invalid AWB, salin AWB, hasil pembaruan suhu, dan kegagalan peta.
+9. Menutup menu mobile otomatis setelah pengguna memilih tautan navigasi.
 
 ## Menjalankan secara lokal
 

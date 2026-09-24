@@ -1,5 +1,5 @@
 import { findShipment } from './data.js';
-import { copyText, formatTemperature, initMobileMenus, thermalState } from './common.js';
+import { copyText, formatTemperature, initMobileMenus, notify, thermalState } from './common.js';
 import { initRouteMap } from './route-map.js';
 
 const params = new URLSearchParams(location.search);
@@ -77,6 +77,7 @@ const renderSegments = () => {
 const initCopy = () => document.querySelector('#copy-awb')?.addEventListener('click', async () => {
   await copyText(shipment.awb);
   setText('#copy-feedback', 'Nomor AWB tersalin.');
+  notify(`${shipment.awb} berhasil disalin.`);
   setTimeout(() => setText('#copy-feedback', ''), 2200);
 });
 
@@ -112,6 +113,7 @@ const initRefresh = () => {
       renderTemperature();
       const state = thermalState(shipment.temperature.value, shipment.temperature.normalLow, shipment.temperature.normalHigh);
       setText('#refresh-status', `Suhu berhasil diperbarui: ${formatTemperature(shipment.temperature.value)} · ${state.label}.`);
+      notify(`Suhu terbaru ${formatTemperature(shipment.temperature.value)} · ${state.label}.`, state.key === 'critical' ? 'error' : state.key === 'warning' ? 'warning' : 'success');
       button.classList.remove('is-loading');
       let remaining = 5;
       button.textContent = `Tunggu ${remaining} detik`;

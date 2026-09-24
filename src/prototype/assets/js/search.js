@@ -1,5 +1,5 @@
 import { DEFAULT_AWBS, isValidAwb, normalizeAwb } from './data.js';
-import { createElement, initMobileMenus } from './common.js';
+import { createElement, initMobileMenus, notify } from './common.js';
 
 const form = document.querySelector('.tracking-search--multiple');
 
@@ -15,6 +15,7 @@ if (form) {
   const announce = (message, isError = false) => {
     feedback.textContent = message;
     feedback.classList.toggle('form-message--error', isError);
+    notify(message, isError ? 'error' : 'success');
   };
 
   const sync = () => {
@@ -28,7 +29,7 @@ if (form) {
       const token = createElement('span', 'awb-token', awb);
       token.dataset.awb = awb;
       token.setAttribute('role', 'listitem');
-      const remove = createElement('button', '', '×');
+      const remove = createElement('button');
       remove.type = 'button';
       remove.dataset.removeAwb = awb;
       remove.setAttribute('aria-label', `Hapus ${awb}`);
