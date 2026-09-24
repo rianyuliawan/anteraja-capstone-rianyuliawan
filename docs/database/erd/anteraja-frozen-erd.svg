@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="2050" height="1320" viewBox="0 0 2050 1320" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="2050" height="1500" viewBox="0 0 2050 1500" role="img" aria-labelledby="title desc">
   <title id="title">ERD Anteraja Frozen Cold Chain Tracking</title>
-  <desc id="desc">Sembilan tabel produksi PostgreSQL beserta primary key, foreign key, dan relasinya.</desc>
+  <desc id="desc">Sebelas tabel produksi PostgreSQL beserta primary key, foreign key, dan relasinya.</desc>
   <defs>
     <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
       <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#172033" flood-opacity="0.10"/>
@@ -26,7 +26,7 @@
     </style>
   </defs>
 
-  <rect class="page" width="2050" height="1320"/>
+  <rect class="page" width="2050" height="1500"/>
   <text class="title" x="50" y="52">ERD Anteraja Frozen — Cold Chain Tracking</text>
   <text class="subtitle" x="50" y="82">PostgreSQL • tabel produksi ternormalisasi • suhu melekat pada aset termal</text>
 
@@ -58,9 +58,15 @@
   <path class="edge" d="M 900 700 C 1160 700, 1340 360, 1580 360"/>
   <text class="edge-label" x="1240" y="535">1 : 0..N</text>
 
+  <path class="edge" d="M 1580 785 C 1340 785, 1160 735, 900 735"/>
+  <text class="edge-label" x="1220" y="765">1 : N</text>
+
+  <path class="edge" d="M 900 800 C 1180 860, 1350 1070, 1580 1070"/>
+  <text class="edge-label" x="1250" y="940">1 : 0..1</text>
+
   <!-- SHIPMENTS -->
   <g transform="translate(50 130)">
-    <rect class="card" width="380" height="330" rx="18"/>
+    <rect class="card" width="380" height="400" rx="18"/>
     <path class="header" d="M18 0 H362 Q380 0 380 18 V58 H0 V18 Q0 0 18 0Z"/>
     <text class="entity" x="22" y="37">SHIPMENTS</text>
     <text class="key" x="22" y="88">PK</text><text class="field" x="62" y="88">id</text><text class="type" x="270" y="88">bigint</text>
@@ -70,7 +76,9 @@
     <text class="field" x="22" y="205">pickup_point</text><text class="type" x="270" y="205">varchar</text>
     <text class="field" x="22" y="241">delivery_area</text><text class="type" x="270" y="241">varchar</text>
     <text class="field" x="22" y="277">delivery_point</text><text class="type" x="270" y="277">varchar</text>
-    <text class="field" x="22" y="313">created_at / updated_at</text><text class="type" x="270" y="313">timestamptz</text>
+    <text class="field" x="22" y="313">sender_name</text><text class="type" x="270" y="313">varchar?</text>
+    <text class="field" x="22" y="349">recipient_name</text><text class="type" x="270" y="349">varchar?</text>
+    <text class="field" x="22" y="385">created_at / updated_at</text><text class="type" x="270" y="385">timestamptz</text>
   </g>
 
   <!-- ROUTE_STOPS -->
@@ -105,18 +113,19 @@
 
   <!-- SHIPMENT_EVENTS -->
   <g transform="translate(520 510)">
-    <rect class="card" width="380" height="370" rx="18"/>
+    <rect class="card" width="380" height="406" rx="18"/>
     <path class="header" d="M18 0 H362 Q380 0 380 18 V58 H0 V18 Q0 0 18 0Z"/>
     <text class="entity" x="22" y="37">SHIPMENT_EVENTS</text>
     <text class="key" x="22" y="88">PK</text><text class="field" x="62" y="88">id</text><text class="type" x="270" y="88">bigint</text>
     <line class="rule" x1="20" y1="105" x2="360" y2="105"/>
     <text class="key" x="22" y="133">FK</text><text class="field" x="62" y="133">shipment_id</text><text class="type" x="270" y="133">bigint</text>
     <text class="key" x="22" y="169">FK</text><text class="field" x="62" y="169">hub_id</text><text class="type" x="270" y="169">bigint?</text>
-    <text class="field" x="22" y="205">stage</text><text class="type" x="270" y="205">varchar(30)</text>
-    <text class="field" x="22" y="241">event_code</text><text class="type" x="270" y="241">varchar(30)</text>
-    <text class="field" x="22" y="277">occurred_at</text><text class="type" x="270" y="277">timestamptz</text>
-    <text class="field" x="22" y="313">completed_stop_order</text><text class="type" x="270" y="313">smallint?</text>
-    <text class="field" x="22" y="349">source_event_key</text><text class="type" x="270" y="349">varchar?</text>
+    <text class="key" x="22" y="205">FK</text><text class="field" x="62" y="205">courier_id</text><text class="type" x="270" y="205">bigint?</text>
+    <text class="field" x="22" y="241">stage</text><text class="type" x="270" y="241">varchar(30)</text>
+    <text class="field" x="22" y="277">event_code</text><text class="type" x="270" y="277">varchar(30)</text>
+    <text class="field" x="22" y="313">occurred_at</text><text class="type" x="270" y="313">timestamptz</text>
+    <text class="field" x="22" y="349">completed_stop_order</text><text class="type" x="270" y="349">smallint?</text>
+    <text class="field" x="22" y="385">source_event_key</text><text class="type" x="270" y="385">varchar?</text>
   </g>
 
   <!-- TEMPERATURE_PROFILES -->
@@ -202,7 +211,34 @@
     <text class="key" x="22" y="477">UK</text><text class="field" x="62" y="477">event + media_type; storage key</text>
   </g>
 
-  <g transform="translate(1020 1230)">
+  <!-- COURIERS -->
+  <g transform="translate(1580 690)">
+    <rect class="card" width="420" height="245" rx="18"/>
+    <path class="header" d="M18 0 H402 Q420 0 420 18 V58 H0 V18 Q0 0 18 0Z"/>
+    <text class="entity" x="22" y="37">COURIERS</text>
+    <text class="key" x="22" y="88">PK</text><text class="field" x="62" y="88">id</text><text class="type" x="315" y="88">bigint</text>
+    <line class="rule" x1="20" y1="105" x2="400" y2="105"/>
+    <text class="key" x="22" y="137">UK</text><text class="field" x="62" y="137">courier_code</text><text class="type" x="315" y="137">varchar(30)</text>
+    <text class="field" x="22" y="173">display_name</text><text class="type" x="315" y="173">varchar(120)</text>
+    <text class="field" x="22" y="209">is_active</text><text class="type" x="315" y="209">boolean</text>
+  </g>
+
+  <!-- DELIVERY_CONFIRMATIONS -->
+  <g transform="translate(1580 985)">
+    <rect class="card" width="420" height="335" rx="18"/>
+    <path class="header" d="M18 0 H402 Q420 0 420 18 V58 H0 V18 Q0 0 18 0Z"/>
+    <text class="entity" x="22" y="37">DELIVERY_CONFIRMATIONS</text>
+    <text class="key" x="22" y="88">PK/FK</text><text class="field" x="82" y="88">shipment_event_id</text><text class="type" x="315" y="88">bigint</text>
+    <line class="rule" x1="20" y1="105" x2="400" y2="105"/>
+    <text class="field" x="22" y="137">receipt_type</text><text class="type" x="315" y="137">varchar(30)</text>
+    <text class="field" x="22" y="173">received_by_name</text><text class="type" x="315" y="173">varchar?</text>
+    <text class="field" x="22" y="209">placement_note</text><text class="type" x="315" y="209">varchar?</text>
+    <text class="field" x="22" y="245">confirmed_at</text><text class="type" x="315" y="245">timestamptz</text>
+    <line class="rule" x1="20" y1="271" x2="400" y2="271"/>
+    <text class="key" x="22" y="303">RULE</text><text class="field" x="78" y="303">hanya untuk event DELIVERED</text>
+  </g>
+
+  <g transform="translate(1020 1400)">
     <text class="legend-title" x="0" y="0">Legenda:</text>
     <text class="legend" x="78" y="0">PK = Primary Key</text>
     <text class="legend" x="230" y="0">FK = Foreign Key</text>
