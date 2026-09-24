@@ -4,9 +4,8 @@
 -- thermal-asset assignments, and temperature readings.
 --
 -- Dataset coverage:
--- The seed consists of eight related CSV files: shipments, hubs, route stops,
--- shipment events, thermal assets, asset assignments, temperature profiles,
--- and temperature readings. Their text record IDs are retained in nullable
+-- The seed consists of thirteen related CSV files, including shipment parties,
+-- couriers, delivery confirmations, and event media. Text record IDs are retained in nullable
 -- seed_* columns while the database uses bigint identity primary keys.
 -- The shipment CSV also contains denormalized current-state fields. Load all
 -- CSV files into the seed schema for reconciliation; events remain the
@@ -81,6 +80,23 @@ CREATE TRIGGER hubs_set_updated_at
 BEFORE UPDATE ON hubs
 FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
+CREATE TABLE couriers (
+    id                  bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    courier_code        varchar(30) NOT NULL,
+    display_name        varchar(120) NOT NULL,
+    is_active           boolean NOT NULL DEFAULT true,
+    created_at          timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT couriers_code_uq UNIQUE (courier_code),
+    CONSTRAINT couriers_code_format_chk CHECK (courier_code ~ '^[A-Z0-9][A-Z0-9-]{1,29}$'),
+    CONSTRAINT couriers_display_name_chk CHECK (length(btrim(display_name)) >= 2)
+);
+
+CREATE TRIGGER couriers_set_updated_at
+BEFORE UPDATE ON couriers
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
 -- ---------------------------------------------------------------------------
 -- Shipment and route
 -- ---------------------------------------------------------------------------
@@ -92,12 +108,18 @@ CREATE TABLE shipments (
     pickup_point        varchar(180) NOT NULL,
     delivery_area       varchar(120) NOT NULL,
     delivery_point      varchar(180) NOT NULL,
+    sender_name         varchar(160),
+    recipient_name      varchar(160),
     created_at          timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at          timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT shipments_awb_uq UNIQUE (awb),
     CONSTRAINT shipments_awb_format_chk
-        CHECK (awb ~ '^[A-Z0-9][A-Z0-9-]{5,49}$')
+        CHECK (awb ~ '^[A-Z0-9][A-Z0-9-]{5,49}$'),
+    CONSTRAINT shipments_sender_name_chk
+        CHECK (sender_name IS NULL OR length(btrim(sender_name)) >= 2),
+    CONSTRAINT shipments_recipient_name_chk
+        CHECK (recipient_name IS NULL OR length(btrim(recipient_name)) >= 2)
 );
 
 CREATE TRIGGER shipments_set_updated_at
@@ -144,6 +166,7 @@ CREATE TABLE shipment_events (
     seed_event_id           varchar(30),
     shipment_id             bigint NOT NULL,
     hub_id                  bigint,
+    courier_id              bigint,
     stage                   varchar(30) NOT NULL,
     event_code              varchar(30) NOT NULL,
     occurred_at             timestamptz NOT NULL,
@@ -156,6 +179,8 @@ CREATE TABLE shipment_events (
         FOREIGN KEY (shipment_id) REFERENCES shipments(id) ON DELETE CASCADE,
     CONSTRAINT shipment_events_hub_fk
         FOREIGN KEY (hub_id) REFERENCES hubs(id) ON DELETE RESTRICT,
+    CONSTRAINT shipment_events_courier_fk
+        FOREIGN KEY (courier_id) REFERENCES couriers(id) ON DELETE RESTRICT,
     CONSTRAINT shipment_events_seed_id_uq UNIQUE (seed_event_id),
     CONSTRAINT shipment_events_route_stop_fk
         FOREIGN KEY (shipment_id, completed_stop_order)
@@ -184,6 +209,8 @@ CREATE TABLE shipment_events (
             event_code NOT IN ('ARRIVED_HUB', 'LEFT_HUB')
             OR hub_id IS NOT NULL
         ),
+    CONSTRAINT shipment_events_courier_event_chk
+        CHECK (courier_id IS NULL OR event_code IN ('PICKED_UP', 'OUT_FOR_DELIVERY', 'DELIVERED')),
     CONSTRAINT shipment_events_completed_order_chk
         CHECK (completed_stop_order IS NULL OR completed_stop_order >= 0)
 );
@@ -198,6 +225,48 @@ CREATE INDEX shipment_events_latest_idx
 CREATE INDEX shipment_events_hub_idx
     ON shipment_events (hub_id, occurred_at DESC)
     WHERE hub_id IS NOT NULL;
+
+CREATE INDEX shipment_events_courier_idx
+    ON shipment_events (courier_id, occurred_at DESC)
+    WHERE courier_id IS NOT NULL;
+
+CREATE TABLE delivery_confirmations (
+    shipment_event_id       bigint PRIMARY KEY,
+    receipt_type            varchar(30) NOT NULL,
+    received_by_name        varchar(160),
+    placement_note          varchar(255),
+    confirmed_at            timestamptz NOT NULL,
+    created_at              timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT delivery_confirmations_event_fk
+        FOREIGN KEY (shipment_event_id) REFERENCES shipment_events(id) ON DELETE CASCADE,
+    CONSTRAINT delivery_confirmations_type_chk
+        CHECK (receipt_type IN ('RECIPIENT', 'FAMILY', 'SECURITY', 'RECEPTION', 'SAFE_PLACE')),
+    CONSTRAINT delivery_confirmations_receiver_chk
+        CHECK (received_by_name IS NULL OR length(btrim(received_by_name)) >= 2),
+    CONSTRAINT delivery_confirmations_note_chk
+        CHECK (placement_note IS NULL OR length(btrim(placement_note)) >= 3)
+);
+
+CREATE OR REPLACE FUNCTION validate_delivery_confirmation()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM shipment_events
+        WHERE id = NEW.shipment_event_id AND event_code = 'DELIVERED'
+    ) THEN
+        RAISE EXCEPTION 'delivery confirmation must reference a DELIVERED event';
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER delivery_confirmations_validate_event
+BEFORE INSERT OR UPDATE OF shipment_event_id
+ON delivery_confirmations
+FOR EACH ROW EXECUTE FUNCTION validate_delivery_confirmation();
 
 -- Image files stay in private Laravel/object storage. This table stores only
 -- the storage key and metadata needed to authorize, render, and audit them.
@@ -395,7 +464,7 @@ CREATE INDEX temperature_readings_anomaly_idx
 
 -- ---------------------------------------------------------------------------
 -- Raw seed tables
--- Import the nine CSV files here first, then run the separate seed transform.
+-- Import the thirteen CSV files here first, then run the separate seed transform.
 -- ---------------------------------------------------------------------------
 
 CREATE TABLE seed.shipments (
@@ -460,6 +529,34 @@ CREATE TABLE seed.shipment_events (
     hub_code                varchar(30),
     completed_stop_order    smallint,
     source_event_key        varchar(120) NOT NULL UNIQUE,
+    loaded_at               timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE seed.shipment_parties (
+    awb                     varchar(50) PRIMARY KEY,
+    sender_name             varchar(160) NOT NULL,
+    recipient_name          varchar(160) NOT NULL,
+    loaded_at               timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE seed.couriers (
+    courier_code            varchar(30) PRIMARY KEY,
+    display_name            varchar(120) NOT NULL,
+    loaded_at               timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE seed.shipment_event_couriers (
+    event_id                varchar(30) PRIMARY KEY,
+    courier_code            varchar(30) NOT NULL,
+    loaded_at               timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE seed.delivery_confirmations (
+    event_id                varchar(30) PRIMARY KEY,
+    receipt_type            varchar(30) NOT NULL,
+    received_by_name        varchar(160),
+    placement_note          varchar(255),
+    confirmed_at            timestamptz NOT NULL,
     loaded_at               timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -547,6 +644,20 @@ COMMENT ON COLUMN temperature_readings.seed_reading_id IS
 -- Read views for the Laravel tracking API
 -- ---------------------------------------------------------------------------
 
+CREATE OR REPLACE FUNCTION mask_public_name(value text)
+RETURNS text
+LANGUAGE sql
+IMMUTABLE
+RETURNS NULL ON NULL INPUT
+AS $$
+    SELECT CASE
+        WHEN length(btrim(value)) <= 2 THEN left(btrim(value), 1) || '*'
+        ELSE left(btrim(value), 1)
+             || repeat('*', greatest(length(btrim(value)) - 2, 1))
+             || right(btrim(value), 1)
+    END;
+$$;
+
 CREATE VIEW shipment_current_status AS
 SELECT DISTINCT ON (e.shipment_id)
     e.shipment_id,
@@ -557,6 +668,38 @@ SELECT DISTINCT ON (e.shipment_id)
     e.id AS shipment_event_id
 FROM shipment_events e
 ORDER BY e.shipment_id, e.occurred_at DESC, e.id DESC;
+
+CREATE VIEW shipment_public_summary AS
+SELECT
+    s.id AS shipment_id,
+    s.awb,
+    mask_public_name(s.sender_name) AS sender_name_masked,
+    mask_public_name(s.recipient_name) AS recipient_name_masked,
+    s.pickup_area,
+    s.delivery_area,
+    cs.current_stage,
+    cs.current_event_code,
+    cs.last_stage_at
+FROM shipments s
+LEFT JOIN shipment_current_status cs ON cs.shipment_id = s.id;
+
+CREATE VIEW shipment_public_timeline AS
+SELECT
+    e.shipment_id,
+    e.id AS shipment_event_id,
+    e.stage,
+    e.event_code,
+    e.occurred_at,
+    h.name AS hub_name,
+    c.display_name AS courier_display_name,
+    dc.receipt_type,
+    mask_public_name(dc.received_by_name) AS received_by_masked,
+    dc.placement_note,
+    dc.confirmed_at
+FROM shipment_events e
+LEFT JOIN hubs h ON h.id = e.hub_id
+LEFT JOIN couriers c ON c.id = e.courier_id
+LEFT JOIN delivery_confirmations dc ON dc.shipment_event_id = e.id;
 
 CREATE VIEW shipment_public_event_media AS
 SELECT
@@ -623,5 +766,11 @@ COMMENT ON VIEW shipment_latest_temperature IS
 
 COMMENT ON VIEW shipment_public_event_media IS
     'Privacy-cleared pickup and delivery media. Laravel converts storage keys to short-lived signed URLs before responding.';
+
+COMMENT ON VIEW shipment_public_summary IS
+    'Batch-search projection with masked party names; Laravel must still filter by the AWBs supplied in the request.';
+
+COMMENT ON VIEW shipment_public_timeline IS
+    'Timeline projection with courier display name and privacy-safe delivered confirmation fields.';
 
 COMMIT;
