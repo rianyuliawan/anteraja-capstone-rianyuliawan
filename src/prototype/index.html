@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Pelacakan paket dan pemantauan suhu lingkungan aset Anteraja Frozen.">
     <title>Lacak Paket | Anteraja Frozen</title>
+    <link rel="icon" href="assets/images/logo-anteraja.png" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/styles.css?v=3">
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -31,22 +32,16 @@
         </a>
         <nav class="primary-nav desktop-nav" aria-label="Navigasi utama">
           <a href="index.html" aria-current="page">Beranda</a>
-          <a href="tracking.html#shipment-summary-title">Ringkasan</a>
-          <a href="tracking.html#timeline-title">Linimasa</a>
-          <a href="tracking.html#delivery-evidence">Dokumentasi</a>
-          <a href="tracking.html#route">Rute</a>
-          <a href="tracking.html#temperature">Suhu</a>
+          <a href="#features">Fitur Pelacakan</a>
+          <a href="#faq">FAQ</a>
         </nav>
         <a class="help-link desktop-help" href="#customer-care">Pusat Bantuan</a>
         <details class="mobile-menu">
           <summary><span class="hamburger-icon" aria-hidden="true"></span>Menu</summary>
           <nav class="mobile-nav" aria-label="Navigasi mobile">
             <a href="index.html" aria-current="page">Beranda</a>
-            <a href="tracking.html#shipment-summary-title">Ringkasan paket</a>
-            <a href="tracking.html#timeline-title">Linimasa perjalanan</a>
-            <a href="tracking.html#delivery-evidence">Dokumentasi foto</a>
-            <a href="tracking.html#route">Rute pengiriman</a>
-            <a href="tracking.html#temperature">Pemantauan suhu</a>
+            <a href="#features">Fitur Pelacakan</a>
+            <a href="#faq">FAQ</a>
             <a class="mobile-nav__help" href="#customer-care">Pusat Bantuan</a>
           </nav>
         </details>
@@ -58,20 +53,27 @@
         <div class="container hero__content">
           <p class="eyebrow">Anteraja Frozen</p>
           <h1 id="page-title">Pelacakan paket <span>cold chain</span> dalam satu tampilan</h1>
-          <p class="hero__lead">Masukkan satu nomor AWB untuk melihat tahap pengiriman, urutan titik singgah, dan suhu yang tercatat.</p>
+          <p class="hero__lead">Masukkan hingga 10 nomor AWB untuk membandingkan status kiriman, lalu pilih paket yang ingin dilihat lebih lengkap.</p>
 
-          <form class="tracking-search" action="tracking.html" method="get" role="search">
-            <div class="tracking-search__field">
-              <label for="tracking-number">Nomor resi / AWB</label>
-              <input id="tracking-number" name="awb" type="text" placeholder="Contoh: ANT-FRZ-0002" aria-describedby="awb-hint" autocomplete="off" autocapitalize="characters" pattern="[A-Za-z0-9-]{6,24}" required>
-            </div>
-            <button class="button button--primary" type="submit">Lacak Paket</button>
+          <form class="tracking-search tracking-search--multiple" action="shipments.html" method="get" role="search">
+            <p class="batch-search-copy">Masukkan nomor resi/AWB maksimal 10, lalu pisahkan dengan koma.</p>
+            <fieldset class="awb-token-field">
+              <legend>Nomor resi / AWB</legend>
+              <div class="awb-token-list" id="awb-token-list">
+                <span class="awb-token" data-awb="ANT-FRZ-0002">ANT-FRZ-0002<button type="button" aria-label="Hapus ANT-FRZ-0002">×</button></span>
+                <span class="awb-token" data-awb="ANT-FRZ-0006">ANT-FRZ-0006<button type="button" aria-label="Hapus ANT-FRZ-0006">×</button></span>
+                <span class="awb-token" data-awb="ANT-FRZ-0012">ANT-FRZ-0012<button type="button" aria-label="Hapus ANT-FRZ-0012">×</button></span>
+                <input type="hidden" name="awbs" value="ANT-FRZ-0002,ANT-FRZ-0006,ANT-FRZ-0012">
+                <input id="tracking-number" name="awb_entry" type="text" maxlength="260" placeholder="Masukkan nomor resi" aria-describedby="awb-hint" autocomplete="off" autocapitalize="characters">
+              </div>
+            </fieldset>
+            <button class="button button--primary" type="submit">Cek Status Paket</button>
           </form>
-          <p class="search-hint" id="awb-hint">Pastikan nomor AWB sesuai dengan yang tercantum pada bukti pengiriman Anda.</p>
+          <p class="search-hint" id="awb-hint">Tekan koma setelah setiap AWB. Sistem akan mengubahnya menjadi daftar paket terpisah.</p>
         </div>
       </section>
 
-      <section class="feature-section" aria-labelledby="feature-title">
+      <section class="feature-section" id="features" aria-labelledby="feature-title">
         <div class="container">
           <div class="section-heading section-heading--center">
             <p class="eyebrow">Informasi utama</p>
@@ -85,8 +87,8 @@
             </article>
             <article class="feature-card">
               <span class="feature-card__number" aria-hidden="true">02</span>
-              <h3>Rute titik singgah</h3>
-              <p>Urutan pickup, hub, dan delivery.</p>
+              <h3>Peta perjalanan</h3>
+              <p>Lihat progres rute ilustratif tanpa menampilkan lokasi GPS langsung.</p>
             </article>
             <article class="feature-card">
               <span class="feature-card__number" aria-hidden="true">03</span>
@@ -97,7 +99,7 @@
         </div>
       </section>
 
-      <section class="faq-section" aria-labelledby="faq-title">
+      <section class="faq-section" id="faq" aria-labelledby="faq-title">
         <div class="container">
           <div class="section-heading section-heading--center">
             <p class="eyebrow">Pertanyaan umum</p>
