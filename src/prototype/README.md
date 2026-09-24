@@ -8,8 +8,10 @@ Elemen `script` pada `index.html` hanya berisi data terstruktur `application/ld+
 
 | Halaman | FRD yang diwakili | Isi |
 |---|---|---|
-| [`index.html`](index.html) | FR-01 | Pencarian AWB, penjelasan informasi yang tersedia, FAQ, dan kontak bantuan. Form mengarah ke halaman hasil menggunakan metode `GET`. |
-| [`tracking.html`](tracking.html) | FR-02 sampai FR-05 | Ringkasan paket, linimasa dan dokumentasi event, rute ilustratif dan fallback daftar titik, suhu terbaru, ringkasan segmen, riwayat suhu, serta tombol pembaruan suhu. |
+| [`index.html`](index.html) | FR-01 | Input maksimal 10 AWB. Navigasi hanya berisi informasi umum sebelum ada hasil. |
+| [`shipments.html`](shipments.html) | FR-01 | Daftar hasil ringkas dengan nama tersamarkan, status bervariasi, dan tombol memilih satu detail. |
+| [`tracking.html`](tracking.html) | FR-02 sampai FR-05 | Detail satu AWB: ringkasan, linimasa, kurir pickup/delivery, dokumentasi event, rute, suhu terbaru, jadwal pembaruan, dan riwayat. |
+| [`tracking-delivered.html`](tracking-delivered.html) | FR-02 sampai FR-05 | Varian lengkap paket terkirim: seluruh linimasa, kurir pickup/delivery, penerima/keterangan, dua foto, rute selesai, dan pembacaan akhir suhu. |
 
 FR-06 tidak memiliki halaman sendiri karena berfungsi sebagai aturan state dan microcopy pada komponen suhu.
 
@@ -17,21 +19,23 @@ FR-06 tidak memiliki halaman sendiri karena berfungsi sebagai aturan state dan m
 
 ### FR-01 — Cari AWB
 
-- Form menggunakan landmark pencarian, label yang terlihat, `required`, dan pola dasar input.
-- Form AWB mengarah ke halaman hasil agar alur halaman dapat diperiksa tanpa JavaScript.
+- Form menggunakan token field responsif untuk satu sampai 10 AWB; setiap koma nantinya diubah JavaScript menjadi chip yang dapat dihapus.
+- Karena tahap ini HTML/CSS murni, halaman daftar hasil memakai lima skenario representatif. Validasi, parsing, dan pemetaan hasil dinamis diterapkan pada tahap JavaScript/React.
 - `index.html` memuat JSON-LD bertipe [`WebApplication`](https://schema.org/WebApplication).
 
 ### FR-02 — Ringkasan dan linimasa
 
-- Ringkasan hanya menampilkan AWB, kawasan asal/tujuan, status, serta waktu event terakhir.
+- Ringkasan menampilkan AWB, nama pengirim/penerima tersamarkan, kawasan, status, serta waktu event terakhir.
 - Linimasa menggunakan ordered list dan menampilkan kejadian terbaru di atas.
+- Linimasa adalah sumber detail perjalanan utama. Daftar titik dihapus agar tidak mengulang event yang sama.
+- Event pickup/delivery dapat menampilkan nama tampilan kurir; delivered dapat menampilkan siapa yang menerima atau lokasi penempatan.
 - Bagian dokumentasi menyediakan slot foto pickup dan delivery yang terkait ke event; paket aktif tidak menampilkan foto delivery sebelum event sah.
-- Tidak menampilkan nama penerima, nomor telepon, kurir, nomor kendaraan, atau alamat pribadi.
+- Tidak menampilkan nama lengkap, nomor telepon, nomor kendaraan, alamat pribadi, atau identitas kurir selain nama tampilan yang memang relevan pada event pickup/delivery.
 
 ### FR-03 — Rute ilustratif
 
 - Visual SVG statis membedakan segmen selesai, titik aktif, dan segmen berikutnya.
-- Pada layar kecil, daftar titik menjadi informasi utama dan peta dapat dibuka melalui elemen `details`.
+- Pada layar kecil, peta dapat dibuka melalui elemen `details`; bila peta gagal, linimasa tetap menjadi sumber urutan perjalanan.
 - Teks secara eksplisit menyatakan bahwa rute bukan posisi GPS langsung.
 
 ### FR-04 — Suhu dan riwayat
@@ -41,17 +45,17 @@ FR-06 tidak memiliki halaman sendiri karena berfungsi sebagai aturan state dan m
 - Riwayat tertutup secara default melalui `details`; tabel berubah menjadi susunan kartu di layar kecil.
 - Tidak menggunakan grafik kontinu.
 
-### FR-05 — Perbarui suhu
+### FR-05 — Jadwal dan pembaruan suhu
 
-- Tombol memiliki selector `#refresh-temperature` dan `.js-refresh-temperature` untuk tahap JavaScript/jQuery berikutnya.
-- Region status memakai `#refresh-status` dan `role="status"`.
-- Tombol belum menjalankan request karena tahap tugas ini hanya HTML/CSS.
+- Halaman menampilkan pembaruan otomatis tiap 60 menit dan waktu berikutnya.
+- Tombol `#refresh-temperature` meminta suhu terbaru untuk paket aktif; Laravel nantinya menerapkan cooldown, rate limit, dan idempotensi.
+- Tombol belum menjalankan request karena branch ini hanya HTML/CSS.
 
 ## Responsivitas dan aksesibilitas
 
 - CSS ditulis dengan pendekatan mobile-first.
 - Breakpoint utama: `48rem` untuk tablet dan `64rem` untuk layout desktop dua kolom.
-- Header halaman awal hanya menyediakan navigasi umum. Navigasi menuju Ringkasan, Linimasa, Dokumentasi, Rute, dan Suhu baru tersedia pada halaman hasil setelah AWB ditemukan. Pada mobile, keduanya memakai disclosure hamburger berbasis HTML/CSS. Footer memakai CTA, informasi korporat, bantuan, dan kanal resmi tanpa mengulang navigasi fitur.
+- Header halaman awal hanya menyediakan Beranda, Fitur Pelacakan, FAQ, dan Bantuan. Daftar hasil memiliki navigasi pencarian/hasil; navigasi detail baru tersedia setelah satu AWB dipilih.
 - Kontrol memiliki tinggi minimum 44px, focus ring terlihat, dan dukungan `prefers-reduced-motion`.
 - Struktur memakai `header`, `main`, `section`, `article`, `aside`, `nav`, `footer`, heading berurutan, tabel semantik, dan skip link.
 - Halaman tidak memerlukan horizontal scroll pada lebar target 360px, 390px, 768px, dan desktop.
@@ -61,7 +65,9 @@ FR-06 tidak memiliki halaman sendiri karena berfungsi sebagai aturan state dan m
 ```text
 src/prototype/
 ├── index.html
+├── shipments.html
 ├── tracking.html
+├── tracking-delivered.html
 ├── README.md
 └── assets/
     ├── css/
