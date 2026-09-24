@@ -71,6 +71,10 @@ if (form) {
     }
   });
 
+  entry.addEventListener('input', () => {
+    if (/[;,]/.test(entry.value)) addValues(entry.value.split(/[,;]+/));
+  });
+
   entry.addEventListener('paste', event => {
     const pasted = event.clipboardData.getData('text');
     if (/[\s,;]/.test(pasted)) {
