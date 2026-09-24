@@ -30,11 +30,13 @@ FR-06 tidak memiliki halaman sendiri karena berfungsi sebagai aturan state dan m
 - Linimasa adalah sumber detail perjalanan utama. Daftar titik dihapus agar tidak mengulang event yang sama.
 - Event pickup/delivery dapat menampilkan nama tampilan kurir; delivered dapat menampilkan siapa yang menerima atau lokasi penempatan.
 - Bagian dokumentasi menyediakan slot foto pickup dan delivery yang terkait ke event; paket aktif tidak menampilkan foto delivery sebelum event sah.
+- Seluruh skenario menyediakan foto pickup, sedangkan paket `DELIVERED` menyediakan foto pickup dan penerimaan beserta kurir, pihak penerima, waktu, dan keterangannya.
 - Tidak menampilkan nama lengkap, nomor telepon, nomor kendaraan, alamat pribadi, atau identitas kurir selain nama tampilan yang memang relevan pada event pickup/delivery.
 
 ### FR-03 — Rute ilustratif
 
 - Leaflet dan tile OpenStreetMap dimuat sebagai progressive enhancement serta membedakan segmen selesai dan berikutnya.
+- Pada paket bergerak, checkpoint tujuan tetap berstatus belum tiba; indikator posisi ilustratif ditempatkan di antara checkpoint terakhir dan titik berikutnya agar tidak memberi kesan paket sudah sampai.
 - Bila pustaka/peta jaringan gagal dimuat, SVG lokal tetap tampil sehingga informasi rute tidak hilang.
 - Teks secara eksplisit menyatakan bahwa rute bukan posisi GPS langsung.
 

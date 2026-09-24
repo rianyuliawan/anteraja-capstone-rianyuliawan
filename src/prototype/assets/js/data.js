@@ -67,7 +67,7 @@ export const SHIPMENTS = {
       ['Tiba di hub', 'Tiba di Hub Tebet', 'Paket masuk ke area penyimpanan dingin.', '2026-09-18T13:45:00+07:00', '18 Sep 2026 · 13.45 WIB'],
       ['Paket diambil', 'Paket diambil dari pengirim', 'Kurir pickup Satria Bima R. menerima paket dalam kondisi baik.', '2026-09-18T10:05:00+07:00', '18 Sep 2026 · 10.05 WIB']
     ],
-    pickup: { image: null, time: '18 Sep 2026 · 10.05 WIB', courier: 'Satria Bima R.', party: 'T*** F***** B***** (pengirim)', note: 'Paket diterima tanpa kerusakan kemasan.', location: 'Kawasan Kelapa Gading, Jakarta Utara' },
+    pickup: { image: 'assets/images/evidence/ANT-FRZ-0002-pickup.webp', time: '18 Sep 2026 · 10.05 WIB', courier: 'Satria Bima R.', party: 'T*** F***** B***** (pengirim)', note: 'Paket diterima tanpa kerusakan kemasan.', location: 'Kawasan Kelapa Gading, Jakarta Utara' },
     delivery: null,
     segments: [
       ['Segmen 1', 'Selesai', 'Cooler Bag CB-06', 'Penjemputan awal', 'Pembacaan akhir', -5.6],
@@ -90,7 +90,7 @@ export const SHIPMENTS = {
       ['Dalam perjalanan', 'Menuju Hub Cawang', 'Armada pendingin bergerak menuju hub transit.', '2026-09-18T14:20:00+07:00', '18 Sep 2026 · 14.20 WIB'],
       ['Paket diambil', 'Paket diambil dari pengirim', 'Kurir pickup Satria Candra A. telah memverifikasi segel.', '2026-09-18T12:10:00+07:00', '18 Sep 2026 · 12.10 WIB']
     ],
-    pickup: { image: null, time: '18 Sep 2026 · 12.10 WIB', courier: 'Satria Candra A.', party: 'C*** K****** (pengirim)', note: 'Segel dan label pengiriman terverifikasi.', location: 'Kawasan Cibubur, Jakarta Timur' },
+    pickup: { image: 'assets/images/evidence/ANT-FRZ-0002-pickup.webp', time: '18 Sep 2026 · 12.10 WIB', courier: 'Satria Candra A.', party: 'C*** K****** (pengirim)', note: 'Segel dan label pengiriman terverifikasi.', location: 'Kawasan Cibubur, Jakarta Timur' },
     delivery: null,
     segments: [
       ['Segmen 1', 'Selesai', 'Cooler Bag CB-09', 'Penjemputan awal', 'Pembacaan akhir', -5.0],
@@ -140,8 +140,8 @@ export const SHIPMENTS = {
       ['Tiba di hub', 'Tiba di Hub Jakarta Pusat', 'Paket disimpan pada freezer terpantau.', '2026-09-18T13:10:00+07:00', '18 Sep 2026 · 13.10 WIB'],
       ['Paket diambil', 'Paket diambil dari titik pickup', 'Kurir pickup Satria Raka D. menerima paket.', '2026-09-18T10:20:00+07:00', '18 Sep 2026 · 10.20 WIB']
     ],
-    pickup: { image: null, time: '18 Sep 2026 · 10.20 WIB', courier: 'Satria Raka D.', party: 'D**** F*** S***** (pengirim)', note: 'Paket diterima dalam kondisi baik.', location: 'Kawasan Palmerah, Jakarta Barat' },
-    delivery: { image: null, time: '18 Sep 2026 · 16.02 WIB', courier: 'Satria Raka D.', receiver: 'Bapak A*** (petugas keamanan)', note: 'Ditempatkan di area penerimaan gedung.' },
+    pickup: { image: 'assets/images/evidence/ANT-FRZ-0002-pickup.webp', time: '18 Sep 2026 · 10.20 WIB', courier: 'Satria Raka D.', party: 'D**** F*** S***** (pengirim)', note: 'Paket diterima dalam kondisi baik.', location: 'Kawasan Palmerah, Jakarta Barat' },
+    delivery: { image: 'assets/images/evidence/ANT-FRZ-0012-delivery.webp', time: '18 Sep 2026 · 16.02 WIB', courier: 'Satria Raka D.', receiver: 'Bapak A*** (petugas keamanan)', note: 'Ditempatkan di area penerimaan gedung.' },
     segments: [
       ['Segmen 1', 'Selesai', 'Cooler Bag BAG-014', 'Penjemputan awal', 'Pembacaan akhir', -5.1],
       ['Segmen 2', 'Selesai', 'Hub Freezer JKT-PST', 'Penyimpanan hub', 'Pembacaan akhir', -4.3],

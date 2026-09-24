@@ -2131,6 +2131,42 @@ main [id] {
   box-shadow: 0 0 0 6px rgb(237 6 119 / 0.2), 0 8px 20px rgb(15 23 42 / 0.22);
 }
 
+.route-marker--next {
+  border-color: var(--brand-500);
+  color: var(--brand-700);
+  background: var(--white);
+  box-shadow: 0 0 0 5px rgb(237 6 119 / 0.13), 0 5px 14px rgb(15 23 42 / 0.18);
+}
+
+.route-vehicle-wrapper {
+  border: 0;
+  background: transparent;
+}
+
+.route-vehicle-marker,
+.route-map-legend__vehicle {
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--white);
+  background: var(--brand-500);
+  box-shadow: 0 0 0 6px rgb(237 6 119 / 0.18), 0 6px 16px rgb(15 23 42 / 0.2);
+  font-weight: 900;
+}
+
+.route-vehicle-marker {
+  width: 2.15rem;
+  height: 2.15rem;
+  font-size: 1rem;
+}
+
+.route-map-legend__vehicle {
+  width: 1rem;
+  height: 1rem;
+  box-shadow: none;
+  font-size: 0.65rem;
+}
+
 .route-popup {
   min-width: 10rem;
   display: grid;

@@ -48,7 +48,11 @@ const renderEvidence = () => {
   if (!grid) return;
   grid.innerHTML = evidenceCard('pickup', shipment.pickup) + evidenceCard('delivery', shipment.delivery);
   const count = [shipment.pickup?.image, shipment.delivery?.image].filter(Boolean).length;
-  setText('.evidence-count', `${count}/2 foto tersedia`);
+  const countNode = document.querySelector('.evidence-count');
+  if (countNode) {
+    countNode.textContent = `${count}/2 foto tersedia`;
+    countNode.setAttribute('aria-label', `${count} dari 2 foto dokumentasi tersedia`);
+  }
 };
 
 const renderTemperature = () => {

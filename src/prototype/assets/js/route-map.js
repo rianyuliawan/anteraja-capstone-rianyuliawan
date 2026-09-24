@@ -37,34 +37,50 @@ export const initRouteMap = async shipment => {
     }).addTo(map);
 
     const latlngs = shipment.route.points.map(([, lat, lng]) => [lat, lng]);
-    const activeIndex = shipment.stage === 'DELIVERED' ? latlngs.length - 1 : Math.min(shipment.route.completedIndex + 1, latlngs.length - 1);
-    const progress = Math.round((activeIndex / (latlngs.length - 1)) * 100);
-    const completed = latlngs.slice(0, activeIndex + 1);
-    const remaining = latlngs.slice(activeIndex);
+    const isDelivered = shipment.stage === 'DELIVERED';
+    const isMoving = ['IN_TRANSIT', 'OUT_FOR_DELIVERY'].includes(shipment.stage);
+    const lastCompletedIndex = isDelivered ? latlngs.length - 1 : Math.min(shipment.route.completedIndex, latlngs.length - 1);
+    const nextIndex = Math.min(lastCompletedIndex + 1, latlngs.length - 1);
+    const progressPosition = isMoving ? lastCompletedIndex + 0.5 : lastCompletedIndex;
+    const progress = isDelivered ? 100 : Math.round((progressPosition / (latlngs.length - 1)) * 100);
+    const completed = latlngs.slice(0, lastCompletedIndex + 1);
+    const activeSegment = isMoving && nextIndex > lastCompletedIndex ? latlngs.slice(lastCompletedIndex, nextIndex + 1) : [];
+    const remaining = latlngs.slice(nextIndex);
     if (completed.length > 1) L.polyline(completed, { color: '#ed0677', weight: 5 }).addTo(map);
+    if (activeSegment.length > 1) L.polyline(activeSegment, { color: '#ed0677', weight: 5, dashArray: '8 8', opacity: 0.85 }).addTo(map);
     if (remaining.length > 1) L.polyline(remaining, { color: '#94a3b8', weight: 4, dashArray: '7 9' }).addTo(map);
 
     shipment.route.points.forEach(([name, lat, lng], index) => {
-      const reached = index <= activeIndex;
-      const current = index === activeIndex;
+      const reached = index <= lastCompletedIndex;
+      const current = index === lastCompletedIndex && !isMoving;
+      const next = index === nextIndex && !isDelivered;
       const type = index === 0 ? 'Titik pickup' : index === shipment.route.points.length - 1 ? 'Tujuan akhir' : 'Titik transit';
       const icon = L.divIcon({
         className: 'route-marker-wrapper',
-        html: `<span class="route-marker ${reached ? 'route-marker--reached' : ''} ${current ? 'route-marker--current' : ''}">${index + 1}</span>`,
+        html: `<span class="route-marker ${reached ? 'route-marker--reached' : ''} ${current ? 'route-marker--current' : ''} ${next ? 'route-marker--next' : ''}">${index + 1}</span>`,
         iconSize: [38, 38],
         iconAnchor: [19, 19],
         popupAnchor: [0, -20]
       });
-      L.marker([lat, lng], { icon }).addTo(map).bindPopup(`<div class="route-popup"><span>${type}</span><strong>${name}</strong><small>${current && shipment.stage !== 'DELIVERED' ? 'Tahap aktif saat ini' : reached ? 'Telah tercatat' : 'Belum dilalui'}</small></div>`);
+      const stateLabel = next ? 'Titik berikutnya · belum tiba' : current && !isDelivered ? 'Paket berada di titik ini' : reached ? 'Telah tercatat' : 'Belum dilalui';
+      L.marker([lat, lng], { icon }).addTo(map).bindPopup(`<div class="route-popup"><span>${type}</span><strong>${name}</strong><small>${stateLabel}</small></div>`);
     });
+
+    if (isMoving && activeSegment.length === 2) {
+      const vehiclePosition = [(activeSegment[0][0] + activeSegment[1][0]) / 2, (activeSegment[0][1] + activeSegment[1][1]) / 2];
+      const vehicleIcon = L.divIcon({ className: 'route-vehicle-wrapper', html: '<span class="route-vehicle-marker" aria-hidden="true">→</span>', iconSize: [38, 38], iconAnchor: [19, 19], popupAnchor: [0, -20] });
+      L.marker(vehiclePosition, { icon: vehicleIcon, zIndexOffset: 1000 }).addTo(map).bindPopup(`<div class="route-popup"><span>Posisi ilustratif</span><strong>Menuju ${shipment.route.points[nextIndex][0]}</strong><small>Paket belum tiba di titik berikutnya</small></div>`);
+    }
     map.fitBounds(L.latLngBounds(latlngs), { padding: [32, 32] });
     const overview = document.createElement('div');
     overview.className = 'route-overview';
-    overview.innerHTML = `<div><span>Progres perjalanan</span><strong>${progress}%</strong></div><div><span>${shipment.stage === 'DELIVERED' ? 'Perjalanan selesai' : 'Tahap saat ini'}</span><strong>${shipment.route.points[activeIndex][0]}</strong></div><div><span>Pembaruan terakhir</span><strong>${shipment.lastAtLabel}</strong></div><div class="route-progress" aria-label="Progres rute ${progress} persen"><i style="width:${progress}%"></i></div>`;
+    const stageLabel = isDelivered ? 'Perjalanan selesai' : isMoving ? 'Sedang menuju' : 'Berada di';
+    const stagePoint = isDelivered ? shipment.route.points.at(-1)[0] : isMoving ? shipment.route.points[nextIndex][0] : shipment.route.points[lastCompletedIndex][0];
+    overview.innerHTML = `<div><span>Progres perjalanan</span><strong>${progress}%</strong></div><div><span>${stageLabel}</span><strong>${stagePoint}</strong></div><div><span>Pembaruan terakhir</span><strong>${shipment.lastAtLabel}</strong></div><div class="route-progress" aria-label="Progres rute ${progress} persen"><i style="width:${progress}%"></i></div>`;
     container.before(overview);
     const legend = document.createElement('div');
     legend.className = 'route-map-legend';
-    legend.innerHTML = `<span><i class="route-map-legend__dot route-map-legend__dot--done"></i>Tercatat</span><span><i class="route-map-legend__dot route-map-legend__dot--current"></i>${shipment.stage === 'DELIVERED' ? 'Tujuan akhir' : 'Tahap aktif'}</span>${shipment.stage === 'DELIVERED' ? '' : '<span><i class="route-map-legend__dot"></i>Belum dilalui</span>'}<small>Rute ilustratif · bukan pelacakan GPS langsung</small>`;
+    legend.innerHTML = `<span><i class="route-map-legend__dot route-map-legend__dot--done"></i>Tercatat</span>${isMoving ? '<span><i class="route-map-legend__vehicle">→</i>Posisi ilustratif</span>' : `<span><i class="route-map-legend__dot route-map-legend__dot--current"></i>${isDelivered ? 'Tujuan akhir' : 'Lokasi tercatat'}</span>`}${isDelivered ? '' : '<span><i class="route-map-legend__dot"></i>Belum dilalui</span>'}<small>Rute ilustratif · bukan pelacakan GPS langsung</small>`;
     container.after(legend);
     fallback.hidden = true;
     status.textContent = '';
