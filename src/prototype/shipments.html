@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Daftar hasil pelacakan beberapa AWB Anteraja Frozen.">
     <title>Hasil Pencarian | Anteraja Frozen</title>
-    <link rel="icon" href="assets/images/logo-anteraja.png" type="image/png">
+    <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/styles.css?v=3">
+    <link rel="stylesheet" href="assets/css/styles.css?v=4">
   </head>
   <body>
     <a class="skip-link" href="#main-content">Lewati ke konten utama</a>
@@ -48,12 +48,12 @@
           <div>
             <p class="eyebrow">Status pengiriman</p>
             <h1 id="shipment-results-title">Pilih paket yang ingin dilihat</h1>
-            <p>Ditemukan 5 paket. Informasi identitas ditampilkan secara tersamarkan untuk menjaga privasi.</p>
+            <p id="results-summary">Ditemukan 5 paket. Informasi identitas ditampilkan secara tersamarkan untuk menjaga privasi.</p>
           </div>
           <a class="button button--secondary" href="index.html">Ubah Nomor AWB</a>
         </section>
 
-        <section class="shipment-results" aria-label="Daftar paket ditemukan">
+        <section class="shipment-results" id="shipment-results" aria-label="Daftar paket ditemukan">
           <article class="shipment-result-card shipment-result-card--active">
             <div class="shipment-result-card__identity">
               <p class="label">Nomor AWB</p>
@@ -186,5 +186,6 @@
         <div class="site-footer__legal"><p>© 2026 PT Tri Adi Bersama (Anteraja).</p></div>
       </div>
     </footer>
+    <script type="module" src="assets/js/shipments.js"></script>
   </body>
 </html>
