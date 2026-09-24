@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Hasil pelacakan paket Anteraja Frozen untuk AWB ANT-FRZ-0002.">
     <title>ANT-FRZ-0002 | Anteraja Frozen</title>
-    <link rel="icon" href="assets/images/logo-anteraja.png" type="image/png">
+    <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/styles.css?v=3">
+    <link rel="stylesheet" href="assets/css/styles.css?v=4">
   </head>
-  <body>
+  <body data-default-awb="ANT-FRZ-0002">
     <a class="skip-link" href="#main-content">Lewati ke konten utama</a>
 
     <header class="site-header">
@@ -63,7 +63,8 @@
               <header class="panel__header">
                 <div>
                   <p class="label">Nomor resi / AWB</p>
-                  <h1 class="awb-code" id="shipment-summary-title">ANT-FRZ-0002</h1>
+                  <div class="awb-heading"><h1 class="awb-code" id="shipment-summary-title">ANT-FRZ-0002</h1><button class="copy-awb-button" id="copy-awb" type="button">Salin</button></div>
+                  <span class="copy-feedback" id="copy-feedback" role="status" aria-live="polite"></span>
                 </div>
                 <span class="status-badge">Dalam perjalanan</span>
               </header>
@@ -120,6 +121,7 @@
               <div class="refresh-control">
                 <button class="button button--primary js-refresh-temperature" id="refresh-temperature" type="button">Ambil Suhu Sekarang</button>
               </div>
+              <p class="form-message" id="refresh-status" role="status" aria-live="polite"></p>
               <p class="temperature-disclaimer">Suhu yang ditampilkan merupakan suhu lingkungan aset penyimpanan atau armada.</p>
             </section>
           </aside>
@@ -244,6 +246,8 @@
 
               <details class="route-map-disclosure" open>
                 <summary>Peta Perjalanan</summary>
+                <div class="leaflet-map" id="leaflet-map" hidden aria-label="Peta interaktif perjalanan paket"></div>
+                <p class="form-message map-status" id="map-status" role="status"></p>
                 <figure class="route-map">
                   <svg viewBox="0 0 760 380" role="img" aria-labelledby="route-map-title route-map-desc">
                     <title id="route-map-title">Rute perjalanan paket ANT-FRZ-0002</title>
@@ -480,5 +484,7 @@
         </div>
       </div>
     </footer>
+    <dialog class="evidence-dialog" id="evidence-dialog"><button type="button" class="evidence-dialog__close" aria-label="Tutup foto">×</button><img alt=""><p></p></dialog>
+    <script type="module" src="assets/js/tracking.js"></script>
   </body>
 </html>
