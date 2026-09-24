@@ -1,8 +1,8 @@
-# Implementasi HTML/CSS — Anteraja Frozen
+# Interactive Prototype — Anteraja Frozen
 
-Implementasi ini mengonversi desain UI Anteraja Frozen menjadi kerangka web semantik, responsif, dan saling terhubung. Implementasi tahap ini hanya menggunakan **HTML dan CSS murni**. Tidak ada file JavaScript, framework CSS, Bootstrap, Tailwind, atau request API.
+Implementasi ini melanjutkan kerangka semantik dan CSS responsif pada branch `7-prototype` dengan JavaScript modular. Styling tetap menggunakan **vanilla CSS** tanpa Bootstrap atau Tailwind. Data serta respons sensor masih berupa dummy lokal; belum ada request ke Laravel, Node-RED, MQTT, atau API eksternal selain tile OpenStreetMap untuk peta.
 
-Elemen `script` pada `index.html` hanya berisi data terstruktur `application/ld+json` sesuai persyaratan tugas dan tidak menjalankan perilaku antarmuka.
+Elemen `application/ld+json` pada `index.html` tetap berfungsi sebagai data terstruktur schema.org dan terpisah dari JavaScript antarmuka.
 
 ## Halaman
 
@@ -19,8 +19,8 @@ FR-06 tidak memiliki halaman sendiri karena berfungsi sebagai aturan state dan m
 
 ### FR-01 — Cari AWB
 
-- Form menggunakan token field responsif untuk satu sampai 10 AWB; setiap koma nantinya diubah JavaScript menjadi chip yang dapat dihapus.
-- Karena tahap ini HTML/CSS murni, halaman daftar hasil memakai lima skenario representatif. Validasi, parsing, dan pemetaan hasil dinamis diterapkan pada tahap JavaScript/React.
+- Form menggunakan token field responsif untuk satu sampai 10 AWB; koma, tombol Enter, dan paste beberapa AWB akan diubah menjadi chip yang dapat dihapus.
+- Input divalidasi, duplikasi dicegah, jumlah dibatasi, lalu daftar hasil dibentuk sesuai query string.
 - `index.html` memuat JSON-LD bertipe [`WebApplication`](https://schema.org/WebApplication).
 
 ### FR-02 — Ringkasan dan linimasa
@@ -34,8 +34,8 @@ FR-06 tidak memiliki halaman sendiri karena berfungsi sebagai aturan state dan m
 
 ### FR-03 — Rute ilustratif
 
-- Visual SVG statis membedakan segmen selesai, titik aktif, dan segmen berikutnya.
-- Pada layar kecil, peta dapat dibuka melalui elemen `details`; bila peta gagal, linimasa tetap menjadi sumber urutan perjalanan.
+- Leaflet dan tile OpenStreetMap dimuat sebagai progressive enhancement serta membedakan segmen selesai dan berikutnya.
+- Bila pustaka/peta jaringan gagal dimuat, SVG lokal tetap tampil sehingga informasi rute tidak hilang.
 - Teks secara eksplisit menyatakan bahwa rute bukan posisi GPS langsung.
 
 ### FR-04 — Suhu dan riwayat
@@ -48,8 +48,30 @@ FR-06 tidak memiliki halaman sendiri karena berfungsi sebagai aturan state dan m
 ### FR-05 — Jadwal dan pembaruan suhu
 
 - Halaman menampilkan pembaruan otomatis tiap 60 menit dan waktu berikutnya.
-- Tombol `#refresh-temperature` meminta suhu terbaru untuk paket aktif; Laravel nantinya menerapkan cooldown, rate limit, dan idempotensi.
-- Tombol belum menjalankan request karena branch ini hanya HTML/CSS.
+- Tombol `#refresh-temperature` menjalankan simulator lokal: loading, pembacaan normal/peringatan/kritis, pesan status, dan cooldown lima detik.
+- Simulasi hanya untuk demonstrasi UX. Implementasi React/Laravel nanti mengganti sumber dummy dengan endpoint HTTP yang menerapkan rate limit dan idempotensi.
+
+## Daftar interaksi JavaScript
+
+1. Menambah beberapa AWB melalui koma, Enter, atau paste; menghapus chip; validasi format, duplikasi, dan batas 10.
+2. Merender hasil pencarian secara dinamis, termasuk state AWB tidak ditemukan dan tautan detail yang sesuai.
+3. Mengikat satu halaman detail ke lima skenario data: transit, tiba di hub, sedang diantar, dan dua varian terkirim.
+4. Menyalin nomor AWB ke clipboard dengan umpan balik aksesibel.
+5. Membuka foto pickup/penerimaan dalam dialog dan menutupnya melalui tombol atau backdrop.
+6. Mengambil suhu simulasi dengan loading, klasifikasi normal/warning/critical, dan cooldown lima detik.
+7. Memuat peta Leaflet/OpenStreetMap dengan polyline, marker, popup, serta fallback SVG.
+8. Menutup menu mobile otomatis setelah pengguna memilih tautan navigasi.
+
+## Menjalankan secara lokal
+
+Karena memakai ES modules, jalankan melalui server HTTP dari folder ini, bukan dengan membuka file secara langsung:
+
+```bash
+cd src/prototype
+python3 -m http.server 8081
+```
+
+Kemudian buka `http://127.0.0.1:8081/`.
 
 ## Responsivitas dan aksesibilitas
 
@@ -72,10 +94,20 @@ src/prototype/
 └── assets/
     ├── css/
     │   └── styles.css
-    └── images/
-        ├── logo-anteraja.png
-        └── evidence/
-            └── ANT-FRZ-0002-pickup.webp
+    ├── images/
+    │   ├── favicon.svg
+    │   ├── logo-anteraja.png
+    │   └── evidence/
+    │       ├── ANT-FRZ-0002-pickup.webp
+    │       ├── ANT-FRZ-0012-pickup.webp
+    │       └── ANT-FRZ-0012-delivery.webp
+    └── js/
+        ├── common.js
+        ├── data.js
+        ├── route-map.js
+        ├── search.js
+        ├── shipments.js
+        └── tracking.js
 ```
 
 Halaman menggunakan salinan lokal dari aset logo yang ditampilkan pada situs resmi Anteraja. Foto dokumentasi pada prototipe menggunakan foto stok berlisensi terbuka yang telah dipotong, dioptimalkan ke WebP, dan dibersihkan dari metadata EXIF. Sumber dan pemetaan foto dicatat di `docs/database/sample-data/media/README.md`; sebelum deployment produksi, seluruh foto tersebut diganti dengan bukti operasional yang lolos pemeriksaan privasi.
