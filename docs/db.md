@@ -2,7 +2,7 @@
 
 **Acuan:** [PRD](prd.md) · [FRD global](frd.md) · [FRD per fitur](frd/README.md) · [IA](ia.md) · **DBMS:** PostgreSQL 15+
 
-Dokumen ini menjadi sumber utama dokumentasi database untuk fitur pelacakan paket dan pemantauan suhu Anteraja Frozen. Fokus data meliputi pencarian AWB, status dan linimasa perjalanan, rute pickup–hub–delivery, aset termal yang menangani paket, riwayat suhu, dan pembaruan suhu terjadwal maupun atas permintaan pengguna.
+Dokumen ini menjadi sumber utama dokumentasi database untuk pencarian beberapa AWB, detail perjalanan, pihak pengiriman yang ditampilkan tersamarkan, kurir per event, konfirmasi delivery, rute, dokumentasi foto, dan suhu terjadwal maupun permintaan on-demand.
 
 ## 1. Isi folder
 
@@ -21,6 +21,10 @@ docs/
         ├── hubs.csv
         ├── route_stops.csv
         ├── shipment_events.csv
+        ├── shipment_parties.csv
+        ├── couriers.csv
+        ├── shipment_event_couriers.csv
+        ├── delivery_confirmations.csv
         ├── shipment_event_media.csv
         ├── media/
         │   ├── README.md
@@ -35,11 +39,11 @@ docs/
 
 | Kebutuhan | Data yang diperlukan | Tabel pendukung |
 |---|---|---|
-| FR-01 — mencari paket berdasarkan AWB | Nomor AWB unik dan informasi asal/tujuan | `shipments` |
-| FR-02 — status, linimasa, dan dokumentasi | Tahap, jenis kejadian, waktu kejadian, hub, titik yang dicapai, serta metadata foto pickup/delivery | `shipment_events`, `shipment_event_media`, `hubs`, `route_stops` |
+| FR-01 — mencari maksimal 10 AWB | Nomor AWB unik, ringkasan status, dan nama tersamarkan | `shipments`, view status terbaru |
+| FR-02 — status, linimasa, kurir, penerimaan, dan dokumentasi | Tahap, waktu, hub, kurir per event, catatan penerimaan delivered, serta metadata foto | `shipment_events`, `couriers`, `delivery_confirmations`, `shipment_event_media` |
 | FR-03 — peta dan urutan titik singgah | Urutan pickup, satu atau beberapa hub, tujuan, serta koordinat penanda | `route_stops`, `hubs` |
 | FR-04 — suhu dan riwayat telemetri | Identitas aset, profil ambang, nilai suhu, status, dan waktu observasi | `thermal_assets`, `temperature_profiles`, `temperature_readings` |
-| FR-05 — pembaruan suhu | Aset aktif paket, `request_id`, jenis pemicu, dan pembacaan terbaru | `shipment_asset_assignments`, `temperature_readings` |
+| FR-05 — jadwal dan pembaruan suhu | Aset aktif, `request_id` on-demand, jenis pemicu, dan pembacaan terbaru | `shipment_asset_assignments`, `temperature_readings` |
 | FR-06 — sumber data suhu | Sumber pesan, ID pesan untuk deduplikasi, dan waktu diterima | `temperature_readings` |
 
 Rancangan UI menampilkan status terkini, linimasa, peta, suhu terkini, ringkasan suhu per segmen, dan histori suhu. Karena itu, status paket tidak disimpan sebagai teks yang terus ditimpa. Status dihitung dari event terakhir. Suhu juga tidak ditempelkan langsung ke AWB karena sensor mengukur suhu aset seperti freezer hub, cooler bag, atau mobil boks.
@@ -52,6 +56,8 @@ Relasi utama:
 
 - satu `shipment` mempunyai banyak `route_stops`;
 - satu `shipment` mempunyai banyak `shipment_events`;
+- satu `courier` dapat terkait dengan banyak event pickup/delivery;
+- satu event `DELIVERED` dapat mempunyai maksimal satu `delivery_confirmation`;
 - satu `shipment_event` dapat memiliki maksimal satu media untuk jenis yang sesuai;
 - satu `hub` dapat dipakai oleh banyak route stop dan event;
 - satu `temperature_profile` digunakan banyak `thermal_assets` sejenis;
@@ -63,17 +69,19 @@ Relasi utama:
 
 | Tabel | Isi dan fungsi |
 |---|---|
-| `shipments` | Satu baris untuk satu AWB. Menyimpan kawasan/titik pickup dan delivery. |
+| `shipments` | Satu baris untuk satu AWB. Menyimpan kawasan/titik pickup-delivery serta snapshot nama pengirim/penerima; API hanya mengirim versi tersamarkan. |
+| `couriers` | Master kode dan nama tampilan kurir. Tidak menyimpan akun, lokasi langsung, atau kredensial. |
 | `hubs` | Master titik hub beserta kode, nama, area, dan koordinat penanda peta. |
 | `route_stops` | Rencana urutan titik yang dilalui satu AWB. Kombinasi `shipment_id` dan `stop_order` harus unik. |
 | `shipment_events` | Catatan kejadian yang benar-benar terjadi, misalnya pickup, tiba hub, keluar hub, transit, sedang diantar, dan delivered. |
+| `delivery_confirmations` | Detail satu-ke-satu untuk event delivered: tipe penerima, nama penerima, catatan lokasi penempatan, dan waktu konfirmasi. |
 | `shipment_event_media` | Metadata foto pickup/delivery. File gambar tidak disimpan di PostgreSQL; tabel hanya menyimpan storage key privat, MIME, ukuran, dimensi, waktu, status privasi, alt text, dan checksum. |
 | `temperature_profiles` | Target serta batas normal/peringatan suhu untuk setiap jenis aset. |
 | `thermal_assets` | Identitas cooler bag, freezer hub, dan mobil boks yang menghasilkan data suhu. |
 | `shipment_asset_assignments` | Interval waktu sebuah AWB berada pada aset tertentu. Satu AWB hanya boleh memiliki satu assignment aktif pada satu waktu. |
 | `temperature_readings` | Pembacaan suhu per aset, waktu observasi, sumber, jenis pemicu, dan status termal. |
 
-Schema `seed` juga berisi sembilan tabel sementara dengan bentuk yang mendekati CSV. Aplikasi tidak membaca schema ini. Data dipindahkan ke tabel produksi oleh `anteraja_frozen_seed_transform.sql` setelah seluruh CSV selesai diimpor.
+Schema `seed` juga berisi tiga belas tabel sementara dengan bentuk yang sama seperti setiap CSV. Aplikasi tidak membaca schema ini. Data dipindahkan ke tabel produksi oleh `anteraja_frozen_seed_transform.sql`.
 
 ## 5. Normalisasi
 
@@ -83,8 +91,10 @@ Rancangan menerapkan prinsip normalisasi sampai bentuk yang sesuai untuk kebutuh
 2. Data hub, profil suhu, dan aset hanya disimpan sekali pada tabel master masing-masing.
 3. Nama dan tipe aset tidak disalin ke setiap pembacaan suhu; reading cukup menyimpan foreign key `thermal_asset_id`.
 4. Hubungan banyak-ke-banyak shipment–aset dipisahkan ke tabel penghubung karena memiliki atribut waktu mulai dan selesai.
-5. Status terbaru diturunkan dari `shipment_events`, sehingga tidak ada dua sumber status yang dapat saling bertentangan.
-6. Metadata foto dipisahkan dari event agar event tetap atomik dan storage file dapat dikelola Laravel tanpa menyimpan binary besar di PostgreSQL.
+5. Kurir dipisahkan menjadi master karena satu kurir dapat menangani banyak event.
+6. Konfirmasi penerimaan dipisahkan karena hanya berlaku untuk event delivered dan mempunyai atribut khusus.
+7. Status terbaru diturunkan dari `shipment_events`, sehingga tidak ada dua sumber status yang dapat saling bertentangan.
+8. Metadata foto dipisahkan dari event agar event tetap atomik dan storage file dapat dikelola Laravel tanpa menyimpan binary besar di PostgreSQL.
 
 ## 6. Integritas dan optimasi
 
@@ -98,11 +108,11 @@ DDL menyediakan:
 - index event terbaru, reading terbaru, assignment aktif, dan pembacaan anomali;
 - unique constraint satu foto per jenis per event, index media publik, checksum SHA-256, batas 10 MB, MIME/dimensi, serta trigger pencocokan jenis foto dengan event pickup/delivered;
 - deduplikasi pesan suhu melalui kombinasi `source + message_id`;
-- view `shipment_current_status`, `shipment_public_event_media`, `shipment_temperature_history`, dan `shipment_latest_temperature` untuk kebutuhan API Laravel.
+- fungsi masking nama dan view `shipment_public_summary`, `shipment_public_timeline`, `shipment_current_status`, `shipment_public_event_media`, `shipment_temperature_history`, serta `shipment_latest_temperature` untuk kebutuhan API Laravel.
 
 ## 7. Sample data
 
-Sample data terdiri dari sembilan CSV yang saling berelasi:
+Sample data terdiri dari tiga belas CSV yang saling berelasi:
 
 | File | Jumlah data | Tujuan |
 |---|---:|---|
@@ -110,13 +120,17 @@ Sample data terdiri dari sembilan CSV yang saling berelasi:
 | `hubs.csv` | 10 | Master hub |
 | `route_stops.csv` | 266 | Urutan pickup–hub–delivery |
 | `shipment_events.csv` | 274 | Riwayat kejadian pengiriman |
+| `shipment_parties.csv` | 5 | Nama pihak untuk skenario demo; UI/API wajib menyamarkan |
+| `couriers.csv` | 4 | Master kurir contoh |
+| `shipment_event_couriers.csv` | 10 | Relasi kurir dengan event pickup atau delivery |
+| `delivery_confirmations.csv` | 2 | Penerima, tipe penerimaan, catatan penempatan, dan waktu konfirmasi delivered |
 | `shipment_event_media.csv` | 3 | Metadata contoh foto pickup/delivery; storage key tidak menunjuk file publik |
 | `temperature_profiles.csv` | 3 | Profil suhu per jenis aset |
 | `thermal_assets.csv` | 86 | Master aset termal |
 | `shipment_asset_assignments.csv` | 260 | Histori perpindahan paket antar-aset |
 | `temperature_readings_seed.csv` | 400 | Pembacaan suhu awal |
 
-Total sample data adalah **1.372 baris**. Data ini digunakan untuk perancangan dan pengujian, bukan data pengiriman operasional Anteraja.
+Data tambahan pihak/kurir sengaja difokuskan pada lima AWB demo dengan tahap bervariasi. Seluruh nama adalah data kerja proyek dan bukan data operasional Anteraja.
 
 ### Alur penyimpanan foto
 
@@ -159,9 +173,13 @@ Impor melalui fitur **Import Data** pada DBeaver dengan urutan:
 4. `shipments.csv` → `seed.shipments`
 5. `route_stops.csv` → `seed.route_stops`
 6. `shipment_events.csv` → `seed.shipment_events`
-7. `shipment_event_media.csv` → `seed.shipment_event_media`
-8. `shipment_asset_assignments.csv` → `seed.shipment_asset_assignments`
-9. `temperature_readings_seed.csv` → `seed.temperature_readings`
+7. `shipment_parties.csv` → `seed.shipment_parties`
+8. `couriers.csv` → `seed.couriers`
+9. `shipment_event_couriers.csv` → `seed.shipment_event_couriers`
+10. `delivery_confirmations.csv` → `seed.delivery_confirmations`
+11. `shipment_event_media.csv` → `seed.shipment_event_media`
+12. `shipment_asset_assignments.csv` → `seed.shipment_asset_assignments`
+13. `temperature_readings_seed.csv` → `seed.temperature_readings`
 
 Saat mengimpor file terakhir, petakan kolom CSV `trigger` ke kolom tabel `trigger_type`.
 
@@ -182,6 +200,8 @@ SELECT count(*) FROM hubs;                         -- 10
 SELECT count(*) FROM route_stops;                  -- 266
 SELECT count(*) FROM shipment_events;              -- 274
 SELECT count(*) FROM shipment_event_media;         -- 3
+SELECT count(*) FROM couriers;                      -- 4
+SELECT count(*) FROM delivery_confirmations;        -- 2
 SELECT count(*) FROM temperature_profiles;         -- 3
 SELECT count(*) FROM thermal_assets;                -- 86
 SELECT count(*) FROM shipment_asset_assignments;    -- 260
