@@ -1,0 +1,118 @@
+@import "tailwindcss";
+/* Shared design tokens for React components and Tailwind v4 utilities. */
+@theme {
+  --font-sans: "Plus Jakarta Sans", Inter, ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #fff0f6;
+  --color-brand-100: #fce7f3;
+  --color-brand-500: #ed0677;
+  --color-brand-600: #d50068;
+  --color-brand-700: #b80059;
+
+  --color-ink-50: #f8fafc;
+  --color-ink-100: #f1f5f9;
+  --color-ink-200: #e2e8f0;
+  --color-ink-300: #cbd5e1;
+  --color-ink-500: #64748b;
+  --color-ink-600: #475569;
+  --color-ink-700: #334155;
+  --color-ink-950: #0f172a;
+
+  --color-cold-100: #cffafe;
+  --color-cold-700: #0e7490;
+  --color-success-100: #d1fae5;
+  --color-success-700: #047857;
+  --color-warning-100: #fef3c7;
+  --color-warning-800: #92400e;
+  --color-danger-100: #fee2e2;
+  --color-danger-700: #b91c1c;
+
+  --radius-card: 1rem;
+  --radius-card-lg: 1.5rem;
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.06);
+  --shadow-card-raised: 0 14px 35px rgb(15 23 42 / 0.08);
+  --container-content: 76rem;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    min-width: 20rem;
+    margin: 0;
+    color: var(--color-ink-950);
+    background: var(--color-ink-50);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-cold-700);
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+.route-marker-wrapper {
+  background: transparent;
+  border: 0;
+}
+.route-marker {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 3px solid #94a3b8;
+  border-radius: 50%;
+  background: white;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: 0 2px 8px rgb(15 23 42 / 0.16);
+}
+.route-marker--reached {
+  border-color: white;
+  background: var(--color-brand-500);
+  color: white;
+}
+
+@keyframes toast-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toast-progress {
+  to {
+    width: 0;
+  }
+}
+
+.toast-enter {
+  animation: toast-enter 180ms ease-out both;
+}
+
+.toast-progress {
+  width: 100%;
+  animation: toast-progress 3s linear forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast-enter,
+  .toast-progress {
+    animation: none;
+  }
+}
