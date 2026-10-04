@@ -6,6 +6,7 @@ use App\Models\Dataset\Shipment;
 use App\Models\Dataset\ShipmentPublicSummary;
 use App\Models\Dataset\ShipmentTemperatureHistory;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -17,6 +18,15 @@ class CapstoneTrackingService
             return [];
         }
 
+        $sortedAwbs = $awbs;
+        sort($sortedAwbs, SORT_STRING);
+        $key = 'tracking:v1:search:'.hash('sha256', implode(',', $sortedAwbs));
+
+        return Cache::remember($key, 60, fn (): array => $this->searchFromDatabase($awbs));
+    }
+
+    private function searchFromDatabase(array $awbs): array
+    {
         $rows = ShipmentPublicSummary::query()->from('shipment_public_summary as p')
             ->join('shipments as s', 's.id', '=', 'p.shipment_id')
             ->whereIn('p.awb', $awbs)
@@ -32,6 +42,11 @@ class CapstoneTrackingService
     }
 
     public function find(string $awb): ?array
+    {
+        return Cache::remember(self::detailCacheKey($awb), 60, fn (): ?array => $this->findFromDatabase($awb));
+    }
+
+    private function findFromDatabase(string $awb): ?array
     {
         // Keep independent detail sections in one PostgreSQL query.
         // PostgreSQL aggregates each section separately, so joins cannot multiply rows.
@@ -199,6 +214,11 @@ class CapstoneTrackingService
 
     public function temperatureReadings(string $awb): ?array
     {
+        return Cache::remember(self::readingsCacheKey($awb), 60, fn (): ?array => $this->readingsFromDatabase($awb));
+    }
+
+    private function readingsFromDatabase(string $awb): ?array
+    {
         $shipmentId = Shipment::query()->where('awb', $awb)->value('id');
         if ($shipmentId === null) {
             return null;
@@ -221,6 +241,22 @@ class CapstoneTrackingService
                 'state' => strtolower($reading->temperature_status ?: 'NORMAL'),
             ])->all(),
         ];
+    }
+
+    public static function detailCacheKey(string $awb): string
+    {
+        return 'tracking:v1:detail:'.hash('sha256', strtoupper($awb));
+    }
+
+    public static function readingsCacheKey(string $awb): string
+    {
+        return 'tracking:v1:readings:'.hash('sha256', strtoupper($awb));
+    }
+
+    public static function forgetCachedShipment(string $awb): void
+    {
+        Cache::forget(self::detailCacheKey($awb));
+        Cache::forget(self::readingsCacheKey($awb));
     }
 
     private function analysisForShipment(int $shipmentId): array
