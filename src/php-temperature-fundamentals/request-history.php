@@ -8,6 +8,10 @@ startTemperatureSession();
 $entries = array_reverse($_SESSION['temperature_requests'] ?? []);
 $saved = ($_GET['saved'] ?? '') === '1';
 $cleared = ($_GET['cleared'] ?? '') === '1';
+$totalViolations = 0;
+foreach ($entries as $entry) {
+    $totalViolations += $entry['result']['pelanggaran'];
+}
 ?>
 <!doctype html>
 <html lang="id">
@@ -45,7 +49,7 @@ $cleared = ($_GET['cleared'] ?? '') === '1';
             <div class="section-heading">
                 <div>
                     <h2 id="history-title"><?= count($entries) ?> permintaan tersimpan</h2>
-                    <p>Data simulasi ini tidak tersimpan dalam database.</p>
+                    <p>Total <?= $totalViolations ?> pembacaan melewati batas dari seluruh permintaan. Data simulasi ini tidak tersimpan dalam database.</p>
                 </div>
                 <a href="temperature-form.php">Buat analisis baru</a>
             </div>
