@@ -1,6 +1,6 @@
 # Anteraja Frozen — migrasi UI interaktif ke React
 
-Setelah halaman pelacakan dibuat dengan HTML, CSS, dan JavaScript interaktif, antarmuka yang sama kami susun ulang menggunakan **React dan Vite**. Tujuannya adalah memindahkan pengelolaan tampilan dari manipulasi DOM langsung ke komponen yang menerima props dan berubah mengikuti state.
+Setelah halaman pelacakan dibuat dengan HTML, CSS, dan JavaScript interaktif, antarmuka yang sama saya susun ulang menggunakan **React dan Vite**. Tujuannya adalah memindahkan pengelolaan tampilan dari manipulasi DOM langsung ke komponen yang menerima props dan berubah mengikuti state.
 
 Fitur yang tersedia meliputi pencarian hingga 10 AWB, daftar hasil, detail perjalanan, suhu aset, peta ilustratif, serta foto pickup dan penerimaan. Data yang digunakan masih berupa mock data lokal. Tampilan berganti tanpa memuat ulang dokumen, tetapi belum menggunakan React Router: URL tetap sama saat pengguna berpindah antara beranda, hasil, dan detail.
 
@@ -134,4 +134,4 @@ npm run build
 
 Uji manual: cari beberapa AWB, periksa kartu valid dan jumlah hasil, buka detail paket dalam perjalanan/terkirim, buka linimasa/peta, lihat foto dan riwayat suhu, lalu kembali ke hasil/beranda. Periksa juga ukuran layar ponsel dan konsol browser.
 
-Untuk tahap API publik: di beranda amati skeleton galeri dan status “Memuat provinsi”, pilih provinsi asal/tujuan lalu kabupaten/kota, dan periksa ringkasan. Di Network Tab terlihat permintaan ke `emsifa.com` dan `commons.wikimedia.org`. Gunakan mode Offline untuk menguji pesan error dan tombol coba lagi. Pada React DevTools pilih `ShipmentProvider` untuk melihat state pilihan wilayah dan hasil fetching di context. Bukti screenshot untuk LMS dapat memuat loading, data API yang sudah tampil, DevTools, serta `git log --oneline -5`. Pengerjaan ini masih lokal; **belum di-push ke GitHub**.
+Untuk tahap API publik: di beranda amati skeleton galeri dan status “Memuat provinsi”, pilih provinsi asal/tujuan lalu kabupaten/kota, dan periksa ringkasan. Di Network Tab terlihat permintaan ke `emsifa.com` dan `commons.wikimedia.org`. Gunakan mode Offline untuk menguji pesan error dan tombol coba lagi. Pada React DevTools pilih `ShipmentProvider` untuk melihat state pilihan wilayah dan hasil fetching di context. Bukti screenshot untuk LMS dapat memuat loading, data API yang sudah tampil, DevTools, serta `git log --oneline -5`.
