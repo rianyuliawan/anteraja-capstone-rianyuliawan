@@ -1,0 +1,495 @@
+[
+  {
+    "id": "a71e0a0000000001",
+    "type": "tab",
+    "label": "Anteraja Frozen | Simulasi Suhu",
+    "disabled": false,
+    "info": "GET aset aktif dari Laravel Day 13 → buat suhu simulasi → POST batch ke Laravel → PostgreSQL lokal."
+  },
+  {
+    "id": "a71e0a0000000002",
+    "type": "inject",
+    "z": "a71e0a0000000001",
+    "name": "Semua aset • setiap 60 menit + saat mulai",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "3600",
+    "crontab": "",
+    "once": true,
+    "onceDelay": "3",
+    "topic": "",
+    "payload": "",
+    "payloadType": "str",
+    "x": 210,
+    "y": 100,
+    "wires": [
+      [
+        "a71e0a0000000007"
+      ]
+    ]
+  },
+  {
+    "id": "a71e0a0000000011",
+    "type": "inject",
+    "z": "a71e0a0000000001",
+    "name": "1. Pilih BAG-002",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": "",
+    "topic": "",
+    "payload": "BAG-002",
+    "payloadType": "str",
+    "x": 180,
+    "y": 200,
+    "wires": [
+      [
+        "a71e0a000000000f"
+      ]
+    ]
+  },
+  {
+    "id": "a71e0a0000000012",
+    "type": "inject",
+    "z": "a71e0a0000000001",
+    "name": "1. Pilih BAG-012",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": "",
+    "topic": "",
+    "payload": "BAG-012",
+    "payloadType": "str",
+    "x": 180,
+    "y": 250,
+    "wires": [
+      [
+        "a71e0a000000000f"
+      ]
+    ]
+  },
+  {
+    "id": "a71e0a0000000013",
+    "type": "inject",
+    "z": "a71e0a0000000001",
+    "name": "1. Pilih FREEZER-JKT-UTR",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": "",
+    "topic": "",
+    "payload": "FREEZER-JKT-UTR",
+    "payloadType": "str",
+    "x": 180,
+    "y": 300,
+    "wires": [
+      [
+        "a71e0a000000000f"
+      ]
+    ]
+  },
+  {
+    "id": "a71e0a0000000014",
+    "type": "inject",
+    "z": "a71e0a0000000001",
+    "name": "1. Pilih FREEZER-JKT-PST",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": "",
+    "topic": "",
+    "payload": "FREEZER-JKT-PST",
+    "payloadType": "str",
+    "x": 180,
+    "y": 350,
+    "wires": [
+      [
+        "a71e0a000000000f"
+      ]
+    ]
+  },
+  {
+    "id": "a71e0a0000000015",
+    "type": "inject",
+    "z": "a71e0a0000000001",
+    "name": "1. Pilih BOX-02",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": "",
+    "topic": "",
+    "payload": "BOX-02",
+    "payloadType": "str",
+    "x": 180,
+    "y": 400,
+    "wires": [
+      [
+        "a71e0a000000000f"
+      ]
+    ]
+  },
+  {
+    "id": "a71e0a0000000016",
+    "type": "inject",
+    "z": "a71e0a0000000001",
+    "name": "1. Pilih BOX-06",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": "",
+    "topic": "",
+    "payload": "BOX-06",
+    "payloadType": "str",
+    "x": 180,
+    "y": 450,
+    "wires": [
+      [
+        "a71e0a000000000f"
+      ]
+    ]
+  },
+  {
+    "id": "a71e0a0000000017",
+    "type": "inject",
+    "z": "a71e0a0000000001",
+    "name": "1. Pilih aset lain (ubah payload kode aset)",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": "",
+    "topic": "",
+    "payload": "BAG-001",
+    "payloadType": "str",
+    "x": 220,
+    "y": 500,
+    "wires": [
+      [
+        "a71e0a000000000f"
+      ]
+    ]
+  },
+  {
+    "id": "a71e0a000000000f",
+    "type": "function",
+    "z": "a71e0a0000000001",
+    "name": "Simpan aset yang dipilih",
+    "func": "const assetCode = String(msg.payload || \"\").trim().toUpperCase();\nif (!/^[A-Z0-9][A-Z0-9-]{1,49}$/.test(assetCode)) {\n    node.error(\"Kode aset tidak valid.\"); return null;\n}\nflow.set(\"selected_asset_code\", assetCode);\nnode.status({ fill: \"blue\", shape: \"dot\", text: \"aset dipilih: \" + assetCode });\nmsg.payload = { selected_asset_code: assetCode, note: \"Klik tombol Normal/Peringatan/Kritis untuk mengirim pembacaan.\" };\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 510,
+    "y": 350,
+    "wires": [
+      [
+        "a71e0a0000000010"
+      ]
+    ]
+  },
+  {
+    "id": "a71e0a0000000010",
+    "type": "debug",
+    "z": "a71e0a0000000001",
+    "name": "Aset manual terpilih",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "x": 760,
+    "y": 350,
+    "wires": []
+  },
+  {
+    "id": "a71e0a0000000003",
+    "type": "inject",
+    "z": "a71e0a0000000001",
+    "name": "2. Uji Normal pada aset terpilih",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": "",
+    "topic": "",
+    "payload": "{\"mode\":\"NORMAL\"}",
+    "payloadType": "json",
+    "x": 210,
+    "y": 590,
+    "wires": [
+      [
+        "a71e0a0000000006"
+      ]
+    ]
+  },
+  {
+    "id": "a71e0a0000000004",
+    "type": "inject",
+    "z": "a71e0a0000000001",
+    "name": "2. Uji Peringatan pada aset terpilih",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": "",
+    "topic": "",
+    "payload": "{\"mode\":\"WARNING\"}",
+    "payloadType": "json",
+    "x": 210,
+    "y": 650,
+    "wires": [
+      [
+        "a71e0a0000000006"
+      ]
+    ]
+  },
+  {
+    "id": "a71e0a0000000005",
+    "type": "inject",
+    "z": "a71e0a0000000001",
+    "name": "2. Uji Kritis pada aset terpilih",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": "",
+    "topic": "",
+    "payload": "{\"mode\":\"CRITICAL\"}",
+    "payloadType": "json",
+    "x": 210,
+    "y": 710,
+    "wires": [
+      [
+        "a71e0a0000000006"
+      ]
+    ]
+  },
+  {
+    "id": "a71e0a0000000006",
+    "type": "function",
+    "z": "a71e0a0000000001",
+    "name": "Gabungkan aset + skenario",
+    "func": "const assetCode = msg.payload?.asset_code || flow.get(\"selected_asset_code\") || \"BOX-02\";\nconst mode = msg.payload?.mode;\nif (![\"NORMAL\", \"WARNING\", \"CRITICAL\"].includes(mode)) {\n    node.error(\"Skenario suhu tidak valid.\"); return null;\n}\nmsg.scenario = { asset_code: assetCode, mode };\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 510,
+    "y": 650,
+    "wires": [
+      [
+        "a71e0a0000000007"
+      ]
+    ]
+  },
+  {
+    "id": "a71e0a0000000007",
+    "type": "function",
+    "z": "a71e0a0000000001",
+    "name": "Minta aset aktif (atau pakai cache)",
+    "func": "const cached = flow.get(\"cached_assets\");\nconst cacheTime = flow.get(\"cached_assets_time\") || 0;\nconst now = Date.now();\nconst cacheTTL = 10 * 60 * 1000;\nif (cached && (now - cacheTime) < cacheTTL) {\n    msg.payload = { assets: cached };\n    msg.fromCache = true;\n    return [null, msg];\n}\nconst token = env.get(\"ANTERAJA_INGEST_TOKEN\");\nif (!token) { node.error(\"Token API internal belum tersedia.\"); return null; }\nmsg.method = \"GET\";\nmsg.url = (env.get(\"ANTERAJA_API_BASE_URL\") || \"http://127.0.0.1:8090\") + \"/api/internal/thermal-assets\";\nmsg.headers = { Authorization: \"Bearer \" + token, Accept: \"application/json\", Connection: \"keep-alive\" };\nreturn [msg, null];",
+    "outputs": 2,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 470,
+    "y": 100,
+    "wires": [
+      [
+        "a71e0a0000000008"
+      ],
+      [
+        "a71e0a0000000009"
+      ]
+    ]
+  },
+  {
+    "id": "a71e0a0000000008",
+    "type": "http request",
+    "z": "a71e0a0000000001",
+    "name": "GET Laravel /thermal-assets",
+    "method": "use",
+    "ret": "obj",
+    "paytoqs": "ignore",
+    "url": "",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "insecureHTTPParser": false,
+    "authType": "",
+    "senderr": false,
+    "headers": [],
+    "x": 740,
+    "y": 100,
+    "wires": [
+      [
+        "a71e0a0000000009"
+      ]
+    ]
+  },
+  {
+    "id": "a71e0a0000000009",
+    "type": "function",
+    "z": "a71e0a0000000001",
+    "name": "Buat suhu per aset",
+    "func": "if (!msg.fromCache && msg.statusCode !== 200 || !Array.isArray(msg.payload?.assets)) {\n    node.error(\"Daftar aset dari Laravel gagal dimuat.\"); return null;\n}\nconst assets = msg.payload.assets;\nif (!msg.fromCache) {\n    flow.set(\"cached_assets\", assets);\n    flow.set(\"cached_assets_time\", Date.now());\n}\nconst selected = msg.scenario?.asset_code;\nconst mode = msg.scenario?.mode || \"NORMAL\";\nconst list = selected ? assets.filter(a => a.asset_code === selected) : assets;\nif (!list.length) { node.error(\"Aset simulasi tidak ditemukan: \" + selected); return null; }\nconst observedAt = new Date().toISOString();\nconst readings = list.map(asset => {\n    const random = (Math.random() - 0.5) * 0.6;\n    let value = asset.target_c + random;\n    if (selected && mode === \"WARNING\") value = asset.normal_high_c + Math.min(0.3, (asset.warning_high_c - asset.normal_high_c) / 2);\n    if (selected && mode === \"CRITICAL\") value = asset.warning_high_c + 1;\n    return {\n        message_id: asset.asset_code + \":\" + Date.now().toString(36) + \":\" + Math.random().toString(36).slice(2),\n        asset_code: asset.asset_code,\n        observed_at: observedAt,\n        temperature_c: Number(value.toFixed(2))\n    };\n});\nmsg.payload = { readings };\nmsg.assetCount = readings.length;\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 1010,
+    "y": 100,
+    "wires": [
+      [
+        "a71e0a000000000a"
+      ]
+    ]
+  },
+  {
+    "id": "a71e0a000000000a",
+    "type": "function",
+    "z": "a71e0a0000000001",
+    "name": "Siapkan POST + token",
+    "func": "const token = env.get(\"ANTERAJA_INGEST_TOKEN\");\nif (!token) { node.error(\"Token API internal belum tersedia.\"); return null; }\nmsg.method = \"POST\";\nmsg.url = (env.get(\"ANTERAJA_API_BASE_URL\") || \"http://127.0.0.1:8090\") + \"/api/internal/temperature-readings\";\nmsg.headers = { Authorization: \"Bearer \" + token, Accept: \"application/json\", \"Content-Type\": \"application/json\", Connection: \"keep-alive\" };\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 220,
+    "y": 420,
+    "wires": [
+      [
+        "a71e0a000000000b"
+      ]
+    ]
+  },
+  {
+    "id": "a71e0a000000000b",
+    "type": "http request",
+    "z": "a71e0a0000000001",
+    "name": "POST Laravel /temperature-readings",
+    "method": "use",
+    "ret": "obj",
+    "paytoqs": "ignore",
+    "url": "",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "insecureHTTPParser": false,
+    "authType": "",
+    "senderr": false,
+    "headers": [],
+    "x": 570,
+    "y": 420,
+    "wires": [
+      [
+        "a71e0a000000000c"
+      ]
+    ]
+  },
+  {
+    "id": "a71e0a000000000c",
+    "type": "function",
+    "z": "a71e0a0000000001",
+    "name": "Periksa hasil simpan",
+    "func": "if (![200, 201].includes(msg.statusCode)) {\n    node.error(\"Laravel menolak pembacaan: HTTP \" + msg.statusCode); return null;\n}\nnode.status({ fill: \"green\", shape: \"dot\", text: (msg.payload?.inserted || 0) + \" dari \" + msg.assetCount + \" aset tersimpan\" });\nmsg.payload = { inserted: msg.payload.inserted, duplicates: msg.payload.duplicates, assets: msg.assetCount };\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 880,
+    "y": 420,
+    "wires": [
+      [
+        "a71e0a000000000d"
+      ]
+    ]
+  },
+  {
+    "id": "a71e0a000000000d",
+    "type": "debug",
+    "z": "a71e0a0000000001",
+    "name": "Ringkasan aman (tanpa token)",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "x": 1120,
+    "y": 420,
+    "wires": []
+  },
+  {
+    "id": "a71e0a000000000e",
+    "type": "comment",
+    "z": "a71e0a0000000001",
+    "name": "Pilih aset → pilih mode; default BOX-02 jika belum memilih",
+    "info": "Enam aset adalah tombol cepat. Untuk aset aktif lain, edit payload node 'Pilih aset lain', isi kode dari thermal_assets, lalu Deploy. Semua kode divalidasi terhadap daftar aset aktif Laravel ketika diuji. Token berasal dari environment dan tidak dimasukkan ke flow/Debug.",
+    "x": 770,
+    "y": 40,
+    "wires": []
+  }
+]
