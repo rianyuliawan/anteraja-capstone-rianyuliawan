@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { currentDemoShipments } from "../../data/demoShipments";
+import { ShipmentProvider } from "../../context/ShipmentContext";
 import SiteHeader from "../../components/SiteHeader";
 import SiteFooter from "../../components/SiteFooter";
 import SearchHero from "../../components/SearchHero";
@@ -11,6 +12,8 @@ import EvidenceGallery from "../../components/EvidenceGallery";
 import TemperatureJourney from "../../components/TemperatureJourney";
 import Button from "../../components/ui/Button";
 import Toast from "../../components/ui/Toast";
+import LocationExplorer from "../../components/LocationExplorer";
+import PackageGallery from "../../components/PackageGallery";
 
 const features = [
   {
@@ -64,6 +67,8 @@ function HomeContent() {
       <p className="mx-auto mt-8 max-w-3xl text-center text-xs text-ink-500">
         Suhu yang ditampilkan merupakan suhu lingkungan kompartemen atau armada.
       </p>
+      <LocationExplorer />
+      <PackageGallery />
     </>
   );
 }
@@ -182,7 +187,9 @@ export function TrackingPage() {
                 onSelect={showDetail}
               />
             ) : (
-              <HomeContent />
+              <ShipmentProvider>
+                <HomeContent />
+              </ShipmentProvider>
             )}
           </>
         )}
