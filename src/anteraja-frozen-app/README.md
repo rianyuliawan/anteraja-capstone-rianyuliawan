@@ -72,7 +72,15 @@ Buka `http://127.0.0.1:5195/`. Contoh resi terkirim: `ANT-FRZ-0012`. Untuk simul
 | GET | `/api/internal/thermal-assets` | Daftar aset aktif untuk Node-RED; perlu Bearer token. |
 | POST | `/api/internal/temperature-readings` | Terima pembacaan Node-RED; perlu Bearer token. |
 
-Frontend tidak terhubung langsung ke PostgreSQL atau Node-RED. Node-RED meminta daftar aset, membangkitkan suhu simulasi, lalu mengirimnya ke API Laravel. Laravel memvalidasi kode aset, suhu, waktu, dan `message_id` sebelum menyimpan. Detail React mengambil data terbaru dari API selama halaman aktif. Belum ada panel admin, login, atau Redis di fondasi ini.
+Frontend tidak terhubung langsung ke PostgreSQL atau Node-RED. Node-RED meminta daftar aset, membangkitkan suhu simulasi, lalu mengirimnya ke API Laravel. Laravel memvalidasi kode aset, suhu, waktu, dan `message_id` sebelum menyimpan. Detail React mengambil data terbaru dari API selama halaman aktif. Belum ada panel admin atau login di fondasi ini.
+
+## Analisis SQL dan cache Redis
+
+Query SQL Day 14, penjelasan relasi, dan contoh hasilnya ada di `../../docs/sql-queries.md`. Latihan tersebut dijalankan langsung di PostgreSQL; kode API pelacakan tetap menggunakan model Eloquent.
+
+Pencarian hingga 10 AWB, detail resi, dan riwayat suhu memakai cache Redis selama 60 detik. Kunci cache memakai hash AWB, bukan nama pengirim atau penerima. Setelah Node-RED menambah pembacaan, Laravel mencari resi yang terkait dengan pembacaan itu lalu menghapus cache detail dan riwayatnya agar permintaan berikutnya membaca data baru. Pencarian tidak perlu dihapus karena respons pencarian tidak memuat suhu. PostgreSQL tetap menjadi sumber data; Redis hanya menyimpan hasil baca sementara.
+
+Untuk menjalankan konfigurasi lokal ini, pastikan `redis-cli ping` menghasilkan `PONG` dan `.env` backend memakai `CACHE_STORE=redis`. Tes otomatis memakai cache `array` agar tidak memerlukan server Redis.
 
 ## Pemeriksaan
 

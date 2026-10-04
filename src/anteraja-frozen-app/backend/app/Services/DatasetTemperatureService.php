@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Dataset\ShipmentTemperatureHistory;
 use App\Models\Dataset\TemperatureReading;
 use App\Models\Dataset\ThermalAsset;
 use Carbon\CarbonImmutable;
@@ -42,7 +43,7 @@ class DatasetTemperatureService
             ];
         }
 
-        return (new TemperatureReading)->getConnection()->transaction(function () use ($prepared) {
+        $result = (new TemperatureReading)->getConnection()->transaction(function () use ($prepared) {
             $columns = ['id', 'thermal_asset_id', 'message_id', 'temperature_c', 'observed_at', 'temperature_status'];
 
             $messageIds = array_column($prepared, 'message_id');
@@ -117,6 +118,26 @@ class DatasetTemperatureService
                 'readings' => $results,
             ];
         });
+
+        $insertedIds = array_column(array_filter(
+            $result['readings'],
+            static fn (array $reading): bool => ! $reading['duplicate']
+        ), 'id');
+
+        if ($insertedIds !== []) {
+            $awbs = ShipmentTemperatureHistory::query()
+                ->from('shipment_temperature_history as history')
+                ->join('shipments as shipment', 'shipment.id', '=', 'history.shipment_id')
+                ->whereIn('history.temperature_reading_id', $insertedIds)
+                ->distinct()
+                ->pluck('shipment.awb');
+
+            foreach ($awbs as $awb) {
+                CapstoneTrackingService::forgetCachedShipment($awb);
+            }
+        }
+
+        return $result;
     }
 
     private function assertIdentical(object $row, array $reading): void
