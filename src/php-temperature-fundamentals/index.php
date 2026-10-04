@@ -79,6 +79,7 @@ function aman(string $teks): string
             <p class="eyebrow">Frozen Temperature Traceability System</p>
             <h1 id="page-title">Analisis suhu aset</h1>
             <p>Masukkan pembacaan suhu untuk melihat nilai tertinggi, terendah, rata-rata, serta pelanggaran batas. Hasil dihitung oleh PHP di server.</p>
+            <p><a href="temperature-form.php">Lanjut ke latihan OOP, form POST, dan riwayat session</a></p>
         </section>
 
         <section class="panel" aria-labelledby="form-title">
