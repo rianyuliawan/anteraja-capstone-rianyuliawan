@@ -32,11 +32,16 @@ SELECT s.awb, lt.temperature_c,
        END AS kategori_suhu
 FROM shipments s
 LEFT JOIN shipment_latest_temperature lt ON lt.shipment_id = s.id
-ORDER BY s.awb
+ORDER BY CASE lt.temperature_status
+             WHEN 'CRITICAL' THEN 1
+             WHEN 'WARNING' THEN 2
+             WHEN 'NORMAL' THEN 3
+             ELSE 4
+         END, s.awb
 LIMIT 10;
 ```
 
-Hasil contoh: `ANT-FRZ-0001` = `-4,94 °C` (`Normal`), `ANT-FRZ-0002` = `-5,01 °C` (`Normal`), dan `ANT-FRZ-0003` = `-4,82 °C` (`Normal`). Query mengembalikan 10 baris.
+Hasil contoh: `ANT-FRZ-0016` dan `ANT-FRZ-0065` masing-masing `-1,30 °C` (`Perlu perhatian`), diikuti `ANT-FRZ-0001` = `-4,94 °C` (`Normal`). Query mengembalikan 10 baris.
 
 ## 3 Jumlah shipment per kurir bulan ini
 
@@ -115,9 +120,3 @@ ORDER BY jumlah_shipment, c.courier_code;
 ```
 
 Hasil saat ini: `SAT-002` dan `SAT-004` masing-masing `23` shipment; `SAT-001` dan `SAT-003` masing-masing `26`. Semua kurir contoh sudah memiliki penugasan, tetapi query tetap menangani kurir baru yang belum mendapat paket.
-
-## Kaitan dengan aplikasi
-
-Query di atas dipakai untuk memahami relasi dan agregasi PostgreSQL, bukan menggantikan Eloquent pada API pelacakan. Redis menyimpan hasil baca pencarian, detail, dan riwayat suhu sementara; data sumber tetap berada di PostgreSQL. Cache detail dan riwayat resi yang terdampak dihapus setelah pembacaan Node-RED baru tersimpan.
-
-Server-side processing pada aplikasi terjadi saat Laravel membatasi pencarian maksimal 10 AWB, memilih resi yang valid, dan meminta PostgreSQL menghitung status serta analisis suhu. React hanya merender respons yang sudah diproses server; latihan ini tidak menambah pagination pada riwayat suhu.
