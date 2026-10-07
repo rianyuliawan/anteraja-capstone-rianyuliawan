@@ -1,0 +1,6 @@
+hub_id,package_count,avg_dwell_hours,median_dwell_hours,p95_dwell_hours,min_dwell_hours,max_dwell_hours,stddev_dwell_hours,total_package_hubs,valid_pair_rate_pct,missing_arrival,missing_departure,duplicate_extra_scans,invalid_timestamp,invalid_order_pairs
+HUB_MKS,539,10.53,10.61,14.39,2.91,21.29,2.44,611,88.22,13,52,18,4,6
+HUB_YGY,83,9.49,9.44,13.9,2.46,16.38,2.48,98,84.69,4,10,4,2,1
+HUB_SBY,339,8.41,8.64,12.24,1.4,16.0,2.5,379,89.45,8,30,20,5,2
+HUB_BDG,223,7.51,7.63,11.96,0.25,13.85,2.7,247,90.28,3,19,14,4,2
+HUB_JKT,805,6.93,6.91,11.07,0.25,14.22,2.54,879,91.58,10,59,44,10,5

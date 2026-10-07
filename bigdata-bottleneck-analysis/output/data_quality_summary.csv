@@ -1,0 +1,11 @@
+metric,value
+total_events,4865
+total_package_hubs,2500
+missing_arrival,44
+missing_departure,201
+invalid_timestamp,25
+exact_duplicate_rows,32
+duplicate_event_groups,109
+duplicate_extra_scans,110
+invalid_order_pairs,18
+valid_pairs,2236
