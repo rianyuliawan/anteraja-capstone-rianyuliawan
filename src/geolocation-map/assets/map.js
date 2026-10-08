@@ -4,11 +4,29 @@ const mapElement = document.getElementById("shipment-map");
 const messageElement = document.getElementById("map-message");
 const countElement = document.getElementById("marker-count");
 const listElement = document.getElementById("location-list");
+const searchForm = document.getElementById("location-search-form");
+const searchInput = document.getElementById("location-search");
+const searchButton = document.getElementById("location-search-button");
+const searchResult = document.getElementById("search-result");
 const listButtons = new Map();
 
 function showMessage(message) {
   messageElement.hidden = false;
   messageElement.textContent = message;
+}
+
+function showSearchResult(title, detail = "", isError = false) {
+  searchResult.replaceChildren();
+  searchResult.hidden = false;
+  searchResult.classList.toggle("is-error", isError);
+  const heading = document.createElement("strong");
+  heading.textContent = title;
+  searchResult.append(heading);
+  if (detail) {
+    const description = document.createElement("span");
+    description.textContent = detail;
+    searchResult.append(description);
+  }
 }
 
 function makeInfoContent(item) {
@@ -20,7 +38,9 @@ function makeInfoContent(item) {
   status.textContent = `Status: ${item.status}`;
   const place = document.createElement("p");
   place.textContent = `Lokasi: ${item.place}`;
-  content.append(title, status, place);
+  const source = document.createElement("p");
+  source.textContent = item.address ? "Sumber: geocoding alamat" : "Sumber: koordinat contoh";
+  content.append(title, status, place, source);
   return content;
 }
 
@@ -108,6 +128,78 @@ async function initMap() {
     const infoWindow = new InfoWindow();
     const bounds = new LatLngBounds();
     let markerCount = 0;
+    let searchMarker;
+
+    searchButton.disabled = false;
+    searchForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const address = searchInput.value.trim();
+      if (address.length < 3) {
+        showSearchResult("Alamat terlalu singkat", "Masukkan setidaknya 3 karakter.", true);
+        return;
+      }
+
+      searchButton.disabled = true;
+      searchButton.textContent = "Mencari…";
+      showSearchResult("Mencari koordinat…", "Alamat sedang diproses oleh Google Geocoding API.");
+
+      try {
+        const body = new FormData();
+        body.set("address", address);
+        const response = await fetch("./geocode.php", {
+          method: "POST",
+          headers: { "X-Geocode-Request": "1" },
+          body,
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Lokasi tidak ditemukan.");
+
+        const position = { lat: result.lat, lng: result.lng };
+        if (searchMarker) searchMarker.map = null;
+        searchMarker = new AdvancedMarkerElement({
+          map,
+          position,
+          title: `Hasil geocoding: ${result.address}`,
+          content: new PinElement({
+            background: "#f0ac28",
+            borderColor: "#ffffff",
+            glyphColor: "#17253d",
+            glyphText: "L",
+          }),
+          gmpClickable: true,
+        });
+        const openSearchInfo = () => {
+          const content = document.createElement("div");
+          content.className = "info-window";
+          const title = document.createElement("strong");
+          title.textContent = "Hasil geocoding lokasi";
+          const place = document.createElement("p");
+          place.textContent = result.address;
+          const coordinates = document.createElement("p");
+          coordinates.textContent = `${result.lat.toFixed(6)}, ${result.lng.toFixed(6)}`;
+          content.append(title, place, coordinates);
+          infoWindow.setContent(content);
+          infoWindow.open({ map, anchor: searchMarker });
+        };
+        searchMarker.addEventListener("gmp-click", openSearchInfo);
+        map.panTo(position);
+        map.setZoom(14);
+        openSearchInfo();
+        showSearchResult(
+          `Ditemukan: ${result.address}`,
+          `Koordinat: ${result.lat.toFixed(6)}, ${result.lng.toFixed(6)}. Pin kuning menunjukkan hasil pencarian.`,
+        );
+        mapElement.scrollIntoView({
+          behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+          block: "center",
+        });
+      } catch (error) {
+        showSearchResult("Lokasi belum ditemukan", error.message, true);
+      } finally {
+        searchButton.disabled = false;
+        searchButton.textContent = "Cari lokasi";
+      }
+    });
 
     function addMarker(item, position) {
       const pin = new PinElement({
@@ -121,13 +213,14 @@ async function initMap() {
         position,
         title: `${item.code}, ${item.status}`,
         content: pin,
+        gmpClickable: true,
       });
       const openInfo = () => {
         infoWindow.setContent(makeInfoContent(item));
         infoWindow.open({ map, anchor: marker });
         map.panTo(position);
       };
-      marker.addListener("click", openInfo);
+      marker.addEventListener("gmp-click", openInfo);
       const button = listButtons.get(item.id);
       button.disabled = false;
       button.addEventListener("click", openInfo);
@@ -141,19 +234,14 @@ async function initMap() {
 
     const addressItems = locations.filter((item) => item.address && !Number.isFinite(item.lat));
     if (addressItems.length) {
-      const { Geocoder } = await google.maps.importLibrary("geocoding");
-      const geocoder = new Geocoder();
       for (const item of addressItems) {
         try {
-          const { results } = await geocoder.geocode({
-            address: item.address,
-            componentRestrictions: { country: "ID" },
-          });
-          const point = results[0]?.geometry?.location;
-          if (!point) throw new Error("Alamat tidak ditemukan.");
-          addMarker(item, { lat: point.lat(), lng: point.lng() });
-        } catch {
-          showMessage(`Peta memuat ${markerCount} dari ${locations.length} penanda. Alamat ${item.code} belum dapat di-geocode; periksa Geocoding API dan batas key.`);
+          const response = await fetch(`./geocode.php?id=${encodeURIComponent(item.id)}`);
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || "Geocoding gagal.");
+          addMarker(item, { lat: result.lat, lng: result.lng });
+        } catch (error) {
+          showMessage(`Peta memuat ${markerCount} dari ${locations.length} penanda. ${item.code}: ${error.message}`);
         }
       }
     }

@@ -24,13 +24,31 @@
       <section class="intro" aria-labelledby="page-title">
         <p class="eyebrow">Demonstrasi geolokasi</p>
         <h1 id="page-title">Lihat titik perjalanan paket</h1>
-        <p>Pilih penanda di peta atau paket dalam daftar untuk melihat nomor resi, status, dan lokasi singkatnya.</p>
+        <p>Cari lokasi untuk melihat hasil geocoding, atau pilih penanda contoh untuk melihat status paket dan kurir.</p>
       </section>
 
       <div class="notice" role="note">
         <span aria-hidden="true">ⓘ</span>
         <p>Semua data di halaman ini adalah contoh. Titik hanya mewakili area atau titik singgah, bukan posisi GPS paket atau kurir secara langsung.</p>
       </div>
+
+      <section class="search-panel" aria-labelledby="search-title">
+        <div class="search-heading">
+          <div>
+            <p class="eyebrow">Coba geocoding</p>
+            <h2 id="search-title">Cari lokasi dari alamat</h2>
+            <p>Ketik nama tempat atau alamat. Google akan mengubahnya menjadi titik koordinat di peta.</p>
+          </div>
+        </div>
+        <form id="location-search-form" class="search-form">
+          <label for="location-search">Nama tempat atau alamat</label>
+          <div class="search-controls">
+            <input id="location-search" name="address" type="search" placeholder="Contoh: Monas, Jakarta" minlength="3" maxlength="120" autocomplete="off" required />
+            <button id="location-search-button" type="submit" disabled>Cari lokasi</button>
+          </div>
+        </form>
+        <div id="search-result" class="search-result" role="status" aria-live="polite" hidden></div>
+      </section>
 
       <section class="map-layout" aria-label="Peta dan daftar pengiriman">
         <div class="map-panel">
@@ -43,7 +61,7 @@
           </div>
           <div id="map-message" class="map-message" role="status">Menyiapkan peta…</div>
           <div id="shipment-map" class="map-canvas" aria-label="Peta Google Maps lokasi pengiriman"></div>
-          <p class="map-caption">Penanda merah muda = paket · penanda biru = kurir. Lokasi dari alamat akan diberi label “geocoding”.</p>
+          <p class="map-caption">Merah muda = paket · biru = kurir · kuning = lokasi yang Anda cari. Lokasi dari alamat contoh diberi label “geocoding”.</p>
         </div>
 
         <aside class="list-panel" aria-labelledby="list-title">

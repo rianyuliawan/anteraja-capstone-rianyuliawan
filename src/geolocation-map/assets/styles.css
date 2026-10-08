@@ -30,6 +30,21 @@ h1 { max-width: 16ch; margin-bottom: .6rem; font-size: clamp(2rem, 5vw, 3.2rem);
 .notice span { font-size: 1.2rem; line-height: 1; }
 .notice p { margin: 0; }
 
+.search-panel { padding: 1.1rem; margin-bottom: 1rem; border: 1px solid #e1e7ee; border-radius: 1rem; background: #fff; box-shadow: 0 8px 30px rgb(26 49 78 / 5%); }
+.search-heading h2 { margin-bottom: .2rem; }
+.search-heading p:last-child { margin-bottom: .9rem; color: #59687b; font-size: .86rem; }
+.search-form label { display: block; margin-bottom: .35rem; font-size: .83rem; font-weight: 700; }
+.search-controls { display: flex; gap: .6rem; }
+.search-controls input { flex: 1; min-width: 0; min-height: 2.8rem; padding: .7rem .85rem; border: 1px solid #bccbd9; border-radius: .7rem; color: #17253d; font: inherit; }
+.search-controls input:focus { border-color: #e90074; outline: 3px solid #fce0ee; }
+.search-controls button { min-height: 2.8rem; padding: .65rem 1.1rem; border: 0; border-radius: .7rem; background: #e90074; color: #fff; font-weight: 700; cursor: pointer; }
+.search-controls button:hover:not(:disabled) { background: #c90065; }
+.search-controls button:disabled { cursor: wait; opacity: .6; }
+.search-result { margin-top: .85rem; padding: .7rem .85rem; border-radius: .7rem; background: #eff9fc; color: #24526b; font-size: .85rem; }
+.search-result[hidden] { display: none; }
+.search-result strong { display: block; color: #17253d; }
+.search-result.is-error { background: #fff4d9; color: #654400; }
+
 .map-layout { display: grid; gap: 1rem; align-items: start; padding-bottom: 3rem; }
 .map-panel, .list-panel { overflow: hidden; border: 1px solid #e1e7ee; border-radius: 1rem; background: #fff; box-shadow: 0 8px 30px rgb(26 49 78 / 5%); }
 .panel-heading { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem 1.1rem; }
@@ -57,6 +72,11 @@ h2 { margin: 0; font-size: 1.15rem; }
   .map-layout { grid-template-columns: minmax(0, 1.7fr) minmax(280px, .8fr); }
   .list-panel { max-height: 680px; overflow-y: auto; }
   .map-canvas { min-height: 500px; }
+}
+
+@media (max-width: 540px) {
+  .search-controls { flex-direction: column; }
+  .search-controls button { width: 100%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
