@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Peta demonstrasi lokasi paket dan kurir Anteraja Frozen." />
+    <title>Peta Pengiriman | Anteraja Frozen</title>
+    <link rel="stylesheet" href="./assets/styles.css" />
+    <script type="module" src="./assets/map.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#konten">Langsung ke konten</a>
+    <header class="site-header">
+      <div class="container header-content">
+        <a class="brand" href="./shipment-map.html" aria-label="Anteraja Frozen, beranda peta">
+          <span class="brand-symbol" aria-hidden="true">↗</span>
+          <span>anteraja<span class="brand-subtitle">frozen</span></span>
+        </a>
+        <span class="header-label">Peta pengiriman</span>
+      </div>
+    </header>
+
+    <main id="konten" class="container">
+      <section class="intro" aria-labelledby="page-title">
+        <p class="eyebrow">Demonstrasi geolokasi</p>
+        <h1 id="page-title">Lihat titik perjalanan paket</h1>
+        <p>Cari lokasi untuk melihat hasil geocoding, atau pilih penanda contoh untuk melihat status paket dan kurir.</p>
+      </section>
+
+      <div class="notice" role="note">
+        <span aria-hidden="true">ⓘ</span>
+        <p>Semua data di halaman ini adalah contoh. Titik hanya mewakili area atau titik singgah, bukan posisi GPS paket atau kurir secara langsung.</p>
+      </div>
+
+      <section class="search-panel" aria-labelledby="search-title">
+        <div class="search-heading">
+          <div>
+            <p class="eyebrow">Coba geocoding</p>
+            <h2 id="search-title">Cari lokasi dari alamat</h2>
+            <p>Ketik nama tempat atau alamat. Google akan mengubahnya menjadi titik koordinat di peta.</p>
+          </div>
+        </div>
+        <form id="location-search-form" class="search-form">
+          <label for="location-search">Nama tempat atau alamat</label>
+          <div class="search-controls">
+            <input id="location-search" name="address" type="search" placeholder="Contoh: Monas, Jakarta" minlength="3" maxlength="120" autocomplete="off" required />
+            <button id="location-search-button" type="submit" disabled>Cari lokasi</button>
+          </div>
+        </form>
+        <div id="search-result" class="search-result" role="status" aria-live="polite" hidden></div>
+      </section>
+
+      <section class="map-layout" aria-label="Peta dan daftar pengiriman">
+        <div class="map-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Wilayah Jabodetabek</p>
+              <h2>Peta lokasi</h2>
+            </div>
+            <span id="marker-count" class="count-chip">Memuat…</span>
+          </div>
+          <div id="map-message" class="map-message" role="status">Menyiapkan peta…</div>
+          <div id="shipment-map" class="map-canvas" aria-label="Peta Google Maps lokasi pengiriman"></div>
+          <p class="map-caption">Merah muda = paket · biru = kurir · kuning = lokasi yang Anda cari. Lokasi dari alamat contoh diberi label “geocoding”.</p>
+        </div>
+
+        <aside class="list-panel" aria-labelledby="list-title">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Data contoh</p>
+              <h2 id="list-title">Paket dan kurir</h2>
+            </div>
+          </div>
+          <ul id="location-list" class="location-list" aria-label="Daftar lokasi contoh"></ul>
+        </aside>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">Latihan Google Maps API · Anteraja Frozen · Data ilustratif</div>
+    </footer>
+  </body>
+</html>
