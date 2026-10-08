@@ -88,6 +88,9 @@ async function initMap() {
   }
 
   try {
+    window.gm_authFailure = () => {
+      showMessage("Google Maps menolak API key. Periksa billing, referrer localhost/127.0.0.1, dan pembatasan API.");
+    };
     await loadGoogleMaps(key);
     const [{ Map: GoogleMap, InfoWindow }, { AdvancedMarkerElement, PinElement }, { LatLngBounds }] =
       await Promise.all([
@@ -104,9 +107,9 @@ async function initMap() {
     });
     const infoWindow = new InfoWindow();
     const bounds = new LatLngBounds();
+    let markerCount = 0;
 
-    locations.forEach((item) => {
-      const position = { lat: item.lat, lng: item.lng };
+    function addMarker(item, position) {
       const pin = new PinElement({
         background: item.kind === "shipment" ? "#e90074" : "#0d6b9b",
         borderColor: "#ffffff",
@@ -129,10 +132,34 @@ async function initMap() {
       button.disabled = false;
       button.addEventListener("click", openInfo);
       bounds.extend(position);
-    });
+      markerCount += 1;
+      map.fitBounds(bounds, 45);
+    }
 
-    map.fitBounds(bounds, 45);
-    messageElement.hidden = true;
+    locations.filter((item) => Number.isFinite(item.lat) && Number.isFinite(item.lng))
+      .forEach((item) => addMarker(item, { lat: item.lat, lng: item.lng }));
+
+    const addressItems = locations.filter((item) => item.address && !Number.isFinite(item.lat));
+    if (addressItems.length) {
+      const { Geocoder } = await google.maps.importLibrary("geocoding");
+      const geocoder = new Geocoder();
+      for (const item of addressItems) {
+        try {
+          const { results } = await geocoder.geocode({
+            address: item.address,
+            componentRestrictions: { country: "ID" },
+          });
+          const point = results[0]?.geometry?.location;
+          if (!point) throw new Error("Alamat tidak ditemukan.");
+          addMarker(item, { lat: point.lat(), lng: point.lng() });
+        } catch {
+          showMessage(`Peta memuat ${markerCount} dari ${locations.length} penanda. Alamat ${item.code} belum dapat di-geocode; periksa Geocoding API dan batas key.`);
+        }
+      }
+    }
+
+    countElement.textContent = `${markerCount} dari ${locations.length} penanda`;
+    if (markerCount === locations.length) messageElement.hidden = true;
   } catch (error) {
     showMessage(`Peta belum dapat ditampilkan: ${error.message} Periksa API key, pembatasan domain, dan billing Google Cloud.`);
   }

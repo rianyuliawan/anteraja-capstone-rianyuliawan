@@ -45,4 +45,12 @@ export const locations = [
     lat: -6.207,
     lng: 106.8884,
   },
+  {
+    id: "shipment-0014",
+    kind: "shipment",
+    code: "ANT-FRZ-0014",
+    status: "Terkirim",
+    place: "Bekasi Timur, Bekasi (geocoding)",
+    address: "Bekasi Timur, Kota Bekasi, Jawa Barat, Indonesia",
+  },
 ];
