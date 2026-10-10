@@ -4,7 +4,6 @@ import ShipmentSummary from "../../components/ShipmentSummary";
 import TemperatureCard from "../../components/TemperatureCard";
 import EvidenceGallery from "../../components/EvidenceGallery";
 import JourneyPanel from "../../components/JourneyPanel";
-import TemperatureJourney from "../../components/TemperatureJourney";
 import { getShipment } from "../../api/shipments";
 
 const REFRESH_INTERVAL_MS = 30_000;
@@ -132,6 +131,7 @@ export function Tracking() {
           <TemperatureCard
             reading={shipment.temperature}
             stage={shipment.stage}
+            analysis={shipment.temperatureAnalysis}
           />
         </aside>
         <div className="grid min-w-0 content-start gap-5">
@@ -141,11 +141,6 @@ export function Tracking() {
             awb={shipment.awb}
             pickup={shipment.pickup}
             delivery={shipment.delivery}
-          />
-          <TemperatureJourney
-            awb={shipment.awb}
-            segments={shipment.segments}
-            analysis={shipment.temperatureAnalysis}
           />
         </div>
       </div>

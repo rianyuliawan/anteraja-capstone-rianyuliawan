@@ -201,6 +201,7 @@ function EvidenceCard({ awb, type, evidence, onOpen }) {
 
 export function EvidenceGallery({ awb, pickup, delivery }) {
   const dialogRef = useRef(null);
+  const [showPhotos, setShowPhotos] = useState(false);
   const [preview, setPreview] = useState(null);
   const [downloading, setDownloading] = useState("");
   const [downloadMessage, setDownloadMessage] = useState("");
@@ -225,12 +226,24 @@ export function EvidenceGallery({ awb, pickup, delivery }) {
 
   return (
     <Panel aria-labelledby="evidence-title" id="delivery-evidence">
-      <div className="mb-5 border-b border-ink-200 pb-4">
+      <div className="mb-4 border-b border-ink-200 pb-4 sm:mb-5">
         <h2 id="evidence-title" className="text-lg font-extrabold">
           Dokumentasi perjalanan
         </h2>
       </div>
-      <div className="grid gap-4 2xl:grid-cols-2">
+      <button
+        type="button"
+        className="min-h-11 w-full rounded-card border border-ink-200 px-4 text-left text-sm font-bold text-brand-700 hover:bg-brand-50 sm:hidden"
+        aria-expanded={showPhotos}
+        aria-controls="evidence-photos"
+        onClick={() => setShowPhotos((current) => !current)}
+      >
+        {showPhotos ? "Sembunyikan foto" : "Lihat foto pickup dan penerimaan"}
+      </button>
+      <div
+        id="evidence-photos"
+        className={`grid gap-4 2xl:grid-cols-2 ${showPhotos ? "mt-4 sm:mt-0" : "max-sm:hidden"}`}
+      >
         <EvidenceCard
           awb={awb}
           type="pickup"

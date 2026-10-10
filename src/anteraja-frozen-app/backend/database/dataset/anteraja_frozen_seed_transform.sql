@@ -222,75 +222,8 @@ ON CONFLICT (seed_assignment_id) DO UPDATE SET
     started_at = EXCLUDED.started_at,
     ended_at = EXCLUDED.ended_at;
 
-INSERT INTO temperature_readings (
-    seed_reading_id, thermal_asset_id, source, message_id,
-    request_id, trigger_type, observed_at, received_at,
-    temperature_c, temperature_status
-)
-SELECT
-    r.reading_id,
-    t.id,
-    r.source,
-    r.message_id,
-    r.request_id,
-    r.trigger_type,
-    r.observed_at,
-    r.received_at,
-    r.temperature_c,
-    r.temperature_status
-FROM seed.temperature_readings r
-JOIN thermal_assets t ON t.asset_code = r.asset_code
-ON CONFLICT (seed_reading_id) DO UPDATE SET
-    thermal_asset_id = EXCLUDED.thermal_asset_id,
-    source = EXCLUDED.source,
-    message_id = EXCLUDED.message_id,
-    request_id = EXCLUDED.request_id,
-    trigger_type = EXCLUDED.trigger_type,
-    observed_at = EXCLUDED.observed_at,
-    received_at = EXCLUDED.received_at,
-    temperature_c = EXCLUDED.temperature_c,
-    temperature_status = EXCLUDED.temperature_status;
--- Setiap resi menyimpan paling banyak 8 cuplikan. Satu cuplikan terakhir
--- tiap segmen didahulukan agar ringkasan suhu segmen tetap tersedia.
-WITH by_assignment AS (
-    SELECT a.shipment_id, a.id AS assignment_id,
-           r.id AS temperature_reading_id, r.observed_at,
-           r.temperature_c, r.temperature_status, r.source, r.trigger_type,
-           row_number() OVER (
-               PARTITION BY a.shipment_id, a.id
-               ORDER BY r.observed_at DESC, r.id DESC
-           ) AS assignment_rank
-    FROM shipment_asset_assignments a
-    JOIN temperature_readings r
-      ON r.thermal_asset_id = a.thermal_asset_id
-     AND r.observed_at <@ a.active_period
-), preferred AS (
-    SELECT *, row_number() OVER (
-        PARTITION BY shipment_id
-        ORDER BY CASE WHEN assignment_rank = 1 THEN 0 ELSE 1 END,
-                 observed_at DESC, temperature_reading_id DESC
-    ) AS shipment_rank
-    FROM by_assignment
-)
-INSERT INTO shipment_temperature_samples (
-    shipment_id, assignment_id, temperature_reading_id,
-    observed_at, temperature_c, temperature_status, source, trigger_type
-)
-SELECT shipment_id, assignment_id, temperature_reading_id,
-       observed_at, temperature_c, temperature_status, source, trigger_type
-FROM preferred WHERE shipment_rank <= 8
-ON CONFLICT (shipment_id, temperature_reading_id) DO NOTHING;
-
-WITH ranked AS (
-    SELECT id, row_number() OVER (
-        PARTITION BY thermal_asset_id ORDER BY observed_at DESC, id DESC
-    ) AS reading_rank
-    FROM temperature_readings
-)
-DELETE FROM temperature_readings r
-USING ranked
-WHERE r.id = ranked.id AND ranked.reading_rank > 8;
-
+-- Pembacaan suhu demo dibangun oleh CapstoneDatasetSeeder setelah jadwal
+-- reading_minute tiap aset disetel. Satu aset menghasilkan satu bacaan per jam.
 
 
 DO $$
@@ -347,4 +280,4 @@ COMMIT;
 -- shipment_event_media 84 (70 pickup + 14 delivered);
 -- shipment_parties 70; couriers 4; delivery_confirmations 14;
 -- thermal_assets 96; shipment_asset_assignments 302;
--- temperature_profiles 4; seed.temperature_readings 604; normalized raw and per-AWB history at most 8 each.
+-- temperature_profiles 4; suhu demo per jam dibangun oleh CapstoneDatasetSeeder.

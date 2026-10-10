@@ -61,24 +61,33 @@ export function ShipmentSummary({ shipment, onNotify }) {
         </div>
       </dl>
 
-      <dl className="mt-4 grid gap-x-4 gap-y-3 text-sm sm:grid-cols-2">
-        <div>
-          <dt className="text-ink-500">Pengirim</dt>
-          <dd className="font-semibold">{shipment.sender}</dd>
-        </div>
-        <div>
-          <dt className="text-ink-500">Penerima</dt>
-          <dd className="font-semibold">{shipment.recipient}</dd>
-        </div>
-        <div className="sm:col-span-2">
-          <dt className="text-ink-500">Kejadian terakhir</dt>
-          <dd className="font-semibold">
-            <time dateTime={shipment.lastEventAt}>
-              {formatDateTime(shipment.lastEventAt)}
-            </time>
-          </dd>
-        </div>
-      </dl>
+      <ShipmentMeta
+        shipment={shipment}
+        className="mt-4 grid gap-x-4 gap-y-3 text-sm sm:grid-cols-2"
+      />
     </Panel>
+  );
+}
+
+function ShipmentMeta({ shipment, className }) {
+  return (
+    <dl className={className}>
+      <div>
+        <dt className="text-ink-500">Pengirim</dt>
+        <dd className="font-semibold">{shipment.sender}</dd>
+      </div>
+      <div>
+        <dt className="text-ink-500">Penerima</dt>
+        <dd className="font-semibold">{shipment.recipient}</dd>
+      </div>
+      <div className="sm:col-span-2">
+        <dt className="text-ink-500">Kejadian terakhir</dt>
+        <dd className="font-semibold">
+          <time dateTime={shipment.lastEventAt}>
+            {formatDateTime(shipment.lastEventAt)}
+          </time>
+        </dd>
+      </div>
+    </dl>
   );
 }

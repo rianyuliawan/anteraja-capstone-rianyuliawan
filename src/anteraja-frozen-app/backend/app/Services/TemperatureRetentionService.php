@@ -32,10 +32,12 @@ class TemperatureRetentionService
         DB::statement(<<<SQL
             INSERT INTO shipment_temperature_samples (
                 shipment_id, assignment_id, temperature_reading_id,
-                observed_at, temperature_c, temperature_status, source, trigger_type
+                observed_at, associated_at, association_kind,
+                temperature_c, temperature_status, source, trigger_type
             )
             SELECT a.shipment_id, a.id, r.id,
-                   r.observed_at, r.temperature_c, r.temperature_status,
+                   r.observed_at, r.observed_at, 'SCHEDULED',
+                   r.temperature_c, r.temperature_status,
                    r.source, r.trigger_type
             FROM temperature_readings r
             JOIN shipment_asset_assignments a
@@ -43,7 +45,7 @@ class TemperatureRetentionService
              AND a.ended_at IS NULL
              AND r.observed_at >= a.started_at
             WHERE r.id IN ($readingSlots)
-            ON CONFLICT (shipment_id, temperature_reading_id) DO NOTHING
+            ON CONFLICT (assignment_id, temperature_reading_id) DO NOTHING
             SQL, $readingIds);
 
         $shipments = DB::table('shipment_temperature_samples as sample')

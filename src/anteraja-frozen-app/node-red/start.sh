@@ -21,6 +21,8 @@ fi
 mkdir -p "$runtime_dir"
 if [[ ! -f "$runtime_dir/flows.json" ]]; then
   cp "$task_dir/node-red/flows.json" "$runtime_dir/flows.json"
+elif ! cmp -s "$task_dir/node-red/flows.json" "$runtime_dir/flows.json"; then
+  echo 'Flow runtime berbeda dari flow sumber. Jadwal baru belum diterapkan; cadangkan/periksa flow runtime sebelum menggantinya.' >&2
 fi
 
 export ANTERAJA_INGEST_TOKEN

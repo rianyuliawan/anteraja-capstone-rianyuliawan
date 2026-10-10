@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Services\DemoTemperatureHistoryService;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +23,6 @@ class CapstoneDatasetSeeder extends Seeder
         ['shipment_event_people', 'shipment_event_people.csv', 112],
         ['shipment_event_media', 'shipment_event_media.csv', 84],
         ['shipment_asset_assignments', 'shipment_asset_assignments.csv', 302],
-        ['temperature_readings', 'temperature_readings_seed.csv', 604],
     ];
 
     public function run(): void
@@ -67,25 +67,59 @@ class CapstoneDatasetSeeder extends Seeder
             $sql = preg_replace('/^BEGIN;\s*$/m', '', $transform);
             $sql = preg_replace('/^COMMIT;\s*$/m', '', $sql);
             $dataset->unprepared($sql);
+            $dataset->statement('UPDATE thermal_assets SET reading_minute = (id * 17) % 60');
 
-            $tooManySamples = $dataset->selectOne('
+            // The source CSV no longer supplies per-package temperature rows.
+            // Generate the readings from each asset's own hourly clock instead.
+            app(DemoTemperatureHistoryService::class)->rebuild();
+
+            $tooManySamples = $dataset->selectOne("
                 SELECT EXISTS (
-                    SELECT 1 FROM shipment_temperature_samples
-                    GROUP BY shipment_id HAVING count(*) > 8
+                    SELECT 1 FROM shipment_temperature_samples sample
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM shipment_events event
+                        WHERE event.shipment_id = sample.shipment_id
+                          AND event.event_code = 'DELIVERED'
+                    )
+                    GROUP BY sample.shipment_id HAVING count(*) > 8
                 ) AS found
-            ')->found;
+            ")->found;
             $tooManyRawReadings = $dataset->selectOne('
                 SELECT EXISTS (
                     SELECT 1 FROM temperature_readings
                     GROUP BY thermal_asset_id HAVING count(*) > 8
                 ) AS found
             ')->found;
+            $invalidHourlySchedule = $dataset->selectOne(<<<'SQL'
+                SELECT EXISTS (
+                    SELECT 1 FROM temperature_readings r
+                    JOIN thermal_assets asset ON asset.id = r.thermal_asset_id
+                    WHERE r.source = 'SEED'
+                      AND extract(minute FROM r.observed_at AT TIME ZONE 'UTC')::int
+                          <> asset.reading_minute
+                ) OR EXISTS (
+                    SELECT 1 FROM temperature_readings
+                    WHERE source = 'SEED'
+                    GROUP BY thermal_asset_id, date_trunc('hour', observed_at)
+                    HAVING count(*) > 1
+                ) AS found
+                SQL)->found;
+            $shipmentsWithoutTemperature = $dataset->selectOne(<<<'SQL'
+                SELECT EXISTS (
+                    SELECT 1 FROM shipments shipment
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM shipment_temperature_samples sample
+                        WHERE sample.shipment_id = shipment.id AND sample.source = 'SEED'
+                    )
+                ) AS found
+                SQL)->found;
 
             if ($dataset->table('shipments')->count() !== 70 ||
+                $dataset->table('thermal_assets')->count() !== 96 ||
                 $dataset->table('shipment_events')->count() !== 316 ||
-                $dataset->table('seed.temperature_readings')->count() !== 604 ||
                 $dataset->table('shipment_temperature_samples')->count() === 0 ||
-                $tooManySamples || $tooManyRawReadings) {
+                $tooManySamples || $tooManyRawReadings ||
+                $invalidHourlySchedule || $shipmentsWithoutTemperature) {
                 throw new RuntimeException('Jumlah baris atau batas riwayat hasil seed tidak sesuai; transaksi dibatalkan.');
             }
         });

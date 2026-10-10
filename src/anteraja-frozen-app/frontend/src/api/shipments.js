@@ -14,13 +14,9 @@ export async function getShipments(awbs, signal) {
 }
 
 export async function getShipment(awb, signal) {
-  const data = await getJson(`/api/shipments/${encodeURIComponent(awb)}`, signal);
-  return data.shipment;
-}
-
-export async function getTemperatureReadings(awb, signal) {
-  return getJson(
-    `/api/shipments/${encodeURIComponent(awb)}/temperature-readings`,
+  const data = await getJson(
+    `/api/shipments/${encodeURIComponent(awb)}`,
     signal,
   );
+  return data.shipment;
 }

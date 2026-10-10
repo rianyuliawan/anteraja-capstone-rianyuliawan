@@ -22,6 +22,8 @@ class DatasetTelemetryController extends Controller
             ->map(fn ($asset) => [
                 'asset_code' => $asset->asset_code,
                 'asset_type' => $asset->asset_type,
+                // All assets read hourly, but each has a stable minute slot.
+                'schedule_minute' => (int) $asset->reading_minute,
                 'target_c' => (float) $asset->profile->target_c,
                 'normal_low_c' => (float) $asset->profile->normal_low_c,
                 'normal_high_c' => (float) $asset->profile->normal_high_c,

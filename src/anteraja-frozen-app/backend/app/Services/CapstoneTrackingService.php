@@ -92,7 +92,7 @@ class CapstoneTrackingService
                     SELECT sample.temperature_c, sample.observed_at
                     FROM shipment_temperature_samples sample
                     WHERE sample.assignment_id = a.id
-                    ORDER BY sample.observed_at DESC, sample.temperature_reading_id DESC LIMIT 1
+                    ORDER BY sample.associated_at DESC, sample.id DESC LIMIT 1
                 ) latest ON true
                 WHERE a.shipment_id = s.id) AS assignments_json
                 SQL)
@@ -224,18 +224,20 @@ class CapstoneTrackingService
 
         $readings = ShipmentTemperatureHistory::query()
             ->where('shipment_id', $shipmentId)
-            ->select(['temperature_reading_id', 'asset_code', 'temperature_c',
-                'observed_at'])
-            ->orderByDesc('observed_at')
-            ->orderBy('temperature_reading_id', 'desc')
+            ->select(['sample_id', 'temperature_reading_id', 'asset_code', 'temperature_c',
+                'observed_at', 'associated_at', 'association_kind'])
+            ->orderByDesc('associated_at')
+            ->orderBy('sample_id', 'desc')
             ->get();
 
         return [
             'readings' => $readings->map(fn ($reading) => [
-                'id' => (string) $reading->temperature_reading_id,
+                'id' => (string) $reading->sample_id,
                 'asset' => $reading->asset_code,
                 'valueC' => round((float) $reading->temperature_c, 2),
                 'observedAt' => $this->isoDate($reading->observed_at),
+                'associatedAt' => $this->isoDate($reading->associated_at),
+                'kind' => $reading->association_kind,
             ])->all(),
         ];
     }

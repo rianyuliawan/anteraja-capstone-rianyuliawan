@@ -10,16 +10,16 @@
     "id": "a71e0a0000000002",
     "type": "inject",
     "z": "a71e0a0000000001",
-    "name": "Semua aset • setiap 60 menit + saat mulai",
+    "name": "Aset terjadwal • cek setiap menit",
     "props": [
       {
         "p": "payload"
       }
     ],
-    "repeat": "3600",
-    "crontab": "",
-    "once": true,
-    "onceDelay": "3",
+    "repeat": "",
+    "crontab": "* * * * *",
+    "once": false,
+    "onceDelay": "",
     "topic": "",
     "payload": "",
     "payloadType": "str",
@@ -388,7 +388,7 @@
     "type": "function",
     "z": "a71e0a0000000001",
     "name": "Buat suhu per aset",
-    "func": "if (!msg.fromCache && msg.statusCode !== 200 || !Array.isArray(msg.payload?.assets)) {\n    node.error(\"Daftar aset dari Laravel gagal dimuat.\"); return null;\n}\nconst assets = msg.payload.assets;\nif (!msg.fromCache) {\n    flow.set(\"cached_assets\", assets);\n    flow.set(\"cached_assets_time\", Date.now());\n}\nconst selected = msg.scenario?.asset_code;\nconst mode = msg.scenario?.mode || \"NORMAL\";\nconst list = selected ? assets.filter(a => a.asset_code === selected) : assets;\nif (!list.length) { node.error(\"Aset simulasi tidak ditemukan: \" + selected); return null; }\nconst observedAt = new Date().toISOString();\nconst readings = list.map(asset => {\n    const random = (Math.random() - 0.5) * 0.6;\n    let value = asset.target_c + random;\n    if (selected && mode === \"WARNING\") value = asset.normal_high_c + Math.min(0.3, (asset.warning_high_c - asset.normal_high_c) / 2);\n    if (selected && mode === \"CRITICAL\") value = asset.warning_high_c + 1;\n    return {\n        message_id: asset.asset_code + \":\" + Date.now().toString(36) + \":\" + Math.random().toString(36).slice(2),\n        asset_code: asset.asset_code,\n        observed_at: observedAt,\n        temperature_c: Number(value.toFixed(2))\n    };\n});\nmsg.payload = { readings };\nmsg.assetCount = readings.length;\nreturn msg;",
+    "func": "if ((!msg.fromCache && msg.statusCode !== 200) || !Array.isArray(msg.payload?.assets)) {\n    node.error(\"Daftar aset dari Laravel gagal dimuat.\"); return null;\n}\nconst assets = msg.payload.assets;\nif (!msg.fromCache) {\n    flow.set(\"cached_assets\", assets);\n    flow.set(\"cached_assets_time\", Date.now());\n}\nconst selected = msg.scenario?.asset_code;\nconst mode = msg.scenario?.mode || \"NORMAL\";\nconst observedAt = new Date();\nconst minute = observedAt.getUTCMinutes();\nconst list = selected\n    ? assets.filter(a => a.asset_code === selected)\n    : assets.filter(a => a.schedule_minute === minute);\nif (!list.length) {\n    if (selected) node.error(\"Aset simulasi tidak ditemukan: \" + selected);\n    return null;\n}\nconst readings = list.map(asset => {\n    const random = (Math.random() - 0.5) * 0.6;\n    let value = asset.target_c + random;\n    if (selected && mode === \"WARNING\") value = asset.normal_high_c + Math.min(0.3, (asset.warning_high_c - asset.normal_high_c) / 2);\n    if (selected && mode === \"CRITICAL\") value = asset.warning_high_c + 1;\n    return {\n        message_id: asset.asset_code + \":\" + observedAt.getTime().toString(36) + \":\" + Math.random().toString(36).slice(2),\n        asset_code: asset.asset_code,\n        observed_at: observedAt.toISOString(),\n        temperature_c: Number(value.toFixed(2))\n    };\n});\nmsg.payload = { readings };\nmsg.assetCount = readings.length;\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,

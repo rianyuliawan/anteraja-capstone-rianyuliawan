@@ -1,13 +1,12 @@
 import { formatDateTime, formatTemperature } from "../../utils/format";
 import Panel from "../ui/Panel";
 
-export function TemperatureCard({ reading, stage }) {
+export function TemperatureCard({ reading, stage, analysis }) {
   const delivered = stage === "DELIVERED";
   const hasReading =
     Number.isFinite(reading.valueC) && Boolean(reading.observedAt);
   const hasRange =
-    Number.isFinite(reading.normalLowC) &&
-    Number.isFinite(reading.normalHighC);
+    Number.isFinite(reading.normalLowC) && Number.isFinite(reading.normalHighC);
   const outsideRange =
     hasReading &&
     hasRange &&
@@ -22,7 +21,9 @@ export function TemperatureCard({ reading, stage }) {
         <p className="text-xs font-extrabold tracking-wide uppercase">
           {reading.asset}
         </p>
-        <p className="mt-1 text-xs">Kode aset: {reading.assetCode}</p>
+        <p className="mt-1 hidden text-xs sm:block">
+          Kode aset: {reading.assetCode}
+        </p>
         <p className="mt-3 font-mono text-4xl font-bold tracking-tight tabular-nums sm:text-5xl">
           {hasReading ? formatTemperature(reading.valueC) : "—"}
         </p>
@@ -43,26 +44,24 @@ export function TemperatureCard({ reading, stage }) {
         >
           Pembacaan suhu aset berada di luar rentang pemantauan.{" "}
           {delivered
-            ? "Riwayat suhu tetap tersedia untuk ditinjau."
+            ? "Tim operasional dapat meninjau hasil pemantauan."
             : "Aset perlu diperiksa oleh tim operasional."}
         </p>
       )}
-      <p className="mt-3 text-xs text-ink-600">
-        {reading.basisType === "PUBLIC_CLAIM" && reading.sourceUrl && (
-          <>
-            {" "}Lihat{" "}
-            <a
-              className="font-semibold text-brand-700 underline"
-              href={reading.sourceUrl}
-              target="_blank"
-              rel="noreferrer"
-            >
-              sumber acuan
-            </a>
-            .
-          </>
-        )}
-      </p>
+      {reading.basisType === "PUBLIC_CLAIM" && reading.sourceUrl && (
+        <p className="mt-3 text-xs text-ink-600">
+          Lihat{" "}
+          <a
+            className="font-semibold text-brand-700 underline"
+            href={reading.sourceUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            sumber acuan
+          </a>
+          .
+        </p>
+      )}
       {hasReading ? (
         <p className="mt-4 text-xs text-ink-600">
           Pembacaan terakhir:{" "}
@@ -73,15 +72,6 @@ export function TemperatureCard({ reading, stage }) {
       ) : (
         <p className="mt-4 text-xs text-ink-600">
           Belum ada pembacaan sejak paket masuk ke aset ini.
-        </p>
-      )}
-      {!hasReading && (
-        <p
-          role="status"
-          className="mt-3 rounded-card bg-ink-50 p-3 text-sm text-ink-700"
-        >
-          Riwayat suhu dari aset sebelumnya tetap tersedia di bawah. Nilainya
-          tidak digunakan sebagai suhu aset saat ini.
         </p>
       )}
       <div className="mt-4 rounded-card bg-ink-50 p-3 text-sm text-ink-700">
@@ -99,6 +89,35 @@ export function TemperatureCard({ reading, stage }) {
           </>
         )}
       </div>
+      {analysis && (
+        <section
+          aria-label="Ringkasan pembacaan suhu"
+          className="mt-5 border-t border-ink-200 pt-4"
+        >
+          <h3 className="text-sm font-extrabold">Ringkasan pembacaan</h3>
+          {analysis.readingCount > 0 ? (
+            <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+              {[
+                ["Jumlah", analysis.readingCount],
+                ["Rata-rata", formatTemperature(analysis.averageC)],
+                ["Terendah", formatTemperature(analysis.minimumC)],
+                ["Tertinggi", formatTemperature(analysis.maximumC)],
+              ].map(([label, value]) => (
+                <div key={label} className="min-w-0">
+                  <dt className="text-xs text-ink-500">{label}</dt>
+                  <dd className="mt-1 font-mono font-bold text-cold-700 tabular-nums">
+                    {value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          ) : (
+            <p className="mt-2 text-sm text-ink-600">
+              Belum ada pembacaan suhu untuk perjalanan ini.
+            </p>
+          )}
+        </section>
+      )}
     </Panel>
   );
 }

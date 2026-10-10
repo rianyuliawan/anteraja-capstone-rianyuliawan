@@ -6,6 +6,7 @@ const LeafletRouteMap = lazy(() => import("../LeafletRouteMap"));
 
 export function JourneyPanel({ shipment }) {
   const [activeTab, setActiveTab] = useState("timeline");
+  const [showAllEvents, setShowAllEvents] = useState(false);
   const id = useId();
   const tabIds = { timeline: `${id}-timeline-tab`, map: `${id}-map-tab` };
   const panelIds = { timeline: `${id}-timeline-panel`, map: `${id}-map-panel` };
@@ -34,7 +35,7 @@ export function JourneyPanel({ shipment }) {
             Perjalanan paket
           </h2>
           <p className="mt-1 text-sm text-ink-500">
-            Pilih linimasa kejadian atau peta rute.
+            Riwayat status dan lokasi pengiriman.
           </p>
         </div>
         <div
@@ -69,7 +70,10 @@ export function JourneyPanel({ shipment }) {
       >
         <ol className="relative ml-3 border-l-2 border-ink-200 pl-6">
           {shipment.events.map((event, index) => (
-            <li key={event.id} className="relative mb-4 last:mb-0">
+            <li
+              key={event.id}
+              className={`relative mb-4 last:mb-0 ${index > 1 && !showAllEvents ? "max-sm:hidden" : ""}`}
+            >
               <span
                 className={`absolute -left-[2.15rem] grid size-7 place-items-center rounded-full border-2 border-white text-xs font-extrabold text-white ${index === 0 ? (shipment.stage === "DELIVERED" ? "bg-success-700" : "bg-brand-500") : "bg-ink-300"}`}
                 aria-hidden="true"
@@ -95,6 +99,18 @@ export function JourneyPanel({ shipment }) {
             </li>
           ))}
         </ol>
+        {shipment.events.length > 2 && (
+          <button
+            type="button"
+            className="mt-4 min-h-11 w-full rounded-card border border-ink-200 px-4 text-sm font-bold text-brand-700 hover:bg-brand-50 sm:hidden"
+            aria-expanded={showAllEvents}
+            onClick={() => setShowAllEvents((current) => !current)}
+          >
+            {showAllEvents
+              ? "Tampilkan dua kejadian terbaru"
+              : `Lihat ${shipment.events.length - 2} kejadian sebelumnya`}
+          </button>
+        )}
       </div>
       <div
         id={panelIds.map}
