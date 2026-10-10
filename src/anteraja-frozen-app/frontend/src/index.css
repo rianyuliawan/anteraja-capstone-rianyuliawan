@@ -83,6 +83,41 @@
   background: var(--color-brand-500);
   color: white;
 }
+.route-marker--current {
+  box-shadow:
+    0 0 0 3px var(--color-brand-100),
+    0 2px 8px rgb(15 23 42 / 0.16);
+}
+.route-popup-status {
+  margin: 0.25rem 0 0;
+  color: var(--color-ink-600);
+  font-size: 0.75rem;
+}
+
+.vehicle-marker-wrapper {
+  background: transparent;
+  border: 0;
+}
+.vehicle-marker {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 3px solid white;
+  border-radius: 50%;
+  background: var(--color-brand-500);
+  color: white;
+  box-shadow: 0 6px 18px rgb(15 23 42 / 0.28);
+}
+.vehicle-marker svg {
+  width: 21px;
+  height: 21px;
+}
+.vehicle-marker--stationary {
+  border-color: var(--color-brand-500);
+  background: white;
+  color: var(--color-brand-700);
+}
 
 @keyframes toast-enter {
   from {

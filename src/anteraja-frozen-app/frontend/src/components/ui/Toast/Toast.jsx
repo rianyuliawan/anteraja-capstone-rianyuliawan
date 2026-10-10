@@ -1,3 +1,5 @@
+import { FiX } from "react-icons/fi";
+
 const styles = {
   success: {
     title: "Berhasil",
@@ -27,7 +29,7 @@ export function Toast({ message, tone = "success", onClose }) {
       <div
         role={tone === "error" ? "alert" : "status"}
         aria-live={tone === "error" ? "assertive" : "polite"}
-        className="toast-enter overflow-hidden rounded-card-lg border border-ink-200 bg-white shadow-[0_18px_48px_rgb(15_23_42_/_0.18)]"
+        className="toast-enter overflow-hidden rounded-card-lg border border-ink-200 bg-white shadow-card-raised"
       >
         <div className="flex items-start gap-3 p-4">
           <span
@@ -44,9 +46,9 @@ export function Toast({ message, tone = "success", onClose }) {
             type="button"
             onClick={onClose}
             aria-label="Tutup notifikasi"
-            className="-mt-1 -mr-1 grid size-9 shrink-0 place-items-center rounded-full text-xl leading-none text-ink-500 transition-colors hover:bg-ink-100 hover:text-ink-950"
+            className="grid size-9 shrink-0 place-items-center rounded-full p-0 leading-none text-ink-500 transition-colors hover:bg-ink-100 hover:text-ink-950 focus-visible:outline-2 focus-visible:outline-brand-500"
           >
-            ×
+            <FiX aria-hidden="true" className="size-4" />
           </button>
         </div>
         <div className="h-1 bg-ink-100" aria-hidden="true">

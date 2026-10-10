@@ -1,6 +1,4 @@
-import { formatDateTime } from "../../utils/format";
-
-export function RouteMap({ route, stage, lastEventAt }) {
+export function RouteMap({ route, stage }) {
   const points = route.points;
   if (!points.length)
     return (
@@ -33,31 +31,23 @@ export function RouteMap({ route, stage, lastEventAt }) {
     .slice(0, completedIndex + 1)
     .map((point) => `${point.x},${point.y}`)
     .join(" ");
+  const moving = ["PICKED_UP", "IN_TRANSIT", "OUT_FOR_DELIVERY"].includes(
+    stage,
+  );
+  const activePath =
+    moving && completedIndex < coordinates.length - 1
+      ? coordinates
+          .slice(completedIndex, completedIndex + 2)
+          .map((point) => `${point.x},${point.y}`)
+          .join(" ")
+      : "";
   return (
     <div>
-      <div className="mb-4 grid gap-3 rounded-card bg-cold-100/40 p-4 text-sm sm:grid-cols-3">
-        <div>
-          <span className="block text-xs text-ink-600">Progres tercatat</span>
-          <strong>{progress}%</strong>
-        </div>
-        <div>
-          <span className="block text-xs text-ink-600">
-            {delivered ? "Tujuan akhir" : "Titik terakhir"}
-          </span>
-          <strong>{coordinates[completedIndex].label}</strong>
-        </div>
-        <div>
-          <span className="block text-xs text-ink-600">Pembaruan terakhir</span>
-          <strong>
-            <time dateTime={lastEventAt}>{formatDateTime(lastEventAt)}</time>
-          </strong>
-        </div>
-      </div>
       <div className="overflow-hidden rounded-card border border-ink-200 bg-ink-50">
         <svg
           viewBox="0 0 760 320"
           role="img"
-          aria-label={`Rute ilustratif dari ${points[0].label} ke ${points.at(-1)?.label}; ${progress} persen titik perjalanan telah tercatat`}
+          aria-label={`Skema perjalanan dari ${points[0].label} ke ${points.at(-1)?.label}; ${progress} persen titik telah dilalui`}
           className="h-auto min-h-64 w-full"
         >
           <defs>
@@ -102,10 +92,31 @@ export function RouteMap({ route, stage, lastEventAt }) {
               strokeLinejoin="round"
             />
           )}
+          {activePath && (
+            <polyline
+              points={activePath}
+              fill="none"
+              stroke="#ed0677"
+              strokeWidth="8"
+              strokeLinecap="round"
+              strokeDasharray="10 10"
+            />
+          )}
           {coordinates.map((point, index) => {
             const reached = index <= completedIndex;
+            const current = index === completedIndex && !delivered;
             return (
               <g key={point.id}>
+                {current && (
+                  <circle
+                    cx={point.x}
+                    cy={point.y}
+                    r="22"
+                    fill="none"
+                    stroke="#fce7f3"
+                    strokeWidth="5"
+                  />
+                )}
                 <circle
                   cx={point.x}
                   cy={point.y}
@@ -139,10 +150,6 @@ export function RouteMap({ route, stage, lastEventAt }) {
           })}
         </svg>
       </div>
-      <p className="mt-3 text-xs text-ink-500">
-        Peta menunjukkan urutan titik singgah yang tercatat. Garis tidak
-        menunjukkan posisi GPS langsung atau jalur jalan sebenarnya.
-      </p>
     </div>
   );
 }

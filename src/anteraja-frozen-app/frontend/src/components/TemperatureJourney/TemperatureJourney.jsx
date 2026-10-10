@@ -2,23 +2,6 @@ import { useEffect, useState } from "react";
 import { getTemperatureReadings } from "../../api/shipments";
 import { formatDateTime, formatTemperature } from "../../utils/format";
 import Panel from "../ui/Panel";
-import StatusBadge from "../ui/StatusBadge";
-
-const statusText = {
-  normal: "Normal",
-  warning: "Perlu perhatian",
-  critical: "Kritis",
-  stale: "Data lama",
-  pending: "Menunggu data",
-};
-
-const statusTone = {
-  normal: "success",
-  warning: "warning",
-  critical: "danger",
-  stale: "neutral",
-  pending: "neutral",
-};
 
 export function TemperatureJourney({ awb, segments, analysis }) {
   const [open, setOpen] = useState(false);
@@ -32,11 +15,13 @@ export function TemperatureJourney({ awb, segments, analysis }) {
     if (!open) return;
     const controller = new AbortController();
     getTemperatureReadings(awb, controller.signal)
-      .then((data) => setRequest({
-        key,
-        readings: data.readings,
-        error: "",
-      }))
+      .then((data) =>
+        setRequest({
+          key,
+          readings: data.readings,
+          error: "",
+        }),
+      )
       .catch((error) => {
         if (error.name !== "AbortError") {
           setRequest({ key, readings: [], error: error.message });
@@ -56,7 +41,7 @@ export function TemperatureJourney({ awb, segments, analysis }) {
           Ringkasan suhu perjalanan
         </h2>
         <p className="mt-1 text-sm text-ink-500">
-          Pembacaan suhu yang tercatat pada aset selama perjalanan paket.
+          Maksimal 8 pembacaan tersimpan per resi; pembacaan akhir tiap segmen tetap ditampilkan.
         </p>
       </div>
       <div
@@ -107,28 +92,7 @@ export function TemperatureJourney({ awb, segments, analysis }) {
           aria-label="Analisis suhu sepanjang perjalanan"
           className="mt-5 rounded-card bg-ink-50 p-4"
         >
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h3 className="text-sm font-extrabold">Analisis suhu</h3>
-            <StatusBadge
-              tone={
-                analysis.criticalCount > 0
-                  ? "danger"
-                  : analysis.warningCount > 0
-                    ? "warning"
-                    : analysis.readingCount > 0
-                      ? "success"
-                      : "neutral"
-              }
-            >
-              {analysis.criticalCount > 0
-                ? `${analysis.criticalCount} kritis`
-                : analysis.warningCount > 0
-                  ? `${analysis.warningCount} perlu perhatian`
-                  : analysis.readingCount > 0
-                    ? "Tidak ada penyimpangan"
-                    : "Belum ada data"}
-            </StatusBadge>
-          </div>
+          <h3 className="text-sm font-extrabold">Ringkasan pembacaan</h3>
           {analysis.readingCount > 0 && (
             <dl className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
               {[
@@ -146,9 +110,9 @@ export function TemperatureJourney({ awb, segments, analysis }) {
               ))}
             </dl>
           )}
-          {analysis.warningCount > 0 && analysis.criticalCount > 0 && (
-            <p className="mt-3 text-xs text-ink-600">
-              Termasuk {analysis.warningCount} pembacaan perlu perhatian.
+          {analysis.readingCount === 0 && (
+            <p className="mt-2 text-sm text-ink-600">
+              Belum ada pembacaan suhu untuk perjalanan ini.
             </p>
           )}
         </section>
@@ -187,13 +151,12 @@ export function TemperatureJourney({ awb, segments, analysis }) {
             className="max-w-full overflow-x-auto px-4 pb-2"
           >
             {history.length > 0 ? (
-              <table className="w-full min-w-[28rem] border-collapse text-sm">
+              <table className="w-full min-w-[24rem] border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-ink-300 text-left text-xs font-bold text-ink-600">
                     <th className="py-2 pr-3">Waktu Pembacaan</th>
                     <th className="py-2 pr-3">Aset</th>
                     <th className="py-2 pr-3 text-right">Suhu</th>
-                    <th className="py-2">Kondisi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-ink-200">
@@ -209,11 +172,6 @@ export function TemperatureJourney({ awb, segments, analysis }) {
                       </td>
                       <td className="py-2 pr-3 text-right font-mono font-bold whitespace-nowrap text-cold-700 tabular-nums">
                         {formatTemperature(item.valueC)}
-                      </td>
-                      <td className="py-2 whitespace-nowrap">
-                        <StatusBadge tone={statusTone[item.state]}>
-                          {statusText[item.state]}
-                        </StatusBadge>
                       </td>
                     </tr>
                   ))}

@@ -1,0 +1,5 @@
+asset_type,target_c,normal_low_c,normal_high_c,warning_low_c,warning_high_c,basis_type,source_url
+COOLER_BAG,-3.5,-5,-2,-7,0,SIMULATION,
+HUB_FREEZER,-3.5,-5,-2,-7,0,PUBLIC_CLAIM,https://blog.anteraja.id/anteraja-frozen/
+STAGING_FREEZER,-3.5,-5,-2,-7,0,SIMULATION,
+MOBIL_BOX,-3.5,-5,-2,-7,0,SIMULATION,

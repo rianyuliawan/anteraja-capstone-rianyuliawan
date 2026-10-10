@@ -11,7 +11,7 @@ const REFRESH_INTERVAL_MS = 30_000;
 
 export function Tracking() {
   const { awb = "" } = useParams();
-  const { now, showToast, searchedAwbs } = useOutletContext();
+  const { showToast, searchedAwbs } = useOutletContext();
   const selectedAwb = awb.toUpperCase();
   const [request, setRequest] = useState({
     awb: "",
@@ -132,12 +132,12 @@ export function Tracking() {
           <TemperatureCard
             reading={shipment.temperature}
             stage={shipment.stage}
-            now={now}
           />
         </aside>
         <div className="grid min-w-0 content-start gap-5">
           <JourneyPanel key={shipment.awb} shipment={shipment} />
           <EvidenceGallery
+            key={`evidence-${shipment.awb}`}
             awb={shipment.awb}
             pickup={shipment.pickup}
             delivery={shipment.delivery}

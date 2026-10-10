@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FiX } from "react-icons/fi";
 import Button from "../ui/Button";
 
 const MAX_AWBS = 10;
@@ -77,7 +78,7 @@ export function AwbSearchForm({ initialAwbs = [], onSearch, onNotify }) {
             {awb}
             <button
               type="button"
-              className="grid size-6 place-items-center rounded-full hover:bg-white/20"
+              className="grid size-6 shrink-0 place-items-center rounded-full p-0 leading-none hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               aria-label={`Hapus ${awb}`}
               onClick={() => {
                 setAwbs(awbs.filter((item) => item !== awb));
@@ -85,7 +86,7 @@ export function AwbSearchForm({ initialAwbs = [], onSearch, onNotify }) {
                 onNotify("Resi dihapus dari daftar pencarian.", "info");
               }}
             >
-              ×
+              <FiX aria-hidden="true" className="size-3.5" />
             </button>
           </span>
         ))}
@@ -94,7 +95,7 @@ export function AwbSearchForm({ initialAwbs = [], onSearch, onNotify }) {
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           onKeyDown={handleKeyDown}
-          className="min-w-36 flex-1 border-0 bg-transparent px-2 py-1 text-sm text-ink-950 uppercase outline-none placeholder:normal-case placeholder:text-ink-500"
+          className="min-w-36 flex-1 border-0 bg-transparent px-2 py-1 text-sm text-ink-950 uppercase outline-none focus-visible:outline-2 focus-visible:outline-brand-500 placeholder:normal-case placeholder:text-ink-500"
           placeholder="Masukkan nomor resi"
           autoComplete="off"
           aria-describedby="awb-feedback"

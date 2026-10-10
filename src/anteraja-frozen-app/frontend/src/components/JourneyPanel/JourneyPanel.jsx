@@ -105,7 +105,7 @@ export function JourneyPanel({ shipment }) {
       >
         {activeTab === "map" && shipment.route.points.length === 0 && (
           <p className="rounded-card bg-ink-50 p-5 text-sm text-ink-600">
-            Titik peta belum tersedia untuk data latihan ini.
+            Titik peta belum tersedia untuk pengiriman ini.
           </p>
         )}
         {activeTab === "map" && shipment.route.points.length > 0 && (
@@ -121,6 +121,7 @@ export function JourneyPanel({ shipment }) {
           >
             <LeafletRouteMap
               route={shipment.route}
+              segments={shipment.segments}
               stage={shipment.stage}
               lastEventAt={shipment.lastEventAt}
             />

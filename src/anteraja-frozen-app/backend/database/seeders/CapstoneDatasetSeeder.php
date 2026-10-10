@@ -10,18 +10,19 @@ use RuntimeException;
 class CapstoneDatasetSeeder extends Seeder
 {
     private const DATASETS = [
-        ['temperature_profiles', 'temperature_profiles.csv', 3],
+        ['temperature_profiles', 'temperature_profiles.csv', 4],
         ['hubs', 'hubs.csv', 10],
-        ['thermal_assets', 'thermal_assets.csv', 86],
+        ['staging_stores', 'staging_stores.csv', 10],
+        ['thermal_assets', 'thermal_assets.csv', 96],
         ['shipments', 'shipments.csv', 70],
-        ['route_stops', 'route_stops.csv', 266],
-        ['shipment_events', 'shipment_events.csv', 274],
+        ['route_stops', 'route_stops.csv', 336],
+        ['shipment_events', 'shipment_events.csv', 316],
         ['shipment_parties', 'shipment_parties.csv', 70],
         ['couriers', 'couriers.csv', 4],
         ['shipment_event_people', 'shipment_event_people.csv', 112],
         ['shipment_event_media', 'shipment_event_media.csv', 84],
-        ['shipment_asset_assignments', 'shipment_asset_assignments.csv', 260],
-        ['temperature_readings', 'temperature_readings_seed.csv', 400],
+        ['shipment_asset_assignments', 'shipment_asset_assignments.csv', 302],
+        ['temperature_readings', 'temperature_readings_seed.csv', 604],
     ];
 
     public function run(): void
@@ -51,15 +52,15 @@ class CapstoneDatasetSeeder extends Seeder
             }
         }
 
-        $root = base_path('../../../docs/database');
-        $transform = @file_get_contents("$root/sql/anteraja_frozen_seed_transform.sql");
+        $root = database_path('dataset');
+        $transform = @file_get_contents("$root/anteraja_frozen_seed_transform.sql");
         if ($transform === false) {
-            throw new RuntimeException('Berkas transformasi seed tidak ditemukan di docs/database/sql.');
+            throw new RuntimeException('Berkas transformasi seed tidak ditemukan di backend/database/dataset.');
         }
 
         $dataset->transaction(function () use ($dataset, $root, $transform): void {
             foreach (self::DATASETS as [$table, $filename, $expected]) {
-                $this->loadCsv($dataset, "seed.$table", "$root/sample-data/$filename", $expected);
+                $this->loadCsv($dataset, "seed.$table", "$root/$filename", $expected);
             }
 
             // Keep the existing normalization/validation SQL as the single source of truth.
@@ -67,10 +68,25 @@ class CapstoneDatasetSeeder extends Seeder
             $sql = preg_replace('/^COMMIT;\s*$/m', '', $sql);
             $dataset->unprepared($sql);
 
+            $tooManySamples = $dataset->selectOne('
+                SELECT EXISTS (
+                    SELECT 1 FROM shipment_temperature_samples
+                    GROUP BY shipment_id HAVING count(*) > 8
+                ) AS found
+            ')->found;
+            $tooManyRawReadings = $dataset->selectOne('
+                SELECT EXISTS (
+                    SELECT 1 FROM temperature_readings
+                    GROUP BY thermal_asset_id HAVING count(*) > 8
+                ) AS found
+            ')->found;
+
             if ($dataset->table('shipments')->count() !== 70 ||
-                $dataset->table('shipment_events')->count() !== 274 ||
-                $dataset->table('temperature_readings')->count() !== 400) {
-                throw new RuntimeException('Jumlah baris hasil seed tidak sesuai; transaksi dibatalkan.');
+                $dataset->table('shipment_events')->count() !== 316 ||
+                $dataset->table('seed.temperature_readings')->count() !== 604 ||
+                $dataset->table('shipment_temperature_samples')->count() === 0 ||
+                $tooManySamples || $tooManyRawReadings) {
+                throw new RuntimeException('Jumlah baris atau batas riwayat hasil seed tidak sesuai; transaksi dibatalkan.');
             }
         });
 
@@ -85,7 +101,7 @@ class CapstoneDatasetSeeder extends Seeder
         }
 
         try {
-            $header = fgetcsv($file);
+            $header = fgetcsv($file, 0, ',', '"', '');
             if (! is_array($header) || $header === []) {
                 throw new RuntimeException("Header CSV tidak valid: $path");
             }
@@ -96,7 +112,7 @@ class CapstoneDatasetSeeder extends Seeder
 
             $rows = [];
             $total = 0;
-            while (($values = fgetcsv($file)) !== false) {
+            while (($values = fgetcsv($file, 0, ',', '"', '')) !== false) {
                 if (count($values) !== count($header)) {
                     throw new RuntimeException('Jumlah kolom CSV tidak sesuai pada baris '.($total + 2).": $path");
                 }

@@ -8,6 +8,7 @@ import SearchHero from "../../components/SearchHero";
 import ShipmentResults from "../../components/ShipmentResults";
 import { getShipments } from "../../api/shipments";
 import { trackingUrl } from "../../utils/awb";
+
 export function Results() {
   const navigate = useNavigate();
   const { showToast, searchedAwbs: awbs, setSearchedAwbs } = useOutletContext();
@@ -16,6 +17,7 @@ export function Results() {
   const isLoading = Boolean(awbKey) && request.key !== awbKey;
   const shipments = isLoading ? {} : request.shipments;
   const error = isLoading ? "" : request.error;
+
   useEffect(() => {
     if (!awbKey) return;
     const controller = new AbortController();

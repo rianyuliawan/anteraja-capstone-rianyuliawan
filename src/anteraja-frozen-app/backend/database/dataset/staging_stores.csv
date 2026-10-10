@@ -1,0 +1,11 @@
+staging_code,display_name,area,latitude,longitude
+STG-JKT-PST,Titik distribusi Jakarta Pusat,Jakarta Pusat,-6.169400,106.833200
+STG-JKT-UTR,Titik distribusi Jakarta Utara,Jakarta Utara,-6.132400,106.869900
+STG-JKT-BRT,Titik distribusi Jakarta Barat,Jakarta Barat,-6.162300,106.764800
+STG-JKT-TMR,Titik distribusi Jakarta Timur,Jakarta Timur,-6.219000,106.906400
+STG-JKT-SLT,Titik distribusi Jakarta Selatan,Jakarta Selatan,-6.255500,106.816600
+STG-BKS,Titik distribusi Bekasi,Bekasi,-6.235600,106.998400
+STG-BGR,Titik distribusi Bogor,Bogor,-6.589000,106.822600
+STG-DPK,Titik distribusi Depok,Depok,-6.396500,106.800200
+STG-TGR,Titik distribusi Tangerang,Tangerang,-6.172300,106.637900
+STG-TGS,Titik distribusi Tangerang Selatan,Tangerang Selatan,-6.282600,106.723900

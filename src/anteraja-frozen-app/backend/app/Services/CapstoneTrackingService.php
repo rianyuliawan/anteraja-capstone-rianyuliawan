@@ -6,6 +6,7 @@ use App\Models\Dataset\Shipment;
 use App\Models\Dataset\ShipmentPublicSummary;
 use App\Models\Dataset\ShipmentTemperatureHistory;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -17,6 +18,15 @@ class CapstoneTrackingService
             return [];
         }
 
+        $sortedAwbs = $awbs;
+        sort($sortedAwbs, SORT_STRING);
+        $key = 'tracking:v1:search:'.hash('sha256', implode(',', $sortedAwbs));
+
+        return Cache::remember($key, 60, fn (): array => $this->searchFromDatabase($awbs));
+    }
+
+    private function searchFromDatabase(array $awbs): array
+    {
         $rows = ShipmentPublicSummary::query()->from('shipment_public_summary as p')
             ->join('shipments as s', 's.id', '=', 'p.shipment_id')
             ->whereIn('p.awb', $awbs)
@@ -32,6 +42,11 @@ class CapstoneTrackingService
     }
 
     public function find(string $awb): ?array
+    {
+        return Cache::remember(self::detailCacheKey($awb), 60, fn (): ?array => $this->findFromDatabase($awb));
+    }
+
+    private function findFromDatabase(string $awb): ?array
     {
         // Keep independent detail sections in one PostgreSQL query.
         // PostgreSQL aggregates each section separately, so joins cannot multiply rows.
@@ -66,19 +81,18 @@ class CapstoneTrackingService
                     'id', a.id, 'segment', a.segment, 'ended_at', a.ended_at,
                     'asset_code', ta.asset_code, 'display_name', ta.display_name,
                     'normal_low_c', p.normal_low_c, 'normal_high_c', p.normal_high_c,
+                    'basis_type', to_jsonb(p)->>'basis_type', 'source_url', p.source_url,
                     'temperature_c', latest.temperature_c,
-                    'temperature_status', latest.temperature_status,
                     'observed_at', latest.observed_at
                 ) ORDER BY a.started_at, a.id), '[]'::jsonb)
                 FROM shipment_asset_assignments a
                 JOIN thermal_assets ta ON ta.id = a.thermal_asset_id
                 JOIN temperature_profiles p ON p.asset_type = ta.asset_type
                 LEFT JOIN LATERAL (
-                    SELECT r.temperature_c, r.temperature_status, r.observed_at
-                    FROM temperature_readings r
-                    WHERE r.thermal_asset_id = a.thermal_asset_id
-                      AND r.observed_at <@ a.active_period
-                    ORDER BY r.observed_at DESC, r.id DESC LIMIT 1
+                    SELECT sample.temperature_c, sample.observed_at
+                    FROM shipment_temperature_samples sample
+                    WHERE sample.assignment_id = a.id
+                    ORDER BY sample.observed_at DESC, sample.temperature_reading_id DESC LIMIT 1
                 ) latest ON true
                 WHERE a.shipment_id = s.id) AS assignments_json
                 SQL)
@@ -86,9 +100,7 @@ class CapstoneTrackingService
                 (SELECT jsonb_build_object(
                     'reading_count', COUNT(*), 'min_c', MIN(h.temperature_c),
                     'max_c', MAX(h.temperature_c),
-                    'average_c', ROUND(AVG(h.temperature_c), 2),
-                    'warning_count', COUNT(*) FILTER (WHERE h.temperature_status = 'WARNING'),
-                    'critical_count', COUNT(*) FILTER (WHERE h.temperature_status = 'CRITICAL')
+                    'average_c', ROUND(AVG(h.temperature_c), 2)
                 ) FROM shipment_temperature_history h
                 WHERE h.shipment_id = s.id) AS analysis_json
                 SQL)
@@ -134,6 +146,7 @@ class CapstoneTrackingService
             'PICKUP' => 'Penjemputan awal',
             'AT_HUB' => 'Penyimpanan hub',
             'IN_TRANSIT' => 'Perjalanan antarthub',
+            'AT_STAGING' => 'Penyimpanan titik distribusi',
             'LAST_MILE' => 'Pengantaran akhir',
         ];
         $shipment['segments'] = array_map(static fn ($assignment) => [
@@ -153,10 +166,10 @@ class CapstoneTrackingService
                 ? null : round((float) $last->temperature_c, 2),
             'normalLowC' => $last === null ? -8.0 : round((float) $last->normal_low_c, 2),
             'normalHighC' => $last === null ? -2.0 : round((float) $last->normal_high_c, 2),
+            'basisType' => $last?->basis_type ?? ($last?->source_url ? 'PUBLIC_CLAIM' : 'SIMULATION'),
+            'sourceUrl' => $last?->source_url,
             'observedAt' => $this->isoDate($last?->observed_at),
             'nextUpdateAt' => null,
-            'state' => $last?->temperature_status
-                ? strtolower($last->temperature_status) : 'pending',
         ];
 
         // Aggregate all assigned readings in SQL. Table rows are loaded separately
@@ -199,6 +212,11 @@ class CapstoneTrackingService
 
     public function temperatureReadings(string $awb): ?array
     {
+        return Cache::remember(self::readingsCacheKey($awb), 60, fn (): ?array => $this->readingsFromDatabase($awb));
+    }
+
+    private function readingsFromDatabase(string $awb): ?array
+    {
         $shipmentId = Shipment::query()->where('awb', $awb)->value('id');
         if ($shipmentId === null) {
             return null;
@@ -207,7 +225,7 @@ class CapstoneTrackingService
         $readings = ShipmentTemperatureHistory::query()
             ->where('shipment_id', $shipmentId)
             ->select(['temperature_reading_id', 'asset_code', 'temperature_c',
-                'temperature_status', 'observed_at'])
+                'observed_at'])
             ->orderByDesc('observed_at')
             ->orderBy('temperature_reading_id', 'desc')
             ->get();
@@ -218,9 +236,24 @@ class CapstoneTrackingService
                 'asset' => $reading->asset_code,
                 'valueC' => round((float) $reading->temperature_c, 2),
                 'observedAt' => $this->isoDate($reading->observed_at),
-                'state' => strtolower($reading->temperature_status ?: 'NORMAL'),
             ])->all(),
         ];
+    }
+
+    public static function detailCacheKey(string $awb): string
+    {
+        return 'tracking:v3:detail:'.hash('sha256', strtoupper($awb));
+    }
+
+    public static function readingsCacheKey(string $awb): string
+    {
+        return 'tracking:v3:readings:'.hash('sha256', strtoupper($awb));
+    }
+
+    public static function forgetCachedShipment(string $awb): void
+    {
+        Cache::forget(self::detailCacheKey($awb));
+        Cache::forget(self::readingsCacheKey($awb));
     }
 
     private function analysisForShipment(int $shipmentId): array
@@ -229,12 +262,10 @@ class CapstoneTrackingService
         // when this shipment was actually assigned to that asset.
         $row = ShipmentTemperatureHistory::query()
             ->where('shipment_id', $shipmentId)
-            ->selectRaw("COUNT(*) AS reading_count,
+            ->selectRaw('COUNT(*) AS reading_count,
                 MIN(temperature_c) AS min_c,
                 MAX(temperature_c) AS max_c,
-                ROUND(AVG(temperature_c), 2) AS average_c,
-                COUNT(*) FILTER (WHERE temperature_status = 'WARNING') AS warning_count,
-                COUNT(*) FILTER (WHERE temperature_status = 'CRITICAL') AS critical_count")
+                ROUND(AVG(temperature_c), 2) AS average_c')
             ->first();
 
         return $this->formatAnalysis($row);
@@ -247,8 +278,6 @@ class CapstoneTrackingService
             'minimumC' => ($row->min_c ?? null) === null ? null : round((float) $row->min_c, 2),
             'maximumC' => ($row->max_c ?? null) === null ? null : round((float) $row->max_c, 2),
             'averageC' => ($row->average_c ?? null) === null ? null : round((float) $row->average_c, 2),
-            'warningCount' => (int) ($row->warning_count ?? 0),
-            'criticalCount' => (int) ($row->critical_count ?? 0),
         ];
     }
 
@@ -282,6 +311,7 @@ class CapstoneTrackingService
             'PICKED_UP' => 'Paket diambil',
             'AT_HUB' => 'Tiba di hub',
             'IN_TRANSIT' => 'Dalam perjalanan',
+            'AT_STAGING' => 'Tiba di titik distribusi',
             'OUT_FOR_DELIVERY' => 'Sedang diantar',
             'DELIVERED' => 'Terkirim',
             default => 'Menunggu pembaruan',
@@ -295,6 +325,7 @@ class CapstoneTrackingService
             'ARRIVED_HUB' => 'Paket tiba di hub',
             'LEFT_HUB' => 'Paket berangkat dari hub',
             'IN_TRANSIT' => 'Paket dalam perjalanan',
+            'ARRIVED_STAGING' => 'Paket tiba di titik distribusi',
             'OUT_FOR_DELIVERY' => 'Kurir membawa paket ke tujuan',
             'DELIVERED' => 'Paket diterima',
             default => 'Perjalanan paket diperbarui',
@@ -303,19 +334,22 @@ class CapstoneTrackingService
 
     private function eventDescription(object $event): string
     {
-        $hub = $event->hub_name;
+        $facility = $event->facility_name ?? $event->hub_name ?? null;
         $courier = $event->courier_display_name;
 
         return match ($event->event_code) {
             'PICKED_UP' => $courier
                 ? 'Paket diterima kurir pickup '.rtrim($courier, '.').'.'
                 : 'Paket telah dijemput dari pengirim.',
-            'ARRIVED_HUB' => $hub
-                ? "Paket diterima di {$hub} untuk proses transit dingin."
+            'ARRIVED_HUB' => $facility
+                ? "Paket diterima di {$facility} untuk proses transit dingin."
                 : 'Paket telah tiba di hub transit.',
-            'LEFT_HUB' => $hub
-                ? "Paket berangkat dari {$hub} menuju titik berikutnya."
+            'LEFT_HUB' => $facility
+                ? "Paket berangkat dari {$facility} menuju titik berikutnya."
                 : 'Paket berangkat menuju titik berikutnya.',
+            'ARRIVED_STAGING' => $facility
+                ? "Paket tiba di {$facility} dan menunggu pengantaran terakhir."
+                : 'Paket tiba di titik distribusi terdekat.',
             'OUT_FOR_DELIVERY' => $courier
                 ? 'Kurir '.rtrim($courier, '.').' sedang membawa paket ke tujuan.'
                 : 'Kurir sedang membawa paket ke tujuan.',

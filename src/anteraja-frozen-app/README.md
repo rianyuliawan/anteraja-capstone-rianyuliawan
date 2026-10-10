@@ -1,85 +1,107 @@
-# Anteraja Frozen App
+# Anteraja Frozen Tracking
 
-Aplikasi pelacakan paket beku ini menggabungkan frontend React, API Laravel, PostgreSQL lokal, dan simulator suhu Node-RED. Antarmuka pelanggan menampilkan hasil pencarian AWB, status dan linimasa, perjalanan aset, riwayat suhu, serta bukti foto pickup/delivery. Ini adalah fondasi lokal proyek; folder `anteraja-frozen-tracking` dan `anteraja-frozen-api` sebelumnya tetap disimpan terpisah sebagai referensi.
+Aplikasi pelacakan pengiriman produk beku dengan tampilan pelanggan berbasis React, REST API Laravel, PostgreSQL, cache Redis, dan simulasi pembacaan suhu dari Node-RED. Pelanggan dapat mencari nomor resi (AWB), melihat perjalanan paket, serta memeriksa pembacaan suhu dan foto pickup atau penerimaan.
 
-## Pekerjaan yang dibuat
+> Proyek ini menggunakan data dan sensor **simulasi** untuk pengembangan capstone. Peta menunjukkan titik perjalanan, bukan posisi GPS paket secara langsung. Foto dalam dataset adalah ilustrasi, bukan bukti pengiriman nyata.
 
-Pada tugas Laravel ini, saya menyiapkan backend baru dan menghubungkannya dengan antarmuka React yang sudah dibuat. Saya membuat migration untuk struktur data pengiriman, model Eloquent untuk membaca shipment, aset, dan riwayat suhu, serta seeder yang mengimpor dataset contoh dari CSV. API Laravel menyediakan pencarian resi, detail pengiriman, riwayat suhu, dan foto bukti. Endpoint internal menerima pembacaan suhu simulasi dari Node-RED. Saya memeriksa hasilnya melalui tampilan React dan pengujian API Laravel.
+## Fitur
 
-## Alur data
+- Pencarian hingga 10 AWB dalam satu permintaan; hasil hanya menampilkan resi yang ditemukan.
+- Detail status, linimasa, rute perjalanan, aset termal, dan penerima paket.
+- Pembacaan suhu terbaru serta riwayat hingga delapan pembacaan per AWB.
+- Foto pickup dan delivery melalui endpoint media privat.
+- Simulasi Node-RED untuk aset aktif; data dikirim ke API internal dengan Bearer token.
+- Cache Redis untuk pencarian dan detail, dengan invalidasi data suhu setelah pembacaan baru.
+
+## Arsitektur
 
 ```text
-React (:5195) ── GET /api ──▶ Laravel (:8093) ── Eloquent/SQL ──▶ PostgreSQL
-Node-RED (:1880) ── token + POST /api/internal ──▶ Laravel ──▶ temperature_readings
-Foto WebP privat ──▶ endpoint media Laravel ──▶ React
+Browser → React/Vite → REST API Laravel → PostgreSQL
+                                 ↕
+                               Redis
+Node-RED → API internal Laravel → pembacaan aset dan snapshot suhu per AWB
 ```
 
-Data suhu melekat pada aset termal, kemudian dikaitkan ke shipment berdasarkan rentang waktu pada `shipment_asset_assignments`. PostgreSQL menyimpan metadata foto dan kunci berkas; file WebP berada di `backend/storage/app/private/shipment-events`.
+React tidak mengakses database atau Node-RED secara langsung. Laravel menangani validasi, penyusunan respons, penyimpanan, dan akses foto. Tabel `shipment_asset_assignments` menghubungkan paket dengan aset pada periode tertentu; pembacaan aset yang relevan disimpan dalam `shipment_temperature_samples` agar riwayat paket tetap tersedia saat aset dipakai kembali.
 
-## Struktur
+| Bagian | Teknologi | Lokasi |
+| --- | --- | --- |
+| Antarmuka | React 19, Vite 8, Tailwind CSS 4, React Router | `frontend/` |
+| API | PHP 8.3+, Laravel 13, Eloquent | `backend/` |
+| Data | PostgreSQL dan Redis | dikonfigurasi di `backend/.env` |
+| Simulasi suhu | Node-RED | `node-red/` |
+| Data demo | SQL, 13 CSV, dan media WebP | `backend/database/dataset/` |
+| Contoh deploy VPS | Nginx dan service Node-RED | `deploy/` |
 
-| Lokasi | Isi |
-| --- | --- |
-| `frontend/` | React, Vite, halaman beranda/hasil/detail, dan komponen UI. |
-| `backend/app/Models/Dataset/` | Model Eloquent untuk tabel dan view pelacakan. |
-| `backend/app/Http/Controllers/Api/` | Endpoint pelacakan, foto, dan penerimaan telemetri. |
-| `backend/app/Services/` | Penyusunan detail pengiriman dan validasi/penyimpanan suhu. |
-| `backend/database/migrations/` | Tabel framework Laravel dan skema pelacakan PostgreSQL. |
-| `backend/database/seeders/` | Impor 12 CSV proyek ke skema ternormalisasi. |
-| `node-red/` | Flow simulasi aset aktif untuk demo lokal. |
-| `../../docs/database/` | SQL, CSV, dan sumber gambar dataset. |
+## Menjalankan secara lokal
 
-Seeder awal memuat 70 shipment, 4 kurir, 86 aset termal, 274 event, 400 pembacaan suhu, dan 84 metadata foto. Pembacaan Node-RED berikutnya menambah riwayat tanpa mengubah data seed. Seeder melewati impor jika shipment sudah ada; jangan memakai `migrate:fresh` pada database berisi data.
+Prasyarat: PHP 8.3+ dengan ekstensi PostgreSQL dan Redis, Composer, Node.js yang sesuai dengan Vite 8, PostgreSQL, Redis, npm, serta Node-RED CLI jika ingin menjalankan simulasi.
 
-## Menjalankan lokal
+1. Siapkan backend dari `backend/`:
 
-Pastikan PostgreSQL lokal dan database aplikasi tersedia, serta PHP/Composer, Node.js, dan Node-RED terpasang. Dari akar repository:
+   ```bash
+   composer install
+   cp .env.example .env
+   php artisan key:generate
+   ```
 
-```bash
-cd src/anteraja-frozen-app/backend
-composer install
-```
+   Atur `DB_*`, `CACHE_STORE=redis`, `REDIS_*`, dan `ANTERAJA_INGEST_TOKEN` dalam `.env`. Gunakan kredensial database milik Anda sendiri; jangan commit `.env`. Jika memakai PostgreSQL cloud, sesuaikan koneksi dan TLS menurut providernya.
 
-Jika `.env` belum ada, salin `.env.example`, jalankan `php artisan key:generate`, dan isi koneksi PostgreSQL sesuai lingkungan lokal. Simpan token internal hanya dalam `.env`, jangan commit atau kirim ke browser.
+2. **Hanya untuk database PostgreSQL baru yang kosong**, jalankan:
 
-```bash
-php artisan migrate
-php artisan db:seed
-php artisan serve --host=127.0.0.1 --port=8093
-```
+   ```bash
+   php artisan migrate
+   php artisan db:seed
+   ```
 
-Pada instalasi baru, salin sumber foto dari `docs/database/sample-data/media/shipment-events` ke `backend/storage/app/private/shipment-events` agar endpoint bukti dapat menampilkan gambar. Migration dan seeder hanya mengelola tabel dan metadata foto, bukan byte gambar.
+   Seeder memuat 70 shipment, 316 event, 96 aset, 84 metadata foto, dan data suhu contoh. Seeder melewati impor bila shipment sudah ada. Jangan jalankan `migrate:fresh` pada database yang berisi data. Salin media demo dari `backend/database/dataset/media/shipment-events/` ke `backend/storage/app/private/shipment-events/` agar foto contoh dapat dibuka. Untuk database yang dipulihkan dari backup, pindahkan pula storage privat aslinya; metadata PostgreSQL saja tidak memuat byte foto.
 
-Terminal lain:
+3. Jalankan Laravel dari `backend/`:
 
-```bash
-cd src/anteraja-frozen-app/frontend
-npm ci
-npm run dev -- --host=127.0.0.1 --port=5195
-```
+   ```bash
+   php artisan serve --host=127.0.0.1 --port=8093
+   ```
 
-Buka `http://127.0.0.1:5195/`. Contoh resi terkirim: `ANT-FRZ-0012`. Untuk simulasi suhu, dari `src/anteraja-frozen-app` jalankan `bash node-red/start.sh`; editor Node-RED ada di `http://127.0.0.1:1880`. Hanya satu proses boleh memakai port 1880 pada satu waktu.
+4. Di terminal lain, jalankan frontend dari `frontend/`:
 
-## Endpoint
+   ```bash
+   npm ci
+   npm run dev -- --host=127.0.0.1 --port=5195
+   ```
 
-| Metode | Rute | Fungsi |
+   Buka `http://127.0.0.1:5195`. Contoh AWB: `ANT-FRZ-0012`. Proxy Vite meneruskan `/api` ke Laravel pada port 8093.
+
+5. Opsional, jalankan simulasi dari folder aplikasi:
+
+   ```bash
+   bash node-red/start.sh
+   ```
+
+   Editor Node-RED berada di `http://127.0.0.1:1880`. Flow sumber disalin ke `node-red/runtime/` pada start pertama. Perubahan di editor tidak otomatis mengubah flow sumber. Jika Node-RED berhenti, aplikasi tetap menampilkan data terakhir, tetapi tidak menerima pembacaan simulasi baru.
+
+## Endpoint utama
+
+| Metode | URL | Keterangan |
 | --- | --- | --- |
 | GET | `/api/health` | Status API. |
-| GET | `/api/shipments?awbs=A,B` | Cari hingga 10 resi; respons hanya memuat yang ditemukan. |
-| GET | `/api/shipments/{awb}` | Detail status, linimasa, rute, aset, suhu, dan bukti. |
-| GET | `/api/shipments/{awb}/temperature-readings` | Riwayat pembacaan suhu yang terkait AWB. |
-| GET | `/api/shipments/{awb}/media/{id}` | Berkas WebP privat yang terkait AWB. |
-| GET | `/api/internal/thermal-assets` | Daftar aset aktif untuk Node-RED; perlu Bearer token. |
-| POST | `/api/internal/temperature-readings` | Terima pembacaan Node-RED; perlu Bearer token. |
+| GET | `/api/shipments?awbs=AWB1,AWB2` | Pencarian maksimal 10 AWB. |
+| GET | `/api/shipments/{awb}` | Detail pengiriman. |
+| GET | `/api/shipments/{awb}/temperature-readings` | Riwayat suhu AWB. |
+| GET | `/api/shipments/{awb}/media/{id}` | Foto terkait AWB yang diizinkan tampil. |
+| GET | `/api/internal/thermal-assets` | Aset aktif; memerlukan Bearer token. |
+| POST | `/api/internal/temperature-readings` | Penerimaan pembacaan simulasi; memerlukan Bearer token. |
 
-Frontend tidak terhubung langsung ke PostgreSQL atau Node-RED. Node-RED meminta daftar aset, membangkitkan suhu simulasi, lalu mengirimnya ke API Laravel. Laravel memvalidasi kode aset, suhu, waktu, dan `message_id` sebelum menyimpan. Detail React mengambil data terbaru dari API selama halaman aktif. Belum ada panel admin, login, atau Redis di fondasi ini.
+Endpoint publik memiliki rate limit. Token internal dan kredensial PostgreSQL hanya berada di sisi server; jangan menaruhnya di React atau repository.
 
-## Pemeriksaan
+## Pengujian
 
 ```bash
-cd src/anteraja-frozen-app/backend
+# Dari backend/
 php artisan test --compact
 php artisan route:list --path=api --except-vendor
+
+# Dari frontend/
+npm run build
 ```
 
-Tes otomatis memeriksa validasi pencarian dan perlindungan endpoint internal tanpa mengubah database lokal. Detail `ANT-FRZ-0012`, riwayat suhu, dan foto pickup/delivery telah diperiksa pada PostgreSQL lokal. Build frontend diperiksa dengan `npm run build`. Semua angka performa lokal bergantung pada mesin dan keadaan server; bukan jaminan produksi.
+Untuk menjalankan seluruh layanan pada satu VPS dengan Node-RED privat yang tetap hidup setelah SSH ditutup, gunakan contoh konfigurasi di `deploy/`. Pastikan backup PostgreSQL **dan** storage foto privat tersedia sebelum memindahkan data atau mengganti koneksi produksi.

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Dataset\TemperatureReading;
 use App\Models\Dataset\ThermalAsset;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class DatasetTemperatureService
@@ -42,7 +43,14 @@ class DatasetTemperatureService
             ];
         }
 
-        return (new TemperatureReading)->getConnection()->transaction(function () use ($prepared) {
+        $assetIds = array_values(array_unique(array_column($prepared, 'thermal_asset_id')));
+        [$result, $awbs] = (new TemperatureReading)->getConnection()->transaction(function () use ($prepared, $assetIds) {
+            $retention = null;
+            if (DB::connection()->getDriverName() === 'pgsql') {
+                $retention = app(TemperatureRetentionService::class);
+                $retention->lockActiveShipments($assetIds);
+            }
+
             $columns = ['id', 'thermal_asset_id', 'message_id', 'temperature_c', 'observed_at', 'temperature_status'];
 
             $messageIds = array_column($prepared, 'message_id');
@@ -111,12 +119,26 @@ class DatasetTemperatureService
                 $results[] = $entry;
             }
 
-            return [
+            $result = [
                 'inserted' => $inserted,
                 'duplicates' => count($prepared) - $inserted,
                 'readings' => $results,
             ];
+
+            $insertedIds = array_column(array_filter(
+                $results,
+                static fn (array $reading): bool => ! $reading['duplicate']
+            ), 'id');
+            $affectedAwbs = $retention?->recordAndPrune($insertedIds, $assetIds) ?? [];
+
+            return [$result, $affectedAwbs];
         });
+
+        foreach ($awbs as $awb) {
+            CapstoneTrackingService::forgetCachedShipment($awb);
+        }
+
+        return $result;
     }
 
     private function assertIdentical(object $row, array $reading): void

@@ -7,7 +7,6 @@ import Toast from "../ui/Toast";
 export function SiteLayout() {
   const location = useLocation();
   const [toast, setToast] = useState(null);
-  const [now, setNow] = useState(() => Date.now());
   const [searchedAwbs, setSearchedAwbs] = useState([]);
   const showToast = (message, tone = "success") =>
     setToast({ id: Date.now(), message, tone });
@@ -45,10 +44,6 @@ export function SiteLayout() {
   useEffect(() => {
     document.title = pageTitle;
   }, [pageTitle]);
-  useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 60_000);
-    return () => window.clearInterval(timer);
-  }, []);
   return (
     <>
       <a
@@ -62,7 +57,7 @@ export function SiteLayout() {
         id="main-content"
         className="mx-auto w-full max-w-content px-4 py-8 md:px-8"
       >
-        <Outlet context={{ now, showToast, searchedAwbs, setSearchedAwbs }} />
+        <Outlet context={{ showToast, searchedAwbs, setSearchedAwbs }} />
         <section
           id="customer-care"
           className="mt-10 scroll-mt-24 rounded-card-lg border border-brand-100 bg-brand-50 p-6 sm:flex sm:items-center sm:justify-between sm:gap-5"

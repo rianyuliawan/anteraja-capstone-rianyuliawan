@@ -1,4 +1,5 @@
 import { formatDateTime } from "../../utils/format";
+import { FiCopy } from "react-icons/fi";
 import Panel from "../ui/Panel";
 import StatusBadge from "../ui/StatusBadge";
 
@@ -28,10 +29,11 @@ export function ShipmentSummary({ shipment, onNotify }) {
             <button
               type="button"
               onClick={copyAwb}
-              className="rounded-full border border-ink-200 px-2.5 py-1 text-xs font-bold text-brand-700 hover:border-brand-500"
+              className="grid size-10 shrink-0 place-items-center rounded-full border border-ink-200 text-brand-700 hover:border-brand-500 hover:bg-brand-50"
               aria-label={`Salin nomor resi ${shipment.awb}`}
+              title="Salin nomor resi"
             >
-              Salin
+              <FiCopy aria-hidden="true" className="size-4" />
             </button>
           </div>
         </div>

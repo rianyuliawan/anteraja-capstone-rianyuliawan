@@ -29,7 +29,7 @@ return new class extends Migration
             return;
         }
 
-        $path = base_path('../../../docs/database/sql/anteraja_frozen_schema.sql');
+        $path = database_path('dataset/anteraja_frozen_schema.sql');
         $sql = file_get_contents($path);
         if ($sql === false) {
             throw new RuntimeException("Skema dataset tidak ditemukan: $path");
