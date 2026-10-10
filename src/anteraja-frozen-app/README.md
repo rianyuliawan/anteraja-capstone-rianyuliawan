@@ -31,7 +31,6 @@ React tidak mengakses database atau Node-RED secara langsung. Laravel menangani 
 | Data | PostgreSQL dan Redis | dikonfigurasi di `backend/.env` |
 | Simulasi suhu | Node-RED | `node-red/` |
 | Data demo | SQL, 13 CSV, dan media WebP | `backend/database/dataset/` |
-| Contoh deploy VPS | Nginx dan service Node-RED | `deploy/` |
 
 ## Menjalankan secara lokal
 
@@ -104,4 +103,4 @@ php artisan route:list --path=api --except-vendor
 npm run build
 ```
 
-Untuk menjalankan seluruh layanan pada satu VPS dengan Node-RED privat yang tetap hidup setelah SSH ditutup, gunakan contoh konfigurasi di `deploy/`. Pastikan backup PostgreSQL **dan** storage foto privat tersedia sebelum memindahkan data atau mengganti koneksi produksi.
+Saat memindahkan aplikasi ke server, pastikan backup PostgreSQL **dan** storage foto privat tersedia. Node-RED perlu dijalankan sebagai service tersendiri agar tetap hidup setelah SSH ditutup.
