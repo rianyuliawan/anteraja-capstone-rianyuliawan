@@ -3,6 +3,7 @@ import DashboardMap from './components/DashboardMap.jsx'
 import { filterHubs, formatHours, prepareDashboard, topHubs } from './lib/dashboard.js'
 
 const numberFormat = new Intl.NumberFormat('id-ID')
+const percentFormat = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 1 })
 
 function useDashboardData(retryCount) {
   const [state, setState] = useState({ status: 'loading', data: null, message: '' })
@@ -57,7 +58,7 @@ function Placeholder({ title, description }) {
   )
 }
 
-function HubDetail({ hub, onClose }) {
+function HubDetail({ hub, thresholdHours, onClose, isDefault }) {
   if (!hub) {
     return <Placeholder title="Pilih salah satu hub" description="Klik penanda pada peta atau nama hub dalam daftar untuk melihat detailnya." />
   }
@@ -66,22 +67,35 @@ function HubDetail({ hub, onClose }) {
     <div className="hub-detail" aria-live="polite">
       <div className="hub-detail-heading">
         <div>
-          <Eyebrow>Detail hub</Eyebrow>
+          <Eyebrow>{isDefault ? 'Fokus awal · mean tertinggi' : 'Detail hub terpilih'}</Eyebrow>
           <h3>{hub.hub_name}</h3>
-          <p>{hub.city}, {hub.province}</p>
+          <p>{hub.hub_id} · {hub.city}, {hub.province}</p>
         </div>
-        <button className="icon-button" type="button" aria-label="Tutup detail hub" onClick={onClose}>×</button>
+        <div className="hub-detail-actions">
+          <span className={`status-pill${hub.priority ? ' status-pill--priority' : ''}`}>{hub.priority ? 'Prioritas investigasi' : 'Reguler'}</span>
+          {!isDefault && <button className="icon-button" type="button" aria-label="Kembali ke fokus awal" onClick={onClose}>×</button>}
+        </div>
       </div>
       <div className="hub-detail-grid">
-        <div><span>Mean dwell</span><strong>{formatHours(hub.mean_dwell_hours)} jam</strong></div>
-        <div><span>Completed visits</span><strong>{numberFormat.format(hub.completed_visits)}</strong></div>
-        <div><span>Minimum</span><strong>{formatHours(hub.min_dwell_hours)} jam</strong></div>
-        <div><span>Maksimum</span><strong>{formatHours(hub.max_dwell_hours)} jam</strong></div>
+        <div className="hub-detail-metric hub-detail-metric--primary"><span>Rata-rata dwell</span><strong>{formatHours(hub.mean_dwell_hours)} <small>jam</small></strong></div>
+        <div className="hub-detail-metric hub-detail-metric--primary"><span>Kunjungan selesai</span><strong>{numberFormat.format(hub.completed_visits)}</strong></div>
+        <div className="hub-detail-metric"><span>Minimum</span><strong>{formatHours(hub.min_dwell_hours)} jam</strong></div>
+        <div className="hub-detail-metric"><span>Maksimum</span><strong>{formatHours(hub.max_dwell_hours)} jam</strong></div>
+        <div className="hub-detail-metric"><span>Median</span><strong>{formatHours(hub.median_dwell_hours)} jam</strong></div>
+        <div className="hub-detail-metric"><span>P95</span><strong>{formatHours(hub.p95_dwell_hours)} jam</strong></div>
+      </div>
+      <div className="hub-detail-quality">
+        <span>Pasangan scan valid</span>
+        <strong>{percentFormat.format(hub.valid_pair_rate_pct)}%</strong>
+        <div className="quality-track" role="meter" aria-label="Persentase pasangan scan valid" aria-valuemin="0" aria-valuemax="100" aria-valuenow={hub.valid_pair_rate_pct}>
+          <span style={{ width: `${hub.valid_pair_rate_pct}%` }} />
+        </div>
       </div>
       <div className="hub-detail-foot">
-        <span>Prioritas investigasi</span>
-        <span className={`status-pill${hub.priority ? ' status-pill--priority' : ''}`}>{hub.priority ? 'Prioritas' : 'Reguler'}</span>
+        <span>Selisih dari ambang {formatHours(thresholdHours)} jam</span>
+        <strong className={hub.priority ? 'delta-positive' : ''}>{hub.mean_dwell_hours > thresholdHours ? '+' : ''}{formatHours(hub.mean_dwell_hours - thresholdHours)} jam</strong>
       </div>
+      <p className="hub-detail-note">P95 berarti 95% kunjungan selesai berdurasi sampai nilai tersebut. Rasio scan valid dihitung dari catatan paket-hub dengan pasangan ARRIVAL–DEPARTURE. Ambang prioritas bukan SLA resmi.</p>
     </div>
   )
 }
@@ -92,9 +106,10 @@ function Dashboard({ data }) {
   const [selectedHubId, setSelectedHubId] = useState(null)
   const priorityCount = data.hubs.filter((hub) => hub.priority).length
   const ranked = useMemo(() => topHubs(data.hubs), [data.hubs])
+  const topVisits = ranked.reduce((total, hub) => total + hub.completed_visits, 0)
   const mapHubs = useMemo(() => filterHubs(data.hubs, priorityOnly), [data.hubs, priorityOnly])
   const listHubs = useMemo(() => filterHubs(data.hubs, priorityOnly, searchTerm), [data.hubs, priorityOnly, searchTerm])
-  const selectedHub = data.hubs.find((hub) => hub.hub_id === selectedHubId) ?? null
+  const selectedHub = data.hubs.find((hub) => hub.hub_id === selectedHubId) ?? ranked[0]
 
   useEffect(() => {
     if (selectedHubId && !mapHubs.some((hub) => hub.hub_id === selectedHubId)) {
@@ -118,13 +133,13 @@ function Dashboard({ data }) {
       <section className="rank-section" aria-labelledby="rank-title">
         <div className="section-heading">
           <div><Eyebrow>Fokus investigasi</Eyebrow><h2 id="rank-title">Top 3 dwell time tertinggi</h2></div>
-          <p>Diurutkan dari nilai mean dwell per hub</p>
+          <p>{numberFormat.format(topVisits)} kunjungan · {percentFormat.format(topVisits / data.completedVisits * 100)}% dari total</p>
         </div>
         <div className="rank-grid">
           {ranked.map((hub, index) => (
             <button className="rank-card" key={hub.hub_id} type="button" onClick={() => setSelectedHubId(hub.hub_id)}>
               <span className="rank-number">0{index + 1}</span>
-              <span className="rank-main"><strong>{hub.hub_name}</strong><small>{numberFormat.format(hub.completed_visits)} completed visits</small></span>
+              <span className="rank-main"><strong>{hub.hub_name}</strong><small>{hub.hub_id} · {numberFormat.format(hub.completed_visits)} kunjungan</small><small>Rentang {formatHours(hub.min_dwell_hours)}–{formatHours(hub.max_dwell_hours)} jam</small></span>
               <span className="rank-value">{formatHours(hub.mean_dwell_hours)} <small>jam</small></span>
             </button>
           ))}
@@ -139,6 +154,7 @@ function Dashboard({ data }) {
             <button type="button" className={priorityOnly ? 'is-active' : ''} aria-pressed={priorityOnly} onClick={() => setPriorityOnly(true)}>Prioritas saja</button>
           </div>
         </div>
+        <p className="monitor-note">Prioritas berarti rata-rata dwell di atas {formatHours(data.priorityThresholdHours)} jam (ambang simulasi analisis, bukan SLA resmi). {priorityCount === data.hubs.length ? 'Saat ini seluruh hub termasuk prioritas.' : ''}</p>
         <div className="monitor-grid">
           <div className="map-panel">
             <div className="panel-topline"><strong>Peta hub</strong><span>{mapHubs.length} lokasi</span></div>
@@ -157,17 +173,23 @@ function Dashboard({ data }) {
                   {listHubs.map((hub) => (
                     <li key={hub.hub_id}>
                       <button type="button" className={`hub-list-item${selectedHubId === hub.hub_id ? ' is-selected' : ''}`} onClick={() => setSelectedHubId(hub.hub_id)}>
-                        <span className="hub-list-marker" aria-hidden="true" />
-                        <span className="hub-list-main"><strong>{hub.hub_name}</strong><small>{hub.city} · {numberFormat.format(hub.completed_visits)} kunjungan</small></span>
-                        <span className="hub-list-value">{formatHours(hub.mean_dwell_hours)}<small> jam</small></span>
+                        <span className="hub-list-top">
+                          <span className="hub-list-marker" aria-hidden="true" />
+                          <span className="hub-list-main"><strong>{hub.hub_name}</strong><small>{hub.city} · {hub.hub_id}</small></span>
+                          <span className="hub-list-value">{formatHours(hub.mean_dwell_hours)}<small> jam</small></span>
+                        </span>
+                        <span className="hub-list-stats">
+                          <span><strong>{numberFormat.format(hub.completed_visits)}</strong> kunjungan selesai</span>
+                          <span>Rentang <strong>{formatHours(hub.min_dwell_hours)}–{formatHours(hub.max_dwell_hours)}</strong> jam</span>
+                        </span>
                       </button>
                     </li>
                   ))}
                 </ul>
               ) : <Placeholder title="Hub tidak ditemukan" description="Coba kata kunci lain atau ubah filter prioritas." />}
             </div>
-            <HubDetail hub={selectedHub} onClose={() => setSelectedHubId(null)} />
           </div>
+          <HubDetail hub={selectedHub} thresholdHours={data.priorityThresholdHours} isDefault={!selectedHubId} onClose={() => setSelectedHubId(null)} />
         </div>
       </section>
 
