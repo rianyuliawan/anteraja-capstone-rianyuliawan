@@ -1,5 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
 import { filterHubs, prepareDashboard, topHubs } from './dashboard.js'
 
 const metrics = {
@@ -33,6 +34,17 @@ test('priority filter and search can be combined', () => {
   assert.deepEqual(filterHubs(hubs, true, 'alpha').map((hub) => hub.hub_id), ['A'])
 })
 
+test('priority is calculated from the exercise threshold, not a stale flag', () => {
+  const staleMetrics = structuredClone(metrics)
+  staleMetrics.hubs[0].priority = false
+  assert.equal(prepareDashboard(staleMetrics, locations, {}).hubs[0].priority, true)
+})
+
+test('no-priority scenario keeps priority list empty', () => {
+  const hubs = [{ hub_id: 'LOW', mean_dwell_hours: 4.5, priority: false }]
+  assert.deepEqual(filterHubs(hubs, true), [])
+})
+
 test('empty data is a supported dashboard state', () => {
   const result = prepareDashboard({ hubs: [], completed_visits: 0, global_mean_dwell_hours: null }, { hubs: [] }, {})
   assert.deepEqual(result.hubs, [])
@@ -40,4 +52,16 @@ test('empty data is a supported dashboard state', () => {
 
 test('missing location is reported instead of silently dropping a hub', () => {
   assert.throws(() => prepareDashboard(metrics, { hubs: [] }, {}), /lokasi tidak cocok/i)
+})
+
+test('global mean uses all completed pairs, excluding open visits', async () => {
+  const [metricsJson, pairsCsv] = await Promise.all([
+    readFile(new URL('../../public/data/metrics.json', import.meta.url), 'utf8'),
+    readFile(new URL('../../../bigdata-bottleneck-analysis/output/scan_pairs_dwell.csv', import.meta.url), 'utf8'),
+  ])
+  const prepared = JSON.parse(metricsJson)
+  const rows = pairsCsv.trim().split(/\r?\n/).slice(1)
+  const total = rows.reduce((sum, row) => sum + Number(row.split(',').at(-1)), 0)
+  assert.equal(prepared.completed_visits, rows.length)
+  assert.ok(Math.abs(prepared.global_mean_dwell_hours - total / rows.length) < 1e-10)
 })

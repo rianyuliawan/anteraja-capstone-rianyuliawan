@@ -96,6 +96,12 @@ function Dashboard({ data }) {
   const listHubs = useMemo(() => filterHubs(data.hubs, priorityOnly, searchTerm), [data.hubs, priorityOnly, searchTerm])
   const selectedHub = data.hubs.find((hub) => hub.hub_id === selectedHubId) ?? null
 
+  useEffect(() => {
+    if (selectedHubId && !mapHubs.some((hub) => hub.hub_id === selectedHubId)) {
+      setSelectedHubId(null)
+    }
+  }, [mapHubs, selectedHubId])
+
   if (data.hubs.length === 0) {
     return <Placeholder title="Belum ada data hub" description="Tambahkan metrics dan lokasi hub, lalu muat ulang dashboard." />
   }

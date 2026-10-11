@@ -4,6 +4,9 @@ export function prepareDashboard(metrics, locations, aiSummary) {
   }
 
   const locationById = new Map()
+  if (metrics.hubs.length && (!Number.isFinite(metrics.priority_threshold_hours) || !Number.isFinite(metrics.global_mean_dwell_hours))) {
+    throw new Error('Ambang prioritas atau mean dwell global tidak valid.')
+  }
   for (const location of locations.hubs) {
     if (!location?.hub_id || locationById.has(location.hub_id)) {
       throw new Error('ID hub pada data lokasi tidak valid atau duplikat.')
@@ -27,11 +30,12 @@ export function prepareDashboard(metrics, locations, aiSummary) {
     if (metric.min_dwell_hours > metric.mean_dwell_hours || metric.mean_dwell_hours > metric.max_dwell_hours) {
       throw new Error(`Rentang dwell tidak valid untuk ${metric.hub_id}.`)
     }
-    if (!Number.isFinite(location.latitude) || !Number.isFinite(location.longitude)) {
+    if (!Number.isFinite(location.latitude) || !Number.isFinite(location.longitude) ||
+        Math.abs(location.latitude) > 90 || Math.abs(location.longitude) > 180) {
       throw new Error(`Koordinat tidak valid untuk ${metric.hub_id}.`)
     }
 
-    return { ...metric, ...location }
+    return { ...metric, ...location, priority: metric.mean_dwell_hours > metrics.priority_threshold_hours }
   })
 
   if (locations.hubs.length !== hubs.length) {

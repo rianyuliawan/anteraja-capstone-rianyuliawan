@@ -23,7 +23,11 @@ export default function DashboardMap({ hubs, selectedHubId, onSelectHub }) {
   const layerRef = useRef(null)
   const markerRef = useRef(new Map())
   const onSelectRef = useRef(onSelectHub)
+  const hubsRef = useRef(hubs)
+  const selectedHubRef = useRef(selectedHubId)
   onSelectRef.current = onSelectHub
+  hubsRef.current = hubs
+  selectedHubRef.current = selectedHubId
 
   useEffect(() => {
     if (!containerRef.current) return undefined
@@ -38,7 +42,15 @@ export default function DashboardMap({ hubs, selectedHubId, onSelectHub }) {
     mapRef.current = map
     layerRef.current = layer
 
-    const resizeObserver = new ResizeObserver(() => map.invalidateSize())
+    const resizeObserver = new ResizeObserver(() => {
+      map.invalidateSize()
+      if (!selectedHubRef.current && hubsRef.current.length) {
+        map.fitBounds(
+          L.latLngBounds(hubsRef.current.map((hub) => [hub.latitude, hub.longitude])),
+          { padding: [28, 28], maxZoom: 7, animate: false },
+        )
+      }
+    })
     resizeObserver.observe(containerRef.current)
 
     return () => {
