@@ -1,23 +1,27 @@
 import { useNavigate, useOutletContext } from "react-router-dom";
+import { FiMap, FiPackage, FiThermometer } from "react-icons/fi";
 import SearchHero from "../../components/SearchHero";
 import Button from "../../components/ui/Button";
 
 const serviceFeatures = [
   {
     title: "Status perjalanan",
-    image: "/images/hub.png",
+    icon: FiMap,
+    iconClassName: "bg-brand-50 text-brand-700",
     description: "Lihat kejadian terbaru dan linimasa perpindahan paket.",
   },
   {
     title: "Detail pengiriman",
-    image: "/images/map.png",
+    icon: FiPackage,
+    iconClassName: "bg-ink-100 text-ink-700",
     description:
       "Lihat pengirim, penerima, kurir, dan status paket yang tercatat.",
   },
   {
     title: "Suhu kompartemen",
-    image: "/images/snowflake.png",
-    description: "Pantau pembacaan suhu lingkungan aset dan riwayatnya.",
+    icon: FiThermometer,
+    iconClassName: "bg-cold-100 text-cold-700",
+    description: "Pantau suhu terakhir dan ringkasan pembacaan aset.",
   },
 ];
 
@@ -47,25 +51,26 @@ export function Home() {
           </p>
         </div>
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
-          {serviceFeatures.map((feature) => (
-            <article
-              key={feature.title}
-              className="rounded-card border border-ink-200 bg-white p-5"
-            >
-              <img
-                src={feature.image}
-                alt=""
-                aria-hidden="true"
-                width="40"
-                height="40"
-                className="h-10 w-10 object-contain"
-              />
-              <h3 className="mt-3 font-extrabold">{feature.title}</h3>
-              <p className="mt-1 text-sm text-ink-600">
-                {feature.description}
-              </p>
-            </article>
-          ))}
+          {serviceFeatures.map((feature) => {
+            const Icon = feature.icon;
+            return (
+              <article
+                key={feature.title}
+                className="rounded-card border border-ink-200 bg-white p-5"
+              >
+                <span
+                  className={`grid size-11 place-items-center rounded-full ${feature.iconClassName}`}
+                  aria-hidden="true"
+                >
+                  <Icon className="size-6" />
+                </span>
+                <h3 className="mt-3 font-extrabold">{feature.title}</h3>
+                <p className="mt-1 text-sm text-ink-600">
+                  {feature.description}
+                </p>
+              </article>
+            );
+          })}
         </div>
       </section>
       <div className="mx-auto mt-8 max-w-3xl text-center text-xs text-ink-500">

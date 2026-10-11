@@ -8,6 +8,31 @@ import { getShipment } from "../../api/shipments";
 
 const REFRESH_INTERVAL_MS = 30_000;
 
+function TrackingLoading() {
+  return (
+    <section role="status" className="min-h-[calc(100svh-8rem)]">
+      <p className="mb-5 text-sm font-semibold text-ink-600">
+        Memuat detail pengiriman…
+      </p>
+      <div aria-hidden="true" className="motion-safe:animate-pulse">
+        <div className="rounded-card border border-ink-200 bg-white p-6">
+          <div className="h-4 w-32 rounded bg-ink-100" />
+          <div className="mt-3 h-7 w-52 max-w-full rounded bg-ink-100" />
+          <div className="mt-7 border-t border-ink-200 pt-5">
+            <div className="h-4 w-28 rounded bg-ink-100" />
+            <div className="mt-2 h-6 w-44 rounded bg-ink-100" />
+          </div>
+          <div className="mt-6 h-24 rounded-card bg-ink-50" />
+        </div>
+        <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(18rem,0.38fr)_minmax(0,0.62fr)]">
+          <div className="h-64 rounded-card border border-ink-200 bg-white" />
+          <div className="h-80 rounded-card border border-ink-200 bg-white" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function Tracking() {
   const { awb = "" } = useParams();
   const { showToast, searchedAwbs } = useOutletContext();
@@ -67,12 +92,7 @@ export function Tracking() {
   }, [selectedAwb]);
 
   const resultAwbs = searchedAwbs.length ? searchedAwbs : [awb.toUpperCase()];
-  if (isLoading)
-    return (
-      <p role="status" className="rounded-card bg-white p-8">
-        Memuat detail pengiriman…
-      </p>
-    );
+  if (isLoading) return <TrackingLoading />;
   if (error && error !== "Paket tidak ditemukan.")
     return (
       <p
@@ -97,6 +117,15 @@ export function Tracking() {
         </Link>
       </section>
     );
+  const delivered = shipment.stage === "DELIVERED";
+  const evidenceGallery = (
+    <EvidenceGallery
+      key={`evidence-${shipment.awb}`}
+      awb={shipment.awb}
+      pickup={shipment.pickup}
+      delivery={shipment.delivery}
+    />
+  );
   return (
     <div id="hasil" className="scroll-mt-24">
       {refreshError && (
@@ -122,26 +151,22 @@ export function Tracking() {
           {resultAwbs.indexOf(shipment.awb) + 1} dari {resultAwbs.length} resi
         </span>
       </div>
-      <div className="grid gap-5 lg:grid-cols-[minmax(18rem,0.38fr)_minmax(0,0.62fr)]">
+      <ShipmentSummary shipment={shipment} onNotify={showToast} />
+      <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(18rem,0.38fr)_minmax(0,0.62fr)]">
         <aside
           className="grid content-start gap-5"
-          aria-label="Informasi utama paket"
+          aria-label="Suhu dan dokumentasi paket"
         >
-          <ShipmentSummary shipment={shipment} onNotify={showToast} />
           <TemperatureCard
             reading={shipment.temperature}
             stage={shipment.stage}
             analysis={shipment.temperatureAnalysis}
           />
+          {delivered && evidenceGallery}
         </aside>
         <div className="grid min-w-0 content-start gap-5">
           <JourneyPanel key={shipment.awb} shipment={shipment} />
-          <EvidenceGallery
-            key={`evidence-${shipment.awb}`}
-            awb={shipment.awb}
-            pickup={shipment.pickup}
-            delivery={shipment.delivery}
-          />
+          {!delivered && evidenceGallery}
         </div>
       </div>
     </div>

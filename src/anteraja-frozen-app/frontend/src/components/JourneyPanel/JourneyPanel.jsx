@@ -1,4 +1,5 @@
 import { lazy, Suspense, useId, useState } from "react";
+import { FiCheck, FiClock, FiMap } from "react-icons/fi";
 import { formatDateTime } from "../../utils/format";
 import Panel from "../ui/Panel";
 
@@ -22,7 +23,7 @@ export function JourneyPanel({ shipment }) {
           ? 1
           : event.key === "ArrowRight"
             ? (current + 1) % 2
-            : (current + 1) % 2;
+            : (current - 1 + 2) % 2;
     const nextTab = tabs[next];
     setActiveTab(nextTab);
     document.getElementById(tabIds[nextTab])?.focus();
@@ -54,9 +55,14 @@ export function JourneyPanel({ shipment }) {
               aria-controls={panelIds[tab]}
               tabIndex={activeTab === tab ? 0 : -1}
               onClick={() => setActiveTab(tab)}
-              className={`min-h-10 rounded-full px-5 text-xs font-extrabold ${activeTab === tab ? "bg-brand-500 text-white shadow-card" : "text-ink-600 hover:bg-white"}`}
+              className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-full px-4 text-xs font-extrabold ${activeTab === tab ? "bg-brand-500 text-white shadow-card" : "text-ink-600 hover:bg-white"}`}
             >
-              {tab === "timeline" ? "Linimasa" : "Peta"}
+              {tab === "timeline" ? (
+                <FiClock aria-hidden="true" className="size-4" />
+              ) : (
+                <FiMap aria-hidden="true" className="size-4" />
+              )}
+              {tab === "timeline" ? "Riwayat" : "Peta"}
             </button>
           ))}
         </div>
@@ -68,33 +74,41 @@ export function JourneyPanel({ shipment }) {
         hidden={activeTab !== "timeline"}
         tabIndex={0}
       >
-        <ol className="relative ml-3 border-l-2 border-ink-200 pl-6">
+        <ol className="relative ml-4 border-l-2 border-ink-200 pl-6">
           {shipment.events.map((event, index) => (
             <li
               key={event.id}
-              className={`relative mb-4 last:mb-0 ${index > 1 && !showAllEvents ? "max-sm:hidden" : ""}`}
+              className={`relative pb-5 last:pb-0 ${index > 1 && !showAllEvents ? "max-sm:hidden" : ""}`}
             >
               <span
-                className={`absolute -left-[2.15rem] grid size-7 place-items-center rounded-full border-2 border-white text-xs font-extrabold text-white ${index === 0 ? (shipment.stage === "DELIVERED" ? "bg-success-700" : "bg-brand-500") : "bg-ink-300"}`}
+                className={`absolute -left-[2.55rem] grid size-8 place-items-center rounded-full border-2 border-white ${index === 0 ? (shipment.stage === "DELIVERED" ? "bg-success-700 text-white" : "bg-brand-500 text-white") : "bg-ink-200 text-ink-600"}`}
                 aria-hidden="true"
               >
-                {shipment.events.length - index}
+                <FiCheck className="size-4" />
               </span>
               <article
-                className={`rounded-card border p-4 ${index === 0 ? "border-brand-100 bg-brand-50/60" : "border-ink-200 bg-white"}`}
+                className={
+                  index === 0
+                    ? "rounded-card border border-brand-100 bg-brand-50/60 p-4"
+                    : "border-b border-ink-200 pb-4"
+                }
               >
-                <div className="flex flex-wrap justify-between gap-x-3 gap-y-1 text-xs">
-                  <span className="font-extrabold text-brand-700">
-                    {event.status}
-                  </span>
-                  <time dateTime={event.occurredAt} className="text-ink-500">
-                    {formatDateTime(event.occurredAt)}
-                  </time>
-                </div>
-                <h3 className="mt-1 text-sm font-extrabold">{event.title}</h3>
-                <p className="mt-1 text-sm leading-6 text-ink-600">
-                  {event.description}
-                </p>
+                <h3
+                  className={`text-sm font-extrabold ${index === 0 ? "text-brand-700" : "text-ink-950"}`}
+                >
+                  {event.title}
+                </h3>
+                <time
+                  dateTime={event.occurredAt}
+                  className="mt-1 block text-xs text-ink-500"
+                >
+                  {formatDateTime(event.occurredAt)}
+                </time>
+                {event.description && (
+                  <p className="mt-2 text-sm leading-6 text-ink-600">
+                    {event.description}
+                  </p>
+                )}
               </article>
             </li>
           ))}

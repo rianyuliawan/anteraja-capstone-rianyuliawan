@@ -152,14 +152,9 @@ function EvidenceCard({ awb, type, evidence, onOpen }) {
   const title = type === "pickup" ? "Foto pickup" : "Foto penerimaan";
   if (!evidence)
     return (
-      <article className="rounded-card border border-dashed border-ink-300 bg-ink-50 p-5">
-        <span className="text-xs font-extrabold tracking-wide text-ink-500 uppercase">
-          Belum tercatat
-        </span>
-        <h3 className="mt-2 font-extrabold">{title}</h3>
-        <p className="mt-1 text-sm text-ink-600">
-          Dokumentasi akan tersedia setelah kejadian pengiriman tercatat.
-        </p>
+      <article className="min-w-0 rounded-card border border-dashed border-ink-300 bg-ink-50 p-3 sm:p-4">
+        <h3 className="text-sm font-extrabold sm:text-base">{title}</h3>
+        <p className="mt-1 text-xs text-ink-600 sm:text-sm">Belum tersedia.</p>
       </article>
     );
 
@@ -192,8 +187,8 @@ function EvidenceCard({ awb, type, evidence, onOpen }) {
           Kejadian sudah tercatat, tetapi foto belum tersedia.
         </div>
       )}
-      <div className="p-4">
-        <h3 className="font-extrabold">{title}</h3>
+      <div className="p-3 sm:p-4">
+        <h3 className="text-sm font-extrabold sm:text-base">{title}</h3>
       </div>
     </article>
   );
@@ -201,7 +196,6 @@ function EvidenceCard({ awb, type, evidence, onOpen }) {
 
 export function EvidenceGallery({ awb, pickup, delivery }) {
   const dialogRef = useRef(null);
-  const [showPhotos, setShowPhotos] = useState(false);
   const [preview, setPreview] = useState(null);
   const [downloading, setDownloading] = useState("");
   const [downloadMessage, setDownloadMessage] = useState("");
@@ -226,24 +220,12 @@ export function EvidenceGallery({ awb, pickup, delivery }) {
 
   return (
     <Panel aria-labelledby="evidence-title" id="delivery-evidence">
-      <div className="mb-4 border-b border-ink-200 pb-4 sm:mb-5">
+      <div className="mb-4 border-b border-ink-200 pb-4">
         <h2 id="evidence-title" className="text-lg font-extrabold">
-          Dokumentasi perjalanan
+          Bukti pengiriman
         </h2>
       </div>
-      <button
-        type="button"
-        className="min-h-11 w-full rounded-card border border-ink-200 px-4 text-left text-sm font-bold text-brand-700 hover:bg-brand-50 sm:hidden"
-        aria-expanded={showPhotos}
-        aria-controls="evidence-photos"
-        onClick={() => setShowPhotos((current) => !current)}
-      >
-        {showPhotos ? "Sembunyikan foto" : "Lihat foto pickup dan penerimaan"}
-      </button>
-      <div
-        id="evidence-photos"
-        className={`grid gap-4 2xl:grid-cols-2 ${showPhotos ? "mt-4 sm:mt-0" : "max-sm:hidden"}`}
-      >
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
         <EvidenceCard
           awb={awb}
           type="pickup"

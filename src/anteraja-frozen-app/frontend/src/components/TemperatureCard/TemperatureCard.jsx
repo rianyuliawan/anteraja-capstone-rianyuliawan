@@ -15,16 +15,18 @@ export function TemperatureCard({ reading, stage, analysis }) {
   return (
     <Panel aria-labelledby="temperature-title">
       <h2 id="temperature-title" className="mb-4 text-lg font-extrabold">
-        {delivered ? "Pembacaan suhu akhir" : "Pembacaan suhu aset"}
+        Suhu aset
       </h2>
       <div className="rounded-card bg-cold-100/40 p-4 text-cold-700">
-        <p className="text-xs font-extrabold tracking-wide uppercase">
-          {reading.asset}
-        </p>
-        <p className="mt-1 hidden text-xs sm:block">
-          Kode aset: {reading.assetCode}
-        </p>
-        <p className="mt-3 font-mono text-4xl font-bold tracking-tight tabular-nums sm:text-5xl">
+        <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
+          <p className="text-xs font-extrabold tracking-wide uppercase">
+            {reading.asset}
+          </p>
+          {delivered && (
+            <span className="text-xs font-semibold">Pembacaan akhir</span>
+          )}
+        </div>
+        <p className="mt-2 font-mono text-4xl font-bold tracking-tight tabular-nums sm:text-5xl">
           {hasReading ? formatTemperature(reading.valueC) : "—"}
         </p>
         {hasRange && (
@@ -36,16 +38,20 @@ export function TemperatureCard({ reading, stage, analysis }) {
             {formatTemperature(reading.normalHighC)}
           </p>
         )}
+        {hasReading && (
+          <p className="mt-3 text-xs">
+            Terakhir dibaca:{" "}
+            <time dateTime={reading.observedAt}>
+              {formatDateTime(reading.observedAt)}
+            </time>
+          </p>
+        )}
       </div>
       {outsideRange && (
-        <p
-          role="status"
-          className="mt-3 rounded-card border border-ink-200 bg-ink-50 p-3 text-sm text-ink-700"
-        >
-          Pembacaan suhu aset berada di luar rentang pemantauan.{" "}
+        <p role="status" className="mt-3 text-sm text-ink-700">
           {delivered
-            ? "Tim operasional dapat meninjau hasil pemantauan."
-            : "Aset perlu diperiksa oleh tim operasional."}
+            ? "Pembacaan akhir berada di luar rentang pemantauan. Catatan ini perlu ditinjau oleh tim operasional."
+            : "Pembacaan terakhir berada di luar rentang pemantauan. Tim operasional perlu memeriksa kondisi aset agar suhu kembali sesuai rentang."}
         </p>
       )}
       {reading.basisType === "PUBLIC_CLAIM" && reading.sourceUrl && (
@@ -62,23 +68,11 @@ export function TemperatureCard({ reading, stage, analysis }) {
           .
         </p>
       )}
-      {hasReading ? (
-        <p className="mt-4 text-xs text-ink-600">
-          Pembacaan terakhir:{" "}
-          <time dateTime={reading.observedAt}>
-            {formatDateTime(reading.observedAt)}
-          </time>
-        </p>
-      ) : (
-        <p className="mt-4 text-xs text-ink-600">
-          Belum ada pembacaan sejak paket masuk ke aset ini.
-        </p>
-      )}
-      <div className="mt-4 rounded-card bg-ink-50 p-3 text-sm text-ink-700">
+      <p className="mt-4 text-sm text-ink-600">
         {delivered ? (
           <>
             <strong>Pemantauan suhu telah selesai.</strong> Data terakhir
-            dikunci setelah paket diterima.
+            tersimpan setelah paket diterima.
           </>
         ) : (
           <>
@@ -88,7 +82,7 @@ export function TemperatureCard({ reading, stage, analysis }) {
               : "Pembacaan aset ini belum tersedia."}
           </>
         )}
-      </div>
+      </p>
       {analysis && (
         <section
           aria-label="Ringkasan pembacaan suhu"
