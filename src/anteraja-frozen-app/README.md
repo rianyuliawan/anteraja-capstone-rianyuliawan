@@ -24,91 +24,100 @@ Node-RED → API internal Laravel → pembacaan aset dan snapshot suhu per AWB
 
 React tidak mengakses database atau Node-RED secara langsung. Laravel menangani validasi, penyusunan respons, penyimpanan, dan akses foto. Tabel `shipment_asset_assignments` menghubungkan paket dengan aset pada periode tertentu; pembacaan aset yang relevan disimpan dalam `shipment_temperature_samples` agar riwayat paket tetap tersedia saat aset dipakai kembali.
 
-| Bagian | Teknologi | Lokasi |
-| --- | --- | --- |
-| Antarmuka | React 19, Vite 8, Tailwind CSS 4, React Router | `frontend/` |
-| API | PHP 8.4+, Laravel 13, Eloquent | `backend/` |
-| Data | PostgreSQL dan Redis | dikonfigurasi di `backend/.env` |
-| Simulasi suhu | Node-RED | `node-red/` |
-| Data demo | SQL, 13 CSV, dan media WebP | `backend/database/dataset/` |
+| Bagian        | Teknologi                                      | Lokasi                          |
+| ------------- | ---------------------------------------------- | ------------------------------- |
+| Antarmuka     | React 19, Vite 8, Tailwind CSS 4, React Router | `frontend/`                     |
+| API           | PHP 8.4+, Laravel 13, Eloquent                 | `backend/`                      |
+| Data          | PostgreSQL dan Redis                           | dikonfigurasi di `backend/.env` |
+| Simulasi suhu | Node-RED                                       | `node-red/`                     |
+| Data demo     | SQL, 13 CSV, dan media WebP                    | `backend/database/dataset/`     |
 
-## Menjalankan secara lokal
+## Kebutuhan
 
-Prasyarat: PHP 8.4+ dengan ekstensi PostgreSQL dan Redis, Composer, Node.js yang sesuai dengan Vite 8, PostgreSQL, Redis, npm, serta Node-RED CLI jika ingin menjalankan simulasi.
+- PHP 8.4+ dengan ekstensi PostgreSQL (`pdo_pgsql`) dan Redis (`phpredis`), serta Composer.
+- PostgreSQL 15+ dan Redis.
+- Node.js `^20.19.0` atau `>=22.12.0`, serta npm.
+- Node-RED CLI untuk simulasi suhu (opsional).
 
-1. Siapkan backend dari `backend/`:
+Perintah di bawah dijalankan dari folder `src/anteraja-frozen-app/`, kecuali jika tertulis lain. Tiga proses aplikasi (Laravel, React, dan Node-RED) menggunakan terminal terpisah.
+
+## Persiapan pertama kali
+
+1. Nyalakan PostgreSQL dan Redis, lalu buat database PostgreSQL kosong bernama `anteraja_frozen_app`. Akun PostgreSQL yang digunakan harus memiliki izin membuat tabel dan skema. Di Ubuntu, layanan dapat dinyalakan dengan:
 
    ```bash
+   sudo systemctl start postgresql redis-server
+   pg_isready
+   redis-cli ping
+   ```
+
+   `redis-cli ping` seharusnya mengembalikan `PONG`.
+
+2. Siapkan Laravel:
+
+   ```bash
+   cd backend
    composer install
    cp .env.example .env
    php artisan key:generate
    ```
 
-   Atur `DB_*`, `CACHE_STORE=redis`, `REDIS_*`, dan `ANTERAJA_INGEST_TOKEN` dalam `.env`. Gunakan kredensial database milik Anda sendiri; jangan commit `.env`. Jika memakai PostgreSQL cloud, sesuaikan koneksi dan TLS menurut providernya.
+   Jika `.env` sudah ada, jangan salin ulang agar konfigurasi lama tidak tertimpa. Sesuaikan `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, dan `DB_PASSWORD` di `backend/.env` dengan PostgreSQL Anda. Pertahankan `CACHE_STORE=redis`, sesuaikan `REDIS_*` jika perlu, dan ganti `ANTERAJA_INGEST_TOKEN` dengan token acak milik Anda. File `.env` berisi kredensial; jangan commit ke Git.
 
-2. **Hanya untuk database PostgreSQL baru yang kosong**, jalankan:
+3. Untuk database yang **masih kosong**, buat skema dan isi data demo:
 
    ```bash
    php artisan migrate
    php artisan db:seed
+   mkdir -p storage/app/private/shipment-events
+   cp -a database/dataset/media/shipment-events/. storage/app/private/shipment-events/
    ```
 
-   Seeder memuat 70 shipment, 316 event, 96 aset, 84 metadata foto, dan data suhu contoh. Seeder melewati impor bila shipment sudah ada. Jangan jalankan `migrate:fresh` pada database yang berisi data. Salin media demo dari `backend/database/dataset/media/shipment-events/` ke `backend/storage/app/private/shipment-events/` agar foto contoh dapat dibuka. Untuk database yang dipulihkan dari backup, pindahkan pula storage privat aslinya; metadata PostgreSQL saja tidak memuat byte foto.
+   Seeder memuat 70 paket, 316 kejadian, 96 aset termal, metadata foto, dan pembacaan suhu simulasi. Perintah salin foto hanya untuk menyiapkan dataset demo baru. Jika database sudah berisi paket, cukup jalankan migration yang belum terpasang; seeder tidak akan menimpa paket yang ada. Jangan gunakan `migrate:fresh` pada database yang ingin dipertahankan.
 
-   Seeder baru menghasilkan pembacaan `SEED` tiap satu jam berdasarkan jadwal masing-masing aset, termasuk untuk paket yang masih dalam perjalanan. Jika database demo sudah pernah di-seed sebelum perubahan ini, buat backup lalu jalankan `php artisan temperature:rebuild-demo`. Perintah ini menyusun ulang hanya data `SEED`; pembacaan dan cuplikan Node-RED tetap disimpan.
-
-3. Jalankan Laravel dari `backend/`:
+4. Siapkan dependensi frontend:
 
    ```bash
-   php artisan serve --host=127.0.0.1 --port=8093
-   ```
-
-4. Di terminal lain, jalankan frontend dari `frontend/`:
-
-   ```bash
+   cd ../frontend
    npm ci
-   npm run dev -- --host=127.0.0.1 --port=5195
    ```
 
-   Buka `http://127.0.0.1:5195`. Contoh AWB: `ANT-FRZ-0012`. Proxy Vite meneruskan `/api` ke Laravel pada port 8093.
+## Menjalankan layanan
 
-5. Opsional, jalankan simulasi dari folder aplikasi:
+Setelah persiapan selesai, jalankan perintah berikut di terminal yang berbeda:
 
-   ```bash
-   bash node-red/start.sh
-   ```
+| Terminal            | Folder          | Perintah                                         | Alamat                  |
+| ------------------- | --------------- | ------------------------------------------------ | ----------------------- |
+| Laravel API         | `backend/`      | `php artisan serve --host=127.0.0.1 --port=8093` | `http://127.0.0.1:8093` |
+| React               | `frontend/`     | `npm run dev -- --host=127.0.0.1 --port=5195`    | `http://127.0.0.1:5195` |
+| Node-RED (opsional) | folder aplikasi | `bash node-red/start.sh`                         | `http://127.0.0.1:1880` |
 
-   Editor Node-RED berada di `http://127.0.0.1:1880`. Flow sumber disalin ke `node-red/runtime/` pada start pertama. Perubahan di editor tidak otomatis mengubah flow sumber. Jika Node-RED berhenti, aplikasi tetap menampilkan data terakhir, tetapi tidak menerima pembacaan simulasi baru.
+Instal Node-RED CLI terlebih dahulu jika perintah `node-red` belum tersedia. Skrip `node-red/start.sh` membaca token dari `backend/.env` dan mengirim data ke Laravel pada port 8093. Saat pertama dijalankan, skrip menyalin flow sumber ke `node-red/runtime/`; perubahan flow di editor tersimpan di runtime dan tidak otomatis mengubah flow sumber.
+
+Frontend meneruskan permintaan `/api` ke Laravel melalui proxy Vite. Node-RED tidak wajib untuk membuka web: tanpa Node-RED, pembacaan suhu terakhir tetap dapat dilihat, tetapi tidak ada pembacaan simulasi baru.
+
+## Pemeriksaan cepat
+
+1. Buka `http://127.0.0.1:5195` dan cari `ANT-FRZ-0012`.
+2. Buka detailnya; status, peta, suhu, dan foto contoh seharusnya tampil.
+3. Periksa API dengan `curl http://127.0.0.1:8093/api/health` (hasil yang diharapkan: `{"status":"ok"}`).
 
 ## Jadwal dan ringkasan suhu
 
-Setiap aset mempunyai `thermal_assets.reading_minute` (0–59). Simulator memeriksa jadwal setiap menit dan mengirim hanya aset yang jatuh tempo; jadi semua aset dibaca satu kali per jam, tetapi tidak harus pada menit yang sama. Tombol uji manual di Node-RED dapat menambah pembacaan di luar jadwal. Flow sumber yang diperbarui tidak otomatis mengganti `node-red/runtime/flows.json` yang sudah pernah dibuat; terapkan flow baru secara terkontrol saat deployment.
+Setiap aset mempunyai `thermal_assets.reading_minute` (0–59). Simulator memeriksa jadwal setiap menit dan mengirim hanya aset aktif yang jatuh tempo; jadi setiap aset aktif dibaca satu kali per jam, tetapi tidak harus pada menit yang sama. Tombol uji manual di Node-RED dapat menambah pembacaan di luar jadwal.
 
 Seeder membuat bacaan **simulasi** dengan interval satu jam per aset. Satu bacaan aset dapat dipakai oleh beberapa paket yang sedang berada di dalamnya. Pada serah-terima, suhu terakhir aset tujuan dikaitkan ke paket. `observed_at` tetap waktu sensor membaca; `associated_at` adalah waktu bacaan dikaitkan karena paket masuk ke aset tersebut. Misalnya paket masuk pukul 13.25 dan aset terakhir membaca pukul 13.10: paket mendapat suhu terakhir aset tersebut tanpa membuat bacaan sensor baru. Tidak ada bacaan baru yang dibuat setelah paket terkirim. Antarmuka pelanggan hanya menampilkan suhu terbaru dan statistik ringkas, bukan daftar riwayat. Cuplikan per paket tetap disimpan di database untuk agregasi dan audit; paket aktif dibatasi delapan cuplikan.
 
-## Endpoint utama
-
-| Metode | URL | Keterangan |
-| --- | --- | --- |
-| GET | `/api/health` | Status API. |
-| GET | `/api/shipments?awbs=AWB1,AWB2` | Pencarian maksimal 10 AWB. |
-| GET | `/api/shipments/{awb}` | Detail pengiriman. |
-| GET | `/api/shipments/{awb}/temperature-readings` | Data historis untuk pemeriksaan API; tidak dipanggil oleh antarmuka pelanggan. |
-| GET | `/api/shipments/{awb}/media/{id}` | Foto terkait AWB yang diizinkan tampil. |
-| GET | `/api/internal/thermal-assets` | Aset aktif; memerlukan Bearer token. |
-| POST | `/api/internal/temperature-readings` | Penerimaan pembacaan simulasi; memerlukan Bearer token. |
-
-Endpoint publik memiliki rate limit. Token internal dan kredensial PostgreSQL hanya berada di sisi server; jangan menaruhnya di React atau repository.
+Pada database demo yang sudah pernah diisi, jalankan `php artisan migrate` untuk memasang migration baru. Jika ingin menyusun ulang jadwal contoh per aset, jalankan `php artisan temperature:rebuild-demo` dari `backend/`. Perintah ini hanya mengganti pembacaan bersumber `SEED`; pembacaan Node-RED tidak dihapus.
 
 ## Pengujian
 
 ```bash
 # Dari backend/
-php artisan test --compact
+php artisan test
 php artisan route:list --path=api --except-vendor
 
 # Dari frontend/
+npm run lint
 npm run build
 ```
-
-Saat memindahkan aplikasi ke server, pastikan backup PostgreSQL **dan** storage foto privat tersedia. Node-RED perlu dijalankan sebagai service tersendiri agar tetap hidup setelah SSH ditutup.
