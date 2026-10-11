@@ -43,12 +43,16 @@ class DemoTemperatureHistoryService
                            END AS last_at
                     FROM shipment_asset_assignments a
                     LEFT JOIN delivery d ON d.shipment_id = a.shipment_id
+                ), reference_time AS (
+                    SELECT max(occurred_at) AS latest_at FROM shipment_events
                 ), asset_window AS (
-                    SELECT a.thermal_asset_id,
-                           min(a.started_at) AS first_at,
-                           max(a.last_at) AS last_at
-                    FROM assignment_window a
-                    GROUP BY a.thermal_asset_id
+                    SELECT ta.id AS thermal_asset_id,
+                           coalesce(min(a.started_at), ref.latest_at - interval '1 hour') AS first_at,
+                           coalesce(max(a.last_at), ref.latest_at) AS last_at
+                    FROM thermal_assets ta
+                    CROSS JOIN reference_time ref
+                    LEFT JOIN assignment_window a ON a.thermal_asset_id = ta.id
+                    GROUP BY ta.id, ref.latest_at
                 ), hours AS (
                     SELECT w.thermal_asset_id,
                            slot.hour_start + make_interval(mins => ta.reading_minute::int) AS observed_at
@@ -139,8 +143,9 @@ class DemoTemperatureHistoryService
                     association_kind = EXCLUDED.association_kind
                 SQL);
 
-            // Keep at most eight snapshots per active shipment, without
-            // discarding live readings just because the demo was rebuilt.
+            // Keep at most eight snapshots per active shipment. Delivered
+            // shipments retain every asset handoff in their final history.
+            // Live readings always take precedence over rebuilt demo data.
             DB::statement(<<<'SQL'
                 WITH active AS (
                     SELECT s.id FROM shipments s

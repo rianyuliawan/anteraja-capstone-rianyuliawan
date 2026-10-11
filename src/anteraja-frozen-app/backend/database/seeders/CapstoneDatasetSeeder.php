@@ -84,6 +84,15 @@ class CapstoneDatasetSeeder extends Seeder
                     GROUP BY sample.shipment_id HAVING count(*) > 8
                 ) AS found
             ")->found;
+            $assetsWithoutReadings = $dataset->selectOne(<<<'SQL'
+                SELECT EXISTS (
+                    SELECT 1 FROM thermal_assets asset
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM temperature_readings reading
+                        WHERE reading.thermal_asset_id = asset.id AND reading.source = 'SEED'
+                    )
+                ) AS found
+                SQL)->found;
             $tooManyRawReadings = $dataset->selectOne('
                 SELECT EXISTS (
                     SELECT 1 FROM temperature_readings
@@ -118,7 +127,7 @@ class CapstoneDatasetSeeder extends Seeder
                 $dataset->table('thermal_assets')->count() !== 96 ||
                 $dataset->table('shipment_events')->count() !== 316 ||
                 $dataset->table('shipment_temperature_samples')->count() === 0 ||
-                $tooManySamples || $tooManyRawReadings ||
+                $tooManySamples || $tooManyRawReadings || $assetsWithoutReadings ||
                 $invalidHourlySchedule || $shipmentsWithoutTemperature) {
                 throw new RuntimeException('Jumlah baris atau batas riwayat hasil seed tidak sesuai; transaksi dibatalkan.');
             }
