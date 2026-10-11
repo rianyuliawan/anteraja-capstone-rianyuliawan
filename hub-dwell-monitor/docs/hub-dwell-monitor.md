@@ -8,7 +8,7 @@ Dashboard ini membantu supervisor membandingkan durasi sejak scan **ARRIVAL** hi
 
 | Berkas | Peran |
 | --- | --- |
-| `../bigdata-bottleneck-analysis/output/hub_dwell_summary.csv` | Mean, minimum, maksimum, dan jumlah kunjungan selesai per `hub_id`. |
+| `../bigdata-bottleneck-analysis/output/hub_dwell_summary.csv` | Mean, median, P95, minimum, maksimum, jumlah kunjungan selesai, dan rasio pasangan scan valid per `hub_id`. |
 | `../bigdata-bottleneck-analysis/output/scan_pairs_dwell.csv` | 2.236 pasangan scan selesai untuk memvalidasi hitungan dan menghitung mean global. |
 | `public/data/metrics.json` | Hasil konversi kedua CSV oleh `npm run data:build`. |
 | `public/data/locations.json` | Titik representatif pusat kota untuk tujuh hub, dipasangkan melalui `hub_id`. |
@@ -16,7 +16,7 @@ Dashboard ini membantu supervisor membandingkan durasi sejak scan **ARRIVAL** hi
 
 Rumus per kunjungan adalah `departure_ts − arrival_ts` dalam jam. **Completed visits** hanya pasangan dengan kedua waktu valid. Open visits, waktu tidak valid, dan pasangan dengan urutan salah tidak masuk ke mean. **Mean dwell global** = jumlah `dwell_hours` dari seluruh 2.236 pasangan selesai ÷ 2.236 = **8,15 jam** setelah pembulatan tampilan. Ini bukan rata-rata sederhana dari tujuh mean hub. Jumlah per hub diverifikasi terhadap CSV pasangan sebelum JSON dibuat. Semua `hub_id` pada metrics harus ada tepat sekali pada locations; data yang tidak cocok memunculkan error, bukan hilang diam-diam.
 
-Hub menjadi prioritas jika `mean_dwell_hours > 6`, bukan `>= 6`. Batas 6 jam adalah aturan simulasi latihan dan **bukan** SLA resmi. Data analisis sebelumnya adalah dataset simulasi deterministik, sedangkan koordinat hanya posisi kota yang representatif, bukan titik fasilitas presisi.
+Hub menjadi prioritas jika `mean_dwell_hours > 6`, bukan `>= 6`. Batas 6 jam adalah aturan simulasi latihan dan **bukan** SLA resmi. Median menunjukkan titik tengah durasi, P95 menunjukkan batas yang mencakup 95% kunjungan selesai, dan `valid_pair_rate_pct` menunjukkan proporsi catatan paket-hub yang memiliki pasangan ARRIVAL–DEPARTURE valid. Data analisis sebelumnya adalah dataset simulasi deterministik, sedangkan koordinat hanya posisi kota yang representatif, bukan titik fasilitas presisi.
 
 ## 3. Stitch design
 
@@ -63,16 +63,18 @@ Jalankan **satu baris JSON per skenario**, bukan keempatnya sekaligus. Nilai pad
 ## 5. Application features
 
 - **KPI**: total tujuh hub, 2.236 completed visits, mean global 8,15 jam, tujuh hub prioritas.
-- **Top 3**: diurutkan dengan angka mentah (`10.53`, `9.49`, `8.41`), baru kemudian diformat untuk UI.
-- **Leaflet map**: tujuh marker berdasarkan `hub_id`, popup aman sebagai teks DOM, zoom dan attribution © OpenStreetMap. Marker membuka detail hub.
-- **Hub list**: pencarian nama/kota/ID, menampilkan mean dan jumlah kunjungan.
+- **Top 3**: diurutkan dengan angka mentah (`10.53`, `9.49`, `8.41`), baru kemudian diformat untuk UI. Kartu menampilkan jumlah kunjungan dan rentang minimum–maksimum; ketiga hub mencakup 961 kunjungan atau sekitar 43% dari total.
+- **Leaflet map**: tujuh marker berdasarkan `hub_id`, popup aman sebagai teks DOM, zoom dan attribution © OpenStreetMap. Popup menampilkan mean, jumlah kunjungan, dan rentang; marker membuka detail hub.
+- **Hub list**: pencarian nama/kota/ID, menampilkan mean, jumlah kunjungan, dan rentang per hub.
 - **Shared filter**: satu state `priorityOnly` dipakai peta dan daftar; pencarian hanya mempersempit daftar agar posisi marker tetap utuh.
-- **Hub detail**: mean, min, max, completed visits, dan status prioritas; dapat dibuka dari marker, ranking, atau daftar lalu ditutup.
+- **Hub detail**: mean, jumlah kunjungan selesai, min, max, median, P95, rasio pasangan scan valid, selisih dari ambang, dan status prioritas. Makassar ditampilkan sebagai fokus awal; marker, ranking, atau daftar dapat menggantinya dengan hub lain, lalu tombol tutup kembali ke fokus awal.
 - **Async state**: loading, error dengan tombol coba lagi, dan empty. Permintaan data memakai `AbortController` untuk mencegah pembaruan state setelah komponen dilepas.
+
+Ketujuh hub dalam dataset saat ini memiliki mean di atas 6 jam, sehingga filter “Prioritas saja” tetap menampilkan tujuh hub. UI menjelaskan kondisi tersebut, bukan mengubah data agar filter terlihat berbeda.
 
 ## 6. Testing
 
-`npm test` lulus 8 pengujian dan `npm run build` berhasil. Pemeriksaan browser dilakukan pada **1440 px desktop** (peta dan daftar berdampingan) dan **390 px mobile** (bertumpuk). Pada 390 px tidak ditemukan overflow horizontal; tujuh marker, popup, filter, daftar, detail buka/tutup, unit jam, dan attribution tetap dapat digunakan. Resize peta memanggil `invalidateSize` dan fit bounds agar marker tidak terpotong ketika viewport berganti. Log browser tidak menunjukkan error atau warning selama pengujian interaksi.
+`npm test` lulus 9 pengujian dan `npm run build` berhasil. Pengujian meliputi join `hub_id`, ranking numerik, filter dan pencarian, ambang prioritas, validasi metrik detail, data kosong, lokasi yang hilang, dan mean global dari pasangan selesai. Pemeriksaan browser dilakukan pada **1440 px desktop** (peta dan daftar berdampingan) dan **390 px mobile** (bertumpuk). Pada 390 px tidak ditemukan overflow horizontal; tujuh marker, popup, filter, pencarian, detail buka/tutup, unit jam, dan attribution tetap dapat digunakan. Resize peta memanggil `invalidateSize` dan fit bounds agar marker tidak terpotong ketika viewport berganti. Log browser tidak menunjukkan error atau warning selama pengujian interaksi.
 
 Bukti layar: [desktop 1440 px](../screenshots/desktop.png) dan [mobile 390 px](../screenshots/mobile.png).
 
@@ -82,4 +84,4 @@ Bukti layar: [desktop 1440 px](../screenshots/desktop.png) dan [mobile 390 px](.
 
 ## 8. Git workflow
 
-Pekerjaan berada di branch `feature/hub-dwell-monitor` dengan commit modular untuk setup, data, antarmuka, dan dokumentasi. Push, pull request, review partner, revisi, dan merge perlu dilakukan berurutan; **merge tidak boleh diklaim selesai sebelum review benar-benar ada**.
+Pekerjaan berada di branch [`feature/hub-dwell-monitor`](https://github.com/rianyuliawan/anteraja-capstone-rianyuliawan/tree/feature/hub-dwell-monitor) dengan commit modular untuk setup, data, antarmuka, pengujian, dan dokumentasi. [Pull request #2](https://github.com/rianyuliawan/anteraja-capstone-rianyuliawan/pull/2) telah di-merge ke `feature/bigdata-bottleneck-hubs` pada 11 Oktober 2026. Review partner tidak dilakukan sesuai keputusan pemilik proyek, sehingga bagian **partner review** dalam alur tugas belum terpenuhi dan tidak diklaim sebagai hasil pengujian.

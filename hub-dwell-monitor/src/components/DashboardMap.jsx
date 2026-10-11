@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import { formatHours } from '../lib/dashboard.js'
 
 function createPopup(hub) {
   const content = document.createElement('div')
@@ -11,9 +12,13 @@ function createPopup(hub) {
   const place = document.createElement('span')
   place.textContent = hub.city
   const dwell = document.createElement('span')
-  dwell.textContent = `Mean dwell ${new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2 }).format(hub.mean_dwell_hours)} jam`
+  dwell.textContent = `Rata-rata dwell ${formatHours(hub.mean_dwell_hours)} jam`
+  const visits = document.createElement('span')
+  visits.textContent = `${new Intl.NumberFormat('id-ID').format(hub.completed_visits)} kunjungan selesai`
+  const range = document.createElement('span')
+  range.textContent = `Rentang ${formatHours(hub.min_dwell_hours)}–${formatHours(hub.max_dwell_hours)} jam`
 
-  content.append(name, place, dwell)
+  content.append(name, place, dwell, visits, range)
   return content
 }
 

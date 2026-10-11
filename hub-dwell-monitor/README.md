@@ -29,10 +29,11 @@ Jika hasil analisis pada `bigdata-bottleneck-analysis/output/` berubah, jalankan
 
 ## Fitur
 
-- Empat KPI global dan Top 3 hub berdasarkan mean numerik.
-- Peta tujuh hub dengan penanda dan popup yang terhubung ke detail hub.
+- Empat KPI global dan Top 3 hub berdasarkan mean numerik, disertai jumlah kunjungan dan rentang dwell.
+- Peta tujuh hub dengan penanda dan popup yang memuat metrik ringkas serta terhubung ke detail hub.
 - Filter “Semua hub”/“Prioritas saja” yang sama untuk peta dan daftar.
-- Pencarian daftar berdasarkan nama, kota, atau `hub_id`.
+- Pencarian daftar berdasarkan nama, kota, atau `hub_id`; tiap hub memperlihatkan mean, jumlah kunjungan, dan rentang dwell.
+- Detail hub memperlihatkan minimum, maksimum, median, P95, rasio pasangan scan valid, dan selisih terhadap ambang analisis.
 - Tampilan loading, empty, dan error; tata letak desktop dan seluler.
 
 Dokumentasi sumber data, pengujian, rancangan, dan insight tersedia di [docs/hub-dwell-monitor.md](docs/hub-dwell-monitor.md).

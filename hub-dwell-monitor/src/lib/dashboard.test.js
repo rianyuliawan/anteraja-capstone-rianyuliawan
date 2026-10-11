@@ -8,8 +8,8 @@ const metrics = {
   global_mean_dwell_hours: 7,
   priority_threshold_hours: 6,
   hubs: [
-    { hub_id: 'A', completed_visits: 2, mean_dwell_hours: 8, min_dwell_hours: 4, max_dwell_hours: 10, priority: true },
-    { hub_id: 'B', completed_visits: 1, mean_dwell_hours: 5, min_dwell_hours: 3, max_dwell_hours: 7, priority: false },
+    { hub_id: 'A', completed_visits: 2, mean_dwell_hours: 8, min_dwell_hours: 4, max_dwell_hours: 10, median_dwell_hours: 8, p95_dwell_hours: 9.5, valid_pair_rate_pct: 80, priority: true },
+    { hub_id: 'B', completed_visits: 1, mean_dwell_hours: 5, min_dwell_hours: 3, max_dwell_hours: 7, median_dwell_hours: 5, p95_dwell_hours: 6.5, valid_pair_rate_pct: 75, priority: false },
   ],
 }
 const locations = { hubs: [
@@ -38,6 +38,12 @@ test('priority is calculated from the exercise threshold, not a stale flag', () 
   const staleMetrics = structuredClone(metrics)
   staleMetrics.hubs[0].priority = false
   assert.equal(prepareDashboard(staleMetrics, locations, {}).hubs[0].priority, true)
+})
+
+test('rejects invalid detailed metrics instead of rendering misleading values', () => {
+  const invalidMetrics = structuredClone(metrics)
+  invalidMetrics.hubs[0].valid_pair_rate_pct = 120
+  assert.throws(() => prepareDashboard(invalidMetrics, locations, {}), /rentang dwell tidak valid/i)
 })
 
 test('no-priority scenario keeps priority list empty', () => {

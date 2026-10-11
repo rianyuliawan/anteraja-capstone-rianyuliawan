@@ -22,12 +22,15 @@ export function prepareDashboard(metrics, locations, aiSummary) {
     }
     seen.add(metric.hub_id)
 
-    for (const field of ['completed_visits', 'mean_dwell_hours', 'min_dwell_hours', 'max_dwell_hours']) {
+    for (const field of ['completed_visits', 'mean_dwell_hours', 'min_dwell_hours', 'max_dwell_hours', 'median_dwell_hours', 'p95_dwell_hours', 'valid_pair_rate_pct']) {
       if (!Number.isFinite(metric[field]) || metric[field] < 0) {
         throw new Error(`Nilai ${field} tidak valid untuk ${metric.hub_id}.`)
       }
     }
-    if (metric.min_dwell_hours > metric.mean_dwell_hours || metric.mean_dwell_hours > metric.max_dwell_hours) {
+    if (metric.min_dwell_hours > metric.mean_dwell_hours || metric.mean_dwell_hours > metric.max_dwell_hours ||
+        metric.median_dwell_hours < metric.min_dwell_hours || metric.median_dwell_hours > metric.max_dwell_hours ||
+        metric.p95_dwell_hours < metric.median_dwell_hours || metric.p95_dwell_hours > metric.max_dwell_hours ||
+        metric.valid_pair_rate_pct > 100) {
       throw new Error(`Rentang dwell tidak valid untuk ${metric.hub_id}.`)
     }
     if (!Number.isFinite(location.latitude) || !Number.isFinite(location.longitude) ||
