@@ -1,0 +1,84 @@
+{
+  "priority_threshold_hours": 6,
+  "completed_visits": 2236,
+  "global_mean_dwell_hours": 8.150078140528706,
+  "hubs": [
+    {
+      "hub_id": "HUB_MKS",
+      "completed_visits": 539,
+      "mean_dwell_hours": 10.53,
+      "min_dwell_hours": 2.91,
+      "max_dwell_hours": 21.29,
+      "median_dwell_hours": 10.61,
+      "p95_dwell_hours": 14.39,
+      "valid_pair_rate_pct": 88.22,
+      "priority": true
+    },
+    {
+      "hub_id": "HUB_YGY",
+      "completed_visits": 83,
+      "mean_dwell_hours": 9.49,
+      "min_dwell_hours": 2.46,
+      "max_dwell_hours": 16.38,
+      "median_dwell_hours": 9.44,
+      "p95_dwell_hours": 13.9,
+      "valid_pair_rate_pct": 84.69,
+      "priority": true
+    },
+    {
+      "hub_id": "HUB_SBY",
+      "completed_visits": 339,
+      "mean_dwell_hours": 8.41,
+      "min_dwell_hours": 1.4,
+      "max_dwell_hours": 16,
+      "median_dwell_hours": 8.64,
+      "p95_dwell_hours": 12.24,
+      "valid_pair_rate_pct": 89.45,
+      "priority": true
+    },
+    {
+      "hub_id": "HUB_BDG",
+      "completed_visits": 223,
+      "mean_dwell_hours": 7.51,
+      "min_dwell_hours": 0.25,
+      "max_dwell_hours": 13.85,
+      "median_dwell_hours": 7.63,
+      "p95_dwell_hours": 11.96,
+      "valid_pair_rate_pct": 90.28,
+      "priority": true
+    },
+    {
+      "hub_id": "HUB_JKT",
+      "completed_visits": 805,
+      "mean_dwell_hours": 6.93,
+      "min_dwell_hours": 0.25,
+      "max_dwell_hours": 14.22,
+      "median_dwell_hours": 6.91,
+      "p95_dwell_hours": 11.07,
+      "valid_pair_rate_pct": 91.58,
+      "priority": true
+    },
+    {
+      "hub_id": "HUB_DPS",
+      "completed_visits": 177,
+      "mean_dwell_hours": 6.83,
+      "min_dwell_hours": 0.31,
+      "max_dwell_hours": 11.83,
+      "median_dwell_hours": 7.11,
+      "p95_dwell_hours": 10.61,
+      "valid_pair_rate_pct": 89.39,
+      "priority": true
+    },
+    {
+      "hub_id": "HUB_BKS",
+      "completed_visits": 70,
+      "mean_dwell_hours": 6.39,
+      "min_dwell_hours": 2.12,
+      "max_dwell_hours": 11.54,
+      "median_dwell_hours": 5.89,
+      "p95_dwell_hours": 10.65,
+      "valid_pair_rate_pct": 79.55,
+      "priority": true
+    }
+  ]
+}

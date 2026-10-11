@@ -1,0 +1,11 @@
+{
+  "hubs": [
+    { "hub_id": "HUB_JKT", "hub_name": "Hub Jakarta", "city": "Jakarta", "province": "DKI Jakarta", "latitude": -6.2088, "longitude": 106.8456 },
+    { "hub_id": "HUB_BKS", "hub_name": "Hub Bekasi", "city": "Bekasi", "province": "Jawa Barat", "latitude": -6.2349, "longitude": 106.9896 },
+    { "hub_id": "HUB_BDG", "hub_name": "Hub Bandung", "city": "Bandung", "province": "Jawa Barat", "latitude": -6.9175, "longitude": 107.6191 },
+    { "hub_id": "HUB_YGY", "hub_name": "Hub Yogyakarta", "city": "Yogyakarta", "province": "DI Yogyakarta", "latitude": -7.7956, "longitude": 110.3695 },
+    { "hub_id": "HUB_SBY", "hub_name": "Hub Surabaya", "city": "Surabaya", "province": "Jawa Timur", "latitude": -7.2575, "longitude": 112.7521 },
+    { "hub_id": "HUB_DPS", "hub_name": "Hub Denpasar", "city": "Denpasar", "province": "Bali", "latitude": -8.6705, "longitude": 115.2126 },
+    { "hub_id": "HUB_MKS", "hub_name": "Hub Makassar", "city": "Makassar", "province": "Sulawesi Selatan", "latitude": -5.1477, "longitude": 119.4327 }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "summary": "Mean dwell global dari 2.236 kunjungan selesai adalah 8,15 jam. Hub Makassar memiliki mean tertinggi, yaitu 10,53 jam dari 539 kunjungan selesai.",
+  "priority_hubs": ["HUB_MKS", "HUB_YGY", "HUB_SBY", "HUB_BDG", "HUB_JKT", "HUB_DPS", "HUB_BKS"],
+  "next_checks": [
+    "Periksa alur proses di Hub Makassar, dimulai dari waktu antara scan ARRIVAL dan DEPARTURE.",
+    "Tinjau kualitas pasangan scan di Hub Yogyakarta sebelum menentukan tindak lanjut operasional.",
+    "Bandingkan kapasitas dan pola kedatangan Hub Surabaya dengan jam keluarnya paket."
+  ]
+}
